@@ -75,6 +75,18 @@ of real time, so uninterrupted real-time streaming remains open.
 Clean fixture generation, sample-free startup, final output, real-time audio, and
 physical CPU/DSP timing remain open.
 
+The [six-voice Plaits bank](PLAITS-BANK.md) adds waveshaping/wavefolding,
+harmonic additive synthesis and granular formants as MODEL 3/4/5. All six host
+engines match their upstream MAIN references exactly in the bounded vectors
+and corners; compiled SHARC comparisons pass. Old trio host/target PCM and its
+rebuilt image remain exact. Real CPU locks recall VA/WS/ADD/GRAIN/WS/VA, and the
+811-frame replay passes exact repeat, recall, stock parity and disabled-hook
+checks. The capture now verifies each actual trigger selector while setting
+locks, after catching a range-dependent encoder scaling mismatch. The complete
+report is `out/runs/bank-final-01/report.json`, and the SINE regression in
+`out/runs/20261005T095057Z-test-5569b436/manifest.json` passes. This adds engine
+choices; the existing interactive-emulator and macro-interface limits remain.
+
 Read [INTEGRATION](INTEGRATION.md) before changing the firmware hook and
 [DEVELOPMENT](DEVELOPMENT.md) for the next steps. Elekloader is recorded in
 [ECOSYSTEM](ECOSYSTEM.md) as an optional future integration.

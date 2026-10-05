@@ -57,7 +57,9 @@ def compile_target(integrated=False, *, variant="reference", output=None, family
         raise ValueError(f"Unknown Plaits variant: {variant}")
     if variant == "shared" and not integrated:
         raise ValueError("Lane sharing requires the firmware wrapper")
-    if family not in ("va", "trio") or (family != "va" and variant != "reference"):
+    if family not in ("va", "trio", "bank") or (
+        family != "va" and variant != "reference"
+    ):
         raise ValueError("Unknown family or unsupported multi-model optimization")
     out = output or OUT
     out.mkdir(parents=True, exist_ok=True)
@@ -101,8 +103,10 @@ def compile_target(integrated=False, *, variant="reference", output=None, family
         ]
     )
     assembly = (out / "kernel-original.s").read_text()
-    if family in ("trio",):
+    if family in ("trio", "bank"):
         assembly = checked_trio_tables(assembly, ROOT / "machines/plaits-trio/tables.h")
+    if family == "bank":
+        assembly = checked_trio_tables(assembly, machine / "tables.h")
     # Full-width RFRAME is not emitted correctly by the current assembler.
     # Only expand the known problematic stand-alone integer ADD instructions.
     assembly = re.sub(
@@ -241,6 +245,7 @@ def build_blob(integrated=False, *, variant="reference", output=None, family="va
                 "lane_state_bytes": {
                     "va": (768 if integrated else 252),
                     "trio": (696 if integrated else 256),
+                    "bank": (704 if integrated else 260),
                 }[family],
                 "render_cache_bytes": 1036 if variant == "shared" else 0,
                 "placement": "emulator-only; stock loader disjointness is not runtime memory ownership",
@@ -263,11 +268,11 @@ def build_cpu(*, family="va"):
     digest, profile = machineprofile.profile_for(STOCK_MAIN)
     if digest != PROFILE["stock_main_sha256"] or profile is not machineprofile.DT2_116:
         raise ValueError("Unexpected CPU firmware")
-    if family not in ("va", "trio"):
+    if family not in ("va", "trio", "bank"):
         raise ValueError("Unknown CPU machine family")
     name, short = ("P-VA", "PVA") if family == "va" else ("PLAITS", "PLT")
     fields = PROFILE["cpu"]["descriptor_fields"]
-    if family in ("trio",):
+    if family in ("trio", "bank"):
         fields = (0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0, 0xFE, 0x0A)
     spec = machinepatch.MachineSpec(
         name=name,
@@ -280,7 +285,7 @@ def build_cpu(*, family="va"):
     writes, data = machinebuild.plan_and_verify(
         STOCK_MAIN, profile, spec, machinepatch.PARTS
     )
-    if family in ("trio",):
+    if family in ("trio", "bank"):
         # Dormant Manual Slice C row: no exposed stock descriptor uses 0xFA.
         # Keep shared PLAY/SAMP/SLICE metadata unchanged; only MODEL is dedicated.
         data = bytearray(data)
@@ -317,7 +322,7 @@ def build_cpu(*, family="va"):
     (OUT / "PLAITS_MAIN_OS.bin").write_bytes(data)
     return {
         "sha256": hashlib.sha256(data).hexdigest(),
-        "writes": len(writes) + (6 if family in ("trio",) else 0),
+        "writes": len(writes) + (6 if family in ("trio", "bank") else 0),
         "machine_id": 7,
         "name": name,
         "scope": "Image construction; UI and control transport require a separate capture",

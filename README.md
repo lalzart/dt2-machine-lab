@@ -21,6 +21,10 @@ and analog bass drum beside VA. A dedicated MODEL control recalls engines
 through real stored-lock CPU captures and prepared SHARC replay. Its repeat
 commands, compiler adaptations and measured instruction costs are documented.
 
+The [six-voice Plaits bank](docs/PLAITS-BANK.md) adds waveshaping/wavefolding,
+harmonic additive synthesis and granular formants as MODEL 3–5, preserving the
+original VA/FM/BD models. It uses the same prepared emulator integration.
+
 Start with [STATUS](docs/STATUS.md), [integration findings](docs/INTEGRATION.md),
 and the [development roadmap](docs/DEVELOPMENT.md). [AGENTS.md](AGENTS.md)
 contains the short development instructions.
@@ -59,6 +63,7 @@ they do not replace that pointer. Verification remains active under Python
 - `machines/sine-controls/`: experimental pitch, duration and level wiring.
 - `machines/plaits-va/`: pinned-source C99 translation and experimental wrappers.
 - `machines/plaits-trio/`: VA/FM/BD source port, control map and upstream oracle.
+- `machines/plaits-bank/`: six-model extension, generated source and upstream oracle.
 - `profiles/dt2-1.16/`: stock image hashes and version-specific integration data.
 - `lab/`: lab-owned CPU build, DSP replay, validation, and reporting adapters.
 - `tests/`: source-only harness tests and a hash-only private-fixture manifest.
