@@ -48,9 +48,11 @@ def header(target, count):
     return bytes(result)
 
 
-def build_route_blob(sine=False):
+def build_route_blob(sine=False, controls=False):
     import sharcldr
 
+    if controls and not sine:
+        raise ValueError("Controls require the SINE renderer")
     raw = bytearray(STOCK_BLOB.read_bytes())
     if hashlib.sha256(raw).hexdigest() != PROFILE["stock_blob_sha256"]:
         raise ValueError("Wrong DSP firmware")
@@ -75,7 +77,7 @@ def build_route_blob(sine=False):
         from sharc_selache import compare_listing, find_elf_section, swap_parcels
 
         toolchain = SELACHE / "target/release"
-        machine = ROOT / "machines/sine"
+        machine = ROOT / "machines" / ("sine-controls" if controls else "sine")
         subprocess.run(
             [
                 str(toolchain / "selas"),
@@ -127,6 +129,11 @@ def build_route_blob(sine=False):
             struct.pack_into(
                 "<f", arena, 0x400 + 4 * i, math.sin(2 * math.pi * i / 256)
             )
+        if controls:
+            # MIDI-indexed DDS increments, with one extra entry for interpolation.
+            for i in range(129):
+                increment = (2**32) * 440 * 2 ** ((i - 69) / 12) / 96000
+                struct.pack_into("<f", arena, 0x800 + 4 * i, increment)
         (OUT / "sine-listing.txt").write_text(listing)
         (OUT / "sine-code.bin").write_bytes(code)
     final = blocks[-1]

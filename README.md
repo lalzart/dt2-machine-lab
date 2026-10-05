@@ -4,6 +4,9 @@ Local source, builds and repeatable offline tests for custom Digitakt II
 machines. The first machine is **SINE**, a fixed 440 Hz, 250 ms oscillator
 on track 1 under OS 1.16. The source runs as new SHARC instructions.
 
+A separate [SINE controls experiment](docs/SINE-CONTROLS.md) connects TUNE,
+LEN and LEV and checks stored parameter locks through real step previews.
+
 Start with [STATUS](docs/STATUS.md), [integration findings](docs/INTEGRATION.md),
 and the [development roadmap](docs/DEVELOPMENT.md). [AGENTS.md](AGENTS.md)
 contains the short development instructions.
@@ -39,6 +42,7 @@ they do not replace that pointer. Verification remains active under Python
 ## Layout and dependencies
 
 - `machines/sine/`: assembly, linker placement, and the machine definition.
+- `machines/sine-controls/`: experimental pitch, duration and level wiring.
 - `profiles/dt2-1.16/`: stock image hashes and version-specific integration data.
 - `lab/`: lab-owned CPU build, DSP replay, validation, and reporting adapters.
 - `tests/`: source-only harness tests and a hash-only private-fixture manifest.
@@ -85,9 +89,10 @@ suite. The suite intentionally detects changed baseline images/PCM; intentional
 algorithm changes need reviewed expectations and signal checks. Do not make a
 failing comparison pass by regenerating its expected hash automatically.
 
-The fixed SINE baseline has no controls. Pitch control, sample-free startup,
-downstream processing, more tracks and compiled kernels remain next steps.
-See [DEVELOPMENT](docs/DEVELOPMENT.md).
+The fixed SINE baseline has no controls; the separate SINE controls variant
+connects pitch, duration and level.
+Sample-free startup, downstream processing, more tracks and physical resource
+measurements remain open. See [DEVELOPMENT](docs/DEVELOPMENT.md).
 
 Elekloader is recorded as an optional future integration in
 [ECOSYSTEM](docs/ECOSYSTEM.md). It is not a dependency of the current DSP test.

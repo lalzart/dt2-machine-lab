@@ -31,6 +31,11 @@ database. The first migration attempt exposed an old default database path;
 that failure report remains in `out/runs/` and the adapter now uses a cache
 keyed by firmware hash and DigiKit revision.
 
+The [SINE controls experiment](SINE-CONTROLS.md) now connects pitch, duration
+and level. Stored locks reach the DSP in step previews, and an unlocked step
+restores the base values. PLAY startup emits the locked values; continuous
+pattern traversal remains unverified.
+
 Clean fixture generation, sample-free startup, final output, live audio, and
 physical CPU/DSP timing remain open.
 
