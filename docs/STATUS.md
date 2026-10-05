@@ -45,6 +45,15 @@ compatibility and disabled-hook checks pass. New macro panel controls and
 locks are unverified. A named `P-VA` CPU candidate is built but not UI-tested;
 the actual replay reuses the SINE type-7 CPU capture.
 
+The optional [Plaits resource optimization](PLAITS-OPTIMIZATION.md) now skips
+unused AUX and shares renders only for matching complete lane states. MAIN
+audio remains bit-identical in the host and SHARC comparisons. MAIN-only
+uses 50.82% fewer standalone emulator instructions; both changes reduce the
+whole 801-frame firmware replay by 10.73%, adding a 1,036-byte cache. These
+are instruction counts, not hardware load percentages. The reference remains
+the default. Divergent-lane state tests, exact repeat, stock-hook compatibility,
+negative controls and the SINE regression pass.
+
 Clean fixture generation, sample-free startup, final output, live audio, and
 physical CPU/DSP timing remain open.
 

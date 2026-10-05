@@ -373,10 +373,13 @@ void va_render(VA *s, const Params *p, float *out, float *aux, int size) {
   // OUT = 1 + 2.
   // AUX = dual variable waveshape controlled by MORPH, self sync by TIMBRE.
   
+#ifndef PLAITS_MAIN_ONLY
   const float sync_amount = p->timbre * p->timbre;
+#endif
   const float auxiliary_detune = ComputeDetuning(p->harmonics);
   const float primary_f = NoteToFrequency(p->note);
   const float auxiliary_f = NoteToFrequency(p->note + auxiliary_detune);
+#ifndef PLAITS_MAIN_ONLY
   const float primary_sync_f = NoteToFrequency(
       p->note + sync_amount * 48.0f);
   const float auxiliary_sync_f = NoteToFrequency(
@@ -395,6 +398,7 @@ void va_render(VA *s, const Params *p, float *out, float *aux, int size) {
     aux[i] = (aux[i] - out[i]) * 0.5f;
   }
   
+#endif
   // Render double varishape to OUT.
   float square_pw = 1.3f * p->timbre - 0.15f;
   CONSTRAIN(square_pw, 0.005f, 0.5f);

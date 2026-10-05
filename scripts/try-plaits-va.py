@@ -29,12 +29,22 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("output", type=Path)
 parser.add_argument("--mode", choices=["host", "target", "firmware"], default="target")
 parser.add_argument(
+    "--variant",
+    choices=["reference", "main-only", "shared"],
+    default="reference",
+    help="Firmware mode only: full reference, omit AUX, or also share matching lanes",
+)
+parser.add_argument(
     "--blocks",
     type=int,
     default=16000,
     help="Standalone 12-sample blocks; 16000 = four seconds",
 )
 args = parser.parse_args()
+if args.variant != "reference" and args.mode != "firmware":
+    parser.error(
+        "Optimized variants here require --mode firmware; use compare-plaits-va.py for core comparisons"
+    )
 if not 120 <= args.blocks <= 16000:
     raise ValueError("Use 120..16000 bounded blocks")
 doctor()
@@ -63,6 +73,7 @@ for path, revision in [
 fingerprint = source_hashes()
 report = {
     "mode": args.mode,
+    "variant": args.variant,
     "source_sha256": fingerprint,
     "source_lock": lock,
     "cpu_load_percent": None,
@@ -99,7 +110,7 @@ def delta(a, b):
 def run():
     if args.mode == "firmware":
         report["cpu_candidate"] = build_cpu()
-        blob = build_blob(integrated=True)
+        blob = build_blob(integrated=True, variant=args.variant)
         engine = Dsp(blob)
         # The real stored-lock CPU capture is unchanged except explicit event isolation.
         capture = ROOT / "out/runs/controls-final-capture"

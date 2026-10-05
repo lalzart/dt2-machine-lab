@@ -17,9 +17,16 @@ def command(args):
     return subprocess.check_output([str(a) for a in args], text=True, timeout=120)
 
 
-def compile_target(integrated=False):
+def compile_target(integrated=False, *, variant="reference", output=None):
     """No dependencies edited; inspect actual emitted/linked instruction extents."""
     from sharc_selache import compare_listing, find_elf_section, swap_parcels
+
+    if variant not in ("reference", "main-only", "shared"):
+        raise ValueError(f"Unknown Plaits variant: {variant}")
+    if variant == "shared" and not integrated:
+        raise ValueError("Lane sharing requires the firmware wrapper")
+    out = output or OUT
+    out.mkdir(parents=True, exist_ok=True)
 
     if not COMPILER.is_file():
         command(
@@ -37,6 +44,15 @@ def compile_target(integrated=False):
             ]
         )
     source = MACHINE / ("machine.c" if integrated else "target.c")
+    if variant != "reference":
+        # A translation unit keeps compiler-specific -D handling out of this
+        # experiment. The default source and build path remain the reference.
+        defines = "#define PLAITS_MAIN_ONLY 1\n"
+        if variant == "shared":
+            defines += "#define PLAITS_SHARE_LANES 1\n"
+        unit = out / "variant.c"
+        unit.write_text(defines + f'#include "{source}"\n')
+        source = unit
     command(
         [
             COMPILER,
@@ -45,17 +61,17 @@ def compile_target(integrated=False):
             "-O1",
             "-S",
             "-o",
-            OUT / "kernel-original.s",
+            out / "kernel-original.s",
             source,
         ]
     )
-    assembly = (OUT / "kernel-original.s").read_text()
+    assembly = (out / "kernel-original.s").read_text()
     # Full-width RFRAME is not emitted correctly by the current assembler.
     # Only expand the known problematic stand-alone integer ADD instructions.
     assembly = re.sub(
         r"(?m)^(\s*R\d+ = R\d+ \+ R\d+;)$", r".NOCOMPRESS;\n\1\n.COMPRESS;", assembly
     )
-    (OUT / "kernel.s").write_text(assembly)
+    (out / "kernel.s").write_text(assembly)
     wrapper = ".SECTION/PM seg_pmco;\n.GLOBAL start;\n"
     if integrated:
         wrapper += ".EXTERN machine.;\nstart:\nDM(-5,I6)=R0;\n"
@@ -76,8 +92,8 @@ def compile_target(integrated=False):
         )
         wrapper += " ".join(f"L{i}=0;" for i in range(8))
         wrapper += "\nI7=0x200dff00; I6=I7; R4=0x200e0000;\nJUMP kernel. (DB);\nDM(I7,M7)=0; DM(I7,M7)=done-1;\ndone: RTS;\n"
-    (OUT / "wrapper.s").write_text(wrapper)
-    (OUT / "memory.ldf").write_text("""ARCHITECTURE(ADSP-21569)
+    (out / "wrapper.s").write_text(wrapper)
+    (out / "memory.ldf").write_text("""ARCHITECTURE(ADSP-21569)
 MEMORY {
  code { TYPE(BW RAM) START(0x20080000) END(0x200bffff) WIDTH(8) }
  data { TYPE(BW RAM) START(0x200c0000) END(0x200cffff) WIDTH(8) }
@@ -96,8 +112,8 @@ PROCESSOR core0 { OUTPUT($COMMAND_LINE_OUTPUT_FILE) ENTRY(start)
                 "-proc",
                 "ADSP-21569",
                 "-o",
-                OUT / f"{stem}.doj",
-                OUT / f"{stem}.s",
+                out / f"{stem}.doj",
+                out / f"{stem}.s",
             ]
         )
     command(
@@ -106,28 +122,29 @@ PROCESSOR core0 { OUTPUT($COMMAND_LINE_OUTPUT_FILE) ENTRY(start)
             "-proc",
             "ADSP-21569",
             "-T",
-            OUT / "memory.ldf",
+            out / "memory.ldf",
             "-o",
-            OUT / "plaits.dxe",
-            OUT / "wrapper.doj",
-            OUT / "kernel.doj",
+            out / "plaits.dxe",
+            out / "wrapper.doj",
+            out / "kernel.doj",
         ]
     )
-    listing = command([TOOLS / "seldump", "-ns", "code", OUT / "plaits.dxe"])
-    (OUT / "listing.txt").write_text(listing)
+    listing = command([TOOLS / "seldump", "-ns", "code", out / "plaits.dxe"])
+    (out / "listing.txt").write_text(listing)
     if not compare_listing(listing).all_extents_agree:
         raise ValueError("Plaits linked instruction width disagreement")
-    code = swap_parcels(find_elf_section(OUT / "plaits.dxe", "code"))
-    data = find_elf_section(OUT / "plaits.dxe", "data")
+    code = swap_parcels(find_elf_section(out / "plaits.dxe", "code"))
+    data = find_elf_section(out / "plaits.dxe", "data")
     return code, data
 
 
-def build_blob(integrated=False):
+def build_blob(integrated=False, *, variant="reference", output=None):
     import sharcldr
 
     from lab.runtime import PROFILE
 
-    code, data = compile_target(integrated)
+    out = output or OUT
+    code, data = compile_target(integrated, variant=variant, output=out)
     raw = bytearray(STOCK_BLOB.read_bytes())
     if hashlib.sha256(raw).hexdigest() != PROFILE["stock_blob_sha256"]:
         raise ValueError("Unexpected stock DSP image")
@@ -173,8 +190,8 @@ def build_blob(integrated=False):
     parsed = sharcldr.parse_blocks(result)
     if parsed[-1]["payload_offset"] != len(result):
         raise ValueError("Bad candidate loader stream")
-    (OUT / "PLAITS_BLOB.bin").write_bytes(result)
-    (OUT / "build.json").write_text(
+    (out / "PLAITS_BLOB.bin").write_bytes(result)
+    (out / "build.json").write_text(
         json.dumps(
             {
                 "code_bytes": len(code),
@@ -182,6 +199,9 @@ def build_blob(integrated=False):
                 "arena_bytes": len(arena),
                 "compiler_sha256": hashlib.sha256(COMPILER.read_bytes()).hexdigest(),
                 "integrated": integrated,
+                "variant": variant,
+                "lane_state_bytes": 768 if integrated else 252,
+                "render_cache_bytes": 1036 if variant == "shared" else 0,
                 "placement": "emulator-only; stock loader disjointness is not runtime memory ownership",
             },
             indent=2,

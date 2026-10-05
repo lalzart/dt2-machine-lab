@@ -12,6 +12,10 @@ to C99, compares it with upstream C++, executes it as compiled SHARC code,
 and renders through the prepared DTII voice hook. Its separate repeat commands
 and remaining control/timing gaps are documented there.
 
+The optional [Plaits resource experiment](docs/PLAITS-OPTIMIZATION.md) compares
+the reference with MAIN-only rendering and safe sharing between matching lanes.
+It retains exact audio comparisons and reports emulator instruction savings.
+
 Start with [STATUS](docs/STATUS.md), [integration findings](docs/INTEGRATION.md),
 and the [development roadmap](docs/DEVELOPMENT.md). [AGENTS.md](AGENTS.md)
 contains the short development instructions.

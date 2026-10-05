@@ -138,6 +138,18 @@ render = common(render).replace("parameters.", "p->")
 for name in ["primary_", "auxiliary_", "sync_"]:
     render = render.replace(f"s->{name}.Render(", f"shape_render(&s->{name}, ")
 render = render.replace("s->variable_saw_.Render(", "saw_render(&s->variable_saw_, ")
+# The firmware consumes MAIN only. Retain the original by default, and guard
+# only AUX-exclusive calculations/state updates in the optional specialization.
+sync = "  const float sync_amount = p->timbre * p->timbre;"
+if render.count(sync) != 1:
+    raise ValueError("Expected one AUX sync calculation")
+render = render.replace(sync, "#ifndef PLAITS_MAIN_ONLY\n" + sync + "\n#endif")
+aux_start = "  const float primary_sync_f = NoteToFrequency("
+aux_end = "  // Render double varishape to OUT."
+if render.count(aux_start) != 1 or render.count(aux_end) != 1:
+    raise ValueError("Expected one bounded AUX render region")
+render = render.replace(aux_start, "#ifndef PLAITS_MAIN_ONLY\n" + aux_start)
+render = render.replace(aux_end, "#endif\n" + aux_end)
 parts.append(
     "void va_render(VA *s, const Params *p, float *out, float *aux, int size) {"
     + render

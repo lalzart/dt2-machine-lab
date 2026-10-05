@@ -42,7 +42,8 @@ does not demonstrate machine integration.
 - Fixed, preallocated state and scratch; no heap allocation or random source
   in the core. C structs replace classes; explicit interpolation commit replaces
   destructors; lookup arrays replace external C++ namespace symbols.
-- Init resets all state. Upstream engine Reset is a no-op. Any wrapper note
+- Init resets oscillator and gain history, but does not clear every scratch
+  buffer byte. Upstream engine Reset is a no-op. Any wrapper note
   envelope/reset is separate from engine equivalence. Panic/switch-away must
   silence the wrapper and clear its active flag. Freeze, recall, reconnection,
   model changes and external MIDI are excluded from this first engine test.
@@ -225,3 +226,6 @@ but does not boot that image, package a firmware container or flash hardware.
 Next useful work: real harmonics/timbre/morph controls and p-locks; explain the
 long-render numeric divergence; close continuous pattern traversal and clean
 startup; then establish compact safe placement, final output and device budget.
+
+The later [resource experiment](PLAITS-OPTIMIZATION.md) adds optional MAIN-only
+and shared-lane builds while retaining this complete reference as the default.
