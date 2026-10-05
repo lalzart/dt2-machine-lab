@@ -66,7 +66,13 @@ voice behavior remain unfinished; this is not all 24 models. The final report
 is `out/runs/trio-final-01/report.json`; the refreshed SINE regression
 `out/runs/20261005T082651Z-test-a0ec5c52/manifest.json` also passes.
 
-Clean fixture generation, sample-free startup, final output, live audio, and
+Buffered GUI audition is now available through `scripts/listen-plaits-trio.py`;
+see [the listening instructions](PLAITS-TRIO.md#buffered-listening-in-the-emulator-window).
+VA/FM/BD previews render real SHARC voice PCM and play completed WAVs on the
+Mac. The native live source matches the checked replay, but renders around 2%
+of real time, so uninterrupted real-time streaming remains open.
+
+Clean fixture generation, sample-free startup, final output, real-time audio, and
 physical CPU/DSP timing remain open.
 
 Read [INTEGRATION](INTEGRATION.md) before changing the firmware hook and

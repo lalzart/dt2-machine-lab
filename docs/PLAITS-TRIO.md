@@ -210,3 +210,40 @@ track-1 voice buffers (represented as stereo). `plaits-trio-host.wav` is a
 separate three-engine host preview: one second per engine plus short silence,
 with four parameter settings within each second and fixed preview gain 0.2.
 Neither file is a recording of the final DTII mixer or physical device.
+
+## Buffered listening in the emulator window
+
+`scripts/listen-plaits-trio.py` opens the prepared CPU snapshot in DigiKit's
+front-panel GUI. Preview VA/FM/BD sends real step-preview buttons for steps
+9/1/5. Each captured track-1 trigger supplies the controls to the native SHARC
+emulator, which renders the note before macOS `afplay` plays it at 48 kHz.
+Replay last plays the completed WAV immediately. The first VA note is automatic.
+Close the window to stop; the session also closes after 15 minutes.
+
+```sh
+cargo build --release --locked \
+  --manifest-path .deps/digikit/native/live/Cargo.toml \
+  --target-dir out/cache/live-audio
+python3 scripts/listen-plaits-trio.py out/runs/trio-listen-new
+```
+
+This local launcher uses the checked images in `trio-final-01` and prepared
+snapshot/capture in `trio-model-capture-02`. It verifies image and input hashes,
+the snapshot's candidate flash bytes, and native pack/card provenance. Each
+note retains its genuine trigger frame, WAV, hashes and render statistics in
+the fresh output directory. The held frames after that trigger are synthesized
+with one-shot events cleared; this auditions separate complete notes and does
+not establish continuous sequencer or final-mixer playback. Other tracks are
+excluded. Existing FM pitch/length/level locks make its preview shorter/quieter.
+
+The native live-source probe in `trio-live-probe-01/report.json` reproduced the
+checked replay prefix byte-for-byte, but took about 31 ms per 0.667 ms audio
+block, roughly 2% of real time. The buffered session `trio-listen-03/session.json`
+rendered VA/FM/BD without SHARC stops and invoked playback on the default Mac
+output. VA/BD notes were 0.267 seconds and FM 0.144 seconds including trailing
+silence; rendering took about 8–14 seconds, plus slow CPU panel handling.
+This is actual emulated voice-buffer audio. Real-time streaming, final mixer
+output, physical timing, and physical-device operation remain unverified.
+After adding the launcher, the eight harness tests, launcher lint/format checks,
+dependency doctor and SINE regression passed again; the regression report is
+`out/runs/20261005T085729Z-test-a007e253/manifest.json`.
