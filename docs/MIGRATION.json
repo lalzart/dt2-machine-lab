@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-05",
+  "method": "SINE assembly/linker copied unchanged; CPU build and DSP replay adapters migrated to lab-owned paths. Original CPU panel capture remains preserved in the previous workspace. No source or artifact deleted.",
+  "source_digikit_revision": "277760aad51b036a4756db051409d4d3b1eeccbc",
+  "source_files_sha256": {
+    "tools/dt2_machine_dsp.py": "951d3af80dc2a493ac51fc1f2f1c0b4351ec9d0016d65eacc015e9457bba4f61",
+    "tools/dt2_machine_test.py": "8731fb4fc3433064f63c02214937bf68b893dc066b689e9ca8abbd4696d9725b",
+    "tools/dt2_machine_verify.py": "43b15b33d802c75355019a259ec71b75c7794b924e56001d2e0eaeec20acf3a0",
+    "tools/dt2_sine.ldf": "83baf73c60bcca6478eabc1f0be1e3dfadd85552409e4a430d3be3304fd6b78b",
+    "tools/dt2_sine.s": "940e821a347d94922785c4a2c74b83247d876a2446df5b60668eb198205f0831"
+  }
+}

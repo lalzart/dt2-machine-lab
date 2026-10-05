@@ -1,0 +1,18 @@
+{
+  "attack_ms": 5,
+  "clone_of": 6,
+  "duration_ms": 250,
+  "frequency_hz": 440,
+  "gain": 0.125,
+  "linker": "memory.ldf",
+  "machine_type": 7,
+  "name": "SINE",
+  "note": "Fixed diagnostic oscillator; inherited SRC controls are not wired",
+  "parameters": [],
+  "profile": "dt2-1.16",
+  "release_ms": 5,
+  "source": "dsp.s",
+  "tracks": [
+    1
+  ]
+}

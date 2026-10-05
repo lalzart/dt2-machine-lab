@@ -1,0 +1,34 @@
+{
+  "expected": {
+    "sine_blob_sha256": "a3e8594d07f656f2e4dc52a16f433646285e4d5f987a2728cd252b5d9dfbef25",
+    "sine_main_sha256": "344bf871f4e25f0d3c349099223ed17ef44da47eddde167fc14e5fe493f44830",
+    "sine_pcm_sha256": "2a38b64c83b1636b9f1a3793f6e78c71275d0a64ca2473c2e6b20bc183673eae"
+  },
+  "files": {
+    "captures/sine-type-7.dtfr": "4fef43be3ca309c99519f22df87e3d51433d1e066146bc093eb923d07d9e6024",
+    "captures/type-6.dtfr": "2e59fb92f95ef27b571a1335f125d893ce5e402578c4f5cd21d701d8c4eb13c7",
+    "captures/type-7.dtfr": "d124b9073fef226c3ce9c1e9a19e84624a0c902003c0fa731c88c34c224d07df",
+    "native/libsharc_native.dylib": "7368cec8498fd706f31732e17dcc1b78b893c72bd06e416a8ee064de9832f11f",
+    "native/state.pack": "de2128dd0249d0e3af3bbc37fc69858fe6f4b92248b19a3cc16811ff62febe26",
+    "sections/section_3_MAIN_OS.bin": "57bb4dfa8df07d846adc72fdb4fb0d3cd3c5680c524bf498338460207e008e7d",
+    "sections/section_7_BLOB.bin": "0f514a12a2255f5c081e292c47f1f29462003177658da4bbae0a22fd737fffa2"
+  },
+  "limitations": [
+    "Prepared native state, not a clean boot",
+    "Voice buffers, not final mix",
+    "No physical timing calibration"
+  ],
+  "name": "sine-1.16",
+  "native_host": {
+    "machine": "arm64",
+    "system": "Darwin"
+  },
+  "origin": "2026-10-05 local SINE experiment; real CPU capture and stock-initialized DSP state",
+  "schema": 1,
+  "selache_tools": {
+    "target/release/selas": "4bd9c08c9feca32275d6ee9254ef23b9c3bf0a9950af60c9f4112bfc9e63743d",
+    "target/release/seld": "21f1dc71be242210090e9cc963447841480e722aa425087959b38333d8150058",
+    "target/release/seldump": "0e4a808555928cf7c787d140c9b00f5200609862346fd4903ef02fe84095f62d"
+  },
+  "unicorn_native_sha256": "a9678abee8689d8bb43ef1967da06adea65020860a03cd5b54cadbd8e4d4f011"
+}

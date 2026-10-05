@@ -1,0 +1,45 @@
+{
+  "boundary": "Offline emulator profile; placement and physical timing unverified",
+  "cpu": {
+    "descriptor_base": "0x4293b960",
+    "descriptor_fields": [
+      248,
+      249,
+      0,
+      251,
+      252,
+      253,
+      0,
+      254,
+      10
+    ],
+    "descriptor_stride": "0x2c"
+  },
+  "dsp": {
+    "arena_byte": "0x200f0000",
+    "arena_bytes": 8192,
+    "code_byte": "0x200f1000",
+    "code_sw": "0xbf8800",
+    "expected_hook_bytes": "5499a801408c",
+    "fallback_sw": "0x1c4f18",
+    "hook_sw": "0x1c4f15",
+    "return_sw": "0x1c524a",
+    "stock_remap_dm": "0x2567c0"
+  },
+  "firmware": "Digitakt II OS 1.16",
+  "stock_blob_sha256": "0f514a12a2255f5c081e292c47f1f29462003177658da4bbae0a22fd737fffa2",
+  "stock_main_sha256": "57bb4dfa8df07d846adc72fdb4fb0d3cd3c5680c524bf498338460207e008e7d",
+  "stock_syx_sha256": "278541e466edcd77d6b3e018a91fb90185932d3c7de224dd3e68294dddf3a9ec",
+  "wire": {
+    "machine_type_offset": "0x94",
+    "machine_type_stride": 2,
+    "one_shot_offsets": [
+      "0x22",
+      "0x24",
+      "0x26",
+      "0x28"
+    ],
+    "release_offset": "0x24",
+    "trigger_offset": "0x22"
+  }
+}

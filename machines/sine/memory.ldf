@@ -1,0 +1,13 @@
+ARCHITECTURE(ADSP-21569)
+MEMORY {
+    code_arena { TYPE(BW RAM) START(0x200f1000) END(0x200f17ff) WIDTH(8) }
+}
+PROCESSOR core0 {
+    OUTPUT($COMMAND_LINE_OUTPUT_FILE)
+    ENTRY(sine_entry)
+    SECTIONS {
+        sine_code SW {
+            INPUT_SECTIONS($COMMAND_LINE_OBJECTS(seg_pmco))
+        } > code_arena
+    }
+}

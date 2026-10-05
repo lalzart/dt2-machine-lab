@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+"""Run from any directory; use the explicitly configured Python when available."""
+
+import json
+import os
+import sys
+from pathlib import Path
+
+root = Path(__file__).resolve().parent
+os.chdir(root)
+config = root / ".local/config.json"
+if config.is_file():
+    configured = Path(json.loads(config.read_text())["python"])
+    # Compare executable paths, not resolved venv symlinks (which lose the venv).
+    if Path(sys.executable).absolute() != configured.absolute():
+        os.execv(
+            str(configured),
+            [str(configured), "-B", str(root / "labctl"), *sys.argv[1:]],
+        )
+
+from lab.cli import main  # noqa: E402 - after selecting the configured interpreter
+
+raise SystemExit(main())

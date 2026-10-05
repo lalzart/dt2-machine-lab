@@ -1,0 +1,56 @@
+{
+  "digikit": {
+    "patches": [],
+    "revision": "277760aad51b036a4756db051409d4d3b1eeccbc",
+    "url": "https://github.com/m-dwyer/digikit.git"
+  },
+  "native": {
+    "optimized_blocks": false,
+    "profile": "release",
+    "runtime_decode": true,
+    "source_revision": "277760aad51b036a4756db051409d4d3b1eeccbc"
+  },
+  "python": {
+    "major_minor": "3.12",
+    "packages": {
+      "capstone": "5.0.7",
+      "networkx": "3.4.2",
+      "pypcode": "4.0.0",
+      "unicorn": "2.1.4"
+    },
+    "requirements": "DigiKit uv.lock",
+    "uv_lock_sha256": "b693fa89efb8cc826f4a414a555f5e243cdcc0c616cdc48127b7f67226f80450"
+  },
+  "references": {
+    "elekloader": {
+      "reviewed_revision": "793b2e473dc0f0fa1a6d6f14e69a8cc166ce9300",
+      "role": "optional future packaging and UI/control integration; not a build dependency",
+      "url": "https://github.com/irpina/elekloader"
+    }
+  },
+  "schema": 1,
+  "selache": {
+    "build": [
+      "cargo",
+      "build",
+      "--release",
+      "--locked"
+    ],
+    "revision": "2b26d3b75c53063575bc5c820fa0d38879335187",
+    "url": "https://github.com/js216/selache.git"
+  },
+  "unicorn": {
+    "installer": "tools/install-patched-unicorn.sh",
+    "installer_sha256": "124ad9c12264be1eda9853d473856b3782dec69649744884008bb1aa61e5c872",
+    "patches": {
+      "unicorn-2.1.4-count-hook-fast-path.patch": "5f7523267ed0a6324496c7ea665d6ea22d84f30d82199218f66594291adc3e17",
+      "unicorn-2.1.4-m68k-emac-fractional.patch": "8f497c939b7b772a0a00a7d16ad85e8a1a6865b772191ca5ca131fb477824603",
+      "unicorn-2.1.4-m68k-emac-mac-load.patch": "ac128dd6836997de55e0d2ad70d7a2978639168090f552c5634da50fddc70bfe",
+      "unicorn-2.1.4-m68k-flush-flags-sync.patch": "9f76167940573e1e33582f6e4fbef10d95528dfa26090406a9b40a4b45712807",
+      "unicorn-2.1.4-m68k-hook-ccr-sync.patch": "56de71acf2adbd5ca2f448095478e65e49fd79d378aeb5b5e4217d2c90f52f4e"
+    },
+    "revision": "8028ec436f2d9376525352dd38ed9ed6b9f6be10",
+    "url": "https://github.com/unicorn-engine/unicorn.git",
+    "version": "2.1.4"
+  }
+}
