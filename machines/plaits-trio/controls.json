@@ -1,0 +1,15 @@
+{
+  "machine_type": 7,
+  "model_names": ["VA", "FM", "BD"],
+  "latch": "all controls on trigger; model edit without trigger preserves old voice",
+  "note": {"wire": "0x02", "dm": "0x2558de", "scale": 256},
+  "tune": {"encoder": "A", "wire": "0xda", "dm": "0x2559b6", "scale": 256, "offset_after_sum": -55},
+  "harmonics": {"encoder": "B", "wire": "0xdc", "dm": "0x2559b8", "scale": 768, "borrowed_label": "PLAY", "resolution": "four inherited positions"},
+  "model": {"encoder": "C", "wire": "0xde", "dm": "0x2559ba", "scale": 256, "param_code": 250, "max_raw": 512, "label": "MODEL"},
+  "timbre": {"encoder": "D", "wire": "0xe0", "dm": "0x2559bc", "scale": 1023, "borrowed_label": "SAMP", "note": "inherited sample selector; macro panel behavior is experimental"},
+  "morph": {"encoder": "E", "wire": "0xe6", "dm": "0x2559c2", "scale": 16384, "borrowed_label": "SLICE"},
+  "length": {"encoder": "F", "wire": "0xe8", "dm": "0x2559c4", "source_samples_numerator": 25, "source_samples_denominator": 32, "min": 960, "max": 48000},
+  "level": {"encoder": "H", "wire": "0xec", "dm": "0x2559c8", "scale": 262144, "max": 0.125},
+  "accent": {"value": 0.8, "note": "fixed default; velocity/accent transport excluded"},
+  "scope": "Prepared-emulator prototype. MODEL is a dedicated bounded row; macro rows still inherit stock meanings. Full dedicated macro UI/ranges and persistent project reload are not claimed."
+}

@@ -3,6 +3,7 @@
 import hashlib
 import json
 import re
+import struct
 import subprocess
 
 from lab.dsp import assemble, header
@@ -17,7 +18,38 @@ def command(args):
     return subprocess.check_output([str(a) for a in args], text=True, timeout=120)
 
 
-def compile_target(integrated=False, *, variant="reference", output=None):
+def checked_trio_tables(assembly, source):
+    """Repair the pinned compiler's integer negation of float array literals.
+
+    Accept only the exact IEEE bits or the observed negated-positive-bit bug;
+    never guess a correction for other output. Host source stays upstream exact.
+    """
+    for name, body in re.findall(
+        r"static const float (\w+)\[\] = \{(.*?)\};", source.read_text(), re.S
+    ):
+        values = [float(v.strip()) for v in body.split(",") if v.strip()]
+        pattern = r"\.VAR " + name + r"\. = [^;]+;(?:\n\.VAR = [^;]+;)*"
+        match = re.search(pattern, assembly)
+        if not match:
+            raise ValueError(f"Missing emitted table: {name}")
+        emitted = re.findall(r"= (0x[0-9A-Fa-f]+);", match[0])
+        if len(emitted) != len(values):
+            raise ValueError(f"Unexpected table extent: {name}")
+        corrected = []
+        for value, word in zip(values, emitted, strict=True):
+            expected = struct.unpack("<I", struct.pack("<f", value))[0]
+            buggy = (-(expected & 0x7FFFFFFF)) & 0xFFFFFFFF
+            if int(word, 16) != expected and not (value < 0 and int(word, 16) == buggy):
+                raise ValueError(f"Unexpected emitted value in {name}: {word}")
+            corrected.append(f"0x{expected:08X}")
+        replacement = f".VAR {name}. = {corrected[0]};" + "".join(
+            f"\n.VAR = {word};" for word in corrected[1:]
+        )
+        assembly = assembly[: match.start()] + replacement + assembly[match.end() :]
+    return assembly
+
+
+def compile_target(integrated=False, *, variant="reference", output=None, family="va"):
     """No dependencies edited; inspect actual emitted/linked instruction extents."""
     from sharc_selache import compare_listing, find_elf_section, swap_parcels
 
@@ -25,6 +57,8 @@ def compile_target(integrated=False, *, variant="reference", output=None):
         raise ValueError(f"Unknown Plaits variant: {variant}")
     if variant == "shared" and not integrated:
         raise ValueError("Lane sharing requires the firmware wrapper")
+    if family not in ("va", "trio") or (family != "va" and variant != "reference"):
+        raise ValueError("Unknown family or unsupported multi-model optimization")
     out = output or OUT
     out.mkdir(parents=True, exist_ok=True)
 
@@ -43,7 +77,8 @@ def compile_target(integrated=False, *, variant="reference", output=None):
                 "selcc",
             ]
         )
-    source = MACHINE / ("machine.c" if integrated else "target.c")
+    machine = ROOT / ("machines/plaits-" + family)
+    source = machine / ("machine.c" if integrated else "target.c")
     if variant != "reference":
         # A translation unit keeps compiler-specific -D handling out of this
         # experiment. The default source and build path remain the reference.
@@ -66,6 +101,8 @@ def compile_target(integrated=False, *, variant="reference", output=None):
         ]
     )
     assembly = (out / "kernel-original.s").read_text()
+    if family in ("trio",):
+        assembly = checked_trio_tables(assembly, ROOT / "machines/plaits-trio/tables.h")
     # Full-width RFRAME is not emitted correctly by the current assembler.
     # Only expand the known problematic stand-alone integer ADD instructions.
     assembly = re.sub(
@@ -138,13 +175,13 @@ PROCESSOR core0 { OUTPUT($COMMAND_LINE_OUTPUT_FILE) ENTRY(start)
     return code, data
 
 
-def build_blob(integrated=False, *, variant="reference", output=None):
+def build_blob(integrated=False, *, variant="reference", output=None, family="va"):
     import sharcldr
 
     from lab.runtime import PROFILE
 
     out = output or OUT
-    code, data = compile_target(integrated, variant=variant, output=out)
+    code, data = compile_target(integrated, variant=variant, output=out, family=family)
     raw = bytearray(STOCK_BLOB.read_bytes())
     if hashlib.sha256(raw).hexdigest() != PROFILE["stock_blob_sha256"]:
         raise ValueError("Unexpected stock DSP image")
@@ -200,7 +237,11 @@ def build_blob(integrated=False, *, variant="reference", output=None):
                 "compiler_sha256": hashlib.sha256(COMPILER.read_bytes()).hexdigest(),
                 "integrated": integrated,
                 "variant": variant,
-                "lane_state_bytes": 768 if integrated else 252,
+                "family": family,
+                "lane_state_bytes": {
+                    "va": (768 if integrated else 252),
+                    "trio": (696 if integrated else 256),
+                }[family],
                 "render_cache_bytes": 1036 if variant == "shared" else 0,
                 "placement": "emulator-only; stock loader disjointness is not runtime memory ownership",
             },
@@ -211,7 +252,7 @@ def build_blob(integrated=False, *, variant="reference", output=None):
     return result
 
 
-def build_cpu():
+def build_cpu(*, family="va"):
     """A named type-7 CPU candidate. The current replay capture predates this label."""
     import machinebuild
     import machinepatch
@@ -222,22 +263,62 @@ def build_cpu():
     digest, profile = machineprofile.profile_for(STOCK_MAIN)
     if digest != PROFILE["stock_main_sha256"] or profile is not machineprofile.DT2_116:
         raise ValueError("Unexpected CPU firmware")
+    if family not in ("va", "trio"):
+        raise ValueError("Unknown CPU machine family")
+    name, short = ("P-VA", "PVA") if family == "va" else ("PLAITS", "PLT")
+    fields = PROFILE["cpu"]["descriptor_fields"]
+    if family in ("trio",):
+        fields = (0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0, 0xFE, 0x0A)
     spec = machinepatch.MachineSpec(
-        name="P-VA",
-        short="PVA",
-        desc_name="P-VA",
-        desc_short="PVA",
+        name=name,
+        short=short,
+        desc_name=name,
+        desc_short=short,
         clone_of=6,
-        fields=PROFILE["cpu"]["descriptor_fields"],
+        fields=fields,
     )
     writes, data = machinebuild.plan_and_verify(
         STOCK_MAIN, profile, spec, machinepatch.PARTS
     )
+    if family in ("trio",):
+        # Dormant Manual Slice C row: no exposed stock descriptor uses 0xFA.
+        # Keep shared PLAY/SAMP/SLICE metadata unchanged; only MODEL is dedicated.
+        data = bytearray(data)
+        base, row, label = 0x40000400, 0x40212C24, 0x40311CC4
+        # MODEL is discrete. The stock one-pole mirror filter would turn a
+        # model lock into an intermediate number at note-on. Bypass only
+        # track 1 / type 7 / mirror 27 after the stock filter has completed.
+        # D0 is caller-clobbered and restored to the displaced return value;
+        # no other register or stock track/parameter is changed by this shim.
+        shim = bytes.fromhex(
+            "7000 103980003cd0 0c8000000007 660c "
+            "303980003398 33c080005ba8 "
+            "203c80005b50 4ef9400d934c"
+        )
+        controls = json.loads(
+            (ROOT / f"machines/plaits-{family}/controls.json").read_text()
+        )
+        max_raw = controls["model"]["max_raw"]
+        if max_raw != (len(controls["model_names"]) - 1) * 256:
+            raise ValueError("MODEL range disagrees with control map")
+        extra = [
+            (row + 12, struct.pack(">I", 0x7F00), struct.pack(">I", max_raw)),
+            (row + 40, struct.pack(">I", 0x40242AAC), struct.pack(">I", label)),
+            (row + 48, struct.pack(">I", 0x40242AB6), struct.pack(">I", label + 6)),
+            (label, bytes(12), b"Model\0MODEL\0"),
+            (0x400D9346, bytes.fromhex("203c80005b50"), bytes.fromhex("4ef940311d04")),
+            (0x40311D04, bytes(len(shim)), shim),
+        ]
+        for address, before, after in extra:
+            off = address - base
+            if data[off : off + len(before)] != before:
+                raise ValueError(f"MODEL metadata guard failed at {address:#x}")
+            data[off : off + len(after)] = after
     (OUT / "PLAITS_MAIN_OS.bin").write_bytes(data)
     return {
         "sha256": hashlib.sha256(data).hexdigest(),
-        "writes": len(writes),
+        "writes": len(writes) + (6 if family in ("trio",) else 0),
         "machine_id": 7,
-        "name": "P-VA",
-        "scope": "Image construction only; current real CPU capture still uses inherited SINE label/type 7",
+        "name": name,
+        "scope": "Image construction; UI and control transport require a separate capture",
     }

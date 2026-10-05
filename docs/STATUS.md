@@ -54,6 +54,18 @@ are instruction counts, not hardware load percentages. The reference remains
 the default. Divergent-lane state tests, exact repeat, stock-hook compatibility,
 negative controls and the SINE regression pass.
 
+The [three-model Plaits prototype](PLAITS-TRIO.md) now selects VA, two-operator
+FM and analog bass drum. All three host ports match upstream exactly in the
+bounded vectors/corners; the short compiled SHARC comparisons pass. Real CPU
+MODEL locks recall VA/FM/BD/VA, with a track-1/type-7 CPU shim bypassing stock
+smoothing for the discrete selector. The prepared firmware replay passes exact
+repeat, VA recall, stock-hook parity and disabled-hook checks. Direct adapter
+checks cover latching, independent lanes, retrigger and silent return. The old
+VA image remains byte-identical. Dedicated macro labels/ranges and full Plaits
+voice behavior remain unfinished; this is not all 24 models. The final report
+is `out/runs/trio-final-01/report.json`; the refreshed SINE regression
+`out/runs/20261005T082651Z-test-a0ec5c52/manifest.json` also passes.
+
 Clean fixture generation, sample-free startup, final output, live audio, and
 physical CPU/DSP timing remain open.
 

@@ -1,0 +1,16 @@
+// Generated from controls.json; do not edit.
+#define TRIO_NOTE_DM 0x2558de
+#define TRIO_NOTE_FACTOR (1.0f/256.0f)
+#define TRIO_TUNE_DM 0x2559b6
+#define TRIO_TUNE_FACTOR (1.0f/256.0f)
+#define TRIO_HARMONICS_DM 0x2559b8
+#define TRIO_HARMONICS_FACTOR (1.0f/768.0f)
+#define TRIO_MODEL_DM 0x2559ba
+#define TRIO_MODEL_FACTOR (1.0f/256.0f)
+#define TRIO_TIMBRE_DM 0x2559bc
+#define TRIO_TIMBRE_FACTOR (1.0f/1023.0f)
+#define TRIO_MORPH_DM 0x2559c2
+#define TRIO_MORPH_FACTOR (1.0f/16384.0f)
+#define TRIO_LENGTH_DM 0x2559c4
+#define TRIO_LEVEL_DM 0x2559c8
+#define TRIO_LEVEL_FACTOR (1.0f/262144.0f)

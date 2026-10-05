@@ -16,6 +16,11 @@ The optional [Plaits resource experiment](docs/PLAITS-OPTIMIZATION.md) compares
 the reference with MAIN-only rendering and safe sharing between matching lanes.
 It retains exact audio comparisons and reports emulator instruction savings.
 
+The [three-model Plaits prototype](docs/PLAITS-TRIO.md) adds two-operator FM
+and analog bass drum beside VA. A dedicated MODEL control recalls engines
+through real stored-lock CPU captures and prepared SHARC replay. Its repeat
+commands, compiler adaptations and measured instruction costs are documented.
+
 Start with [STATUS](docs/STATUS.md), [integration findings](docs/INTEGRATION.md),
 and the [development roadmap](docs/DEVELOPMENT.md). [AGENTS.md](AGENTS.md)
 contains the short development instructions.
@@ -53,6 +58,7 @@ they do not replace that pointer. Verification remains active under Python
 - `machines/sine/`: assembly, linker placement, and the machine definition.
 - `machines/sine-controls/`: experimental pitch, duration and level wiring.
 - `machines/plaits-va/`: pinned-source C99 translation and experimental wrappers.
+- `machines/plaits-trio/`: VA/FM/BD source port, control map and upstream oracle.
 - `profiles/dt2-1.16/`: stock image hashes and version-specific integration data.
 - `lab/`: lab-owned CPU build, DSP replay, validation, and reporting adapters.
 - `tests/`: source-only harness tests and a hash-only private-fixture manifest.
