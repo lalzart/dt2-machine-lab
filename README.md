@@ -7,6 +7,11 @@ on track 1 under OS 1.16. The source runs as new SHARC instructions.
 A separate [SINE controls experiment](docs/SINE-CONTROLS.md) connects TUNE,
 LEN and LEV and checks stored parameter locks through real step previews.
 
+The [Plaits VA experiment](docs/PLAITS-VA.md) ports one original Plaits engine
+to C99, compares it with upstream C++, executes it as compiled SHARC code,
+and renders through the prepared DTII voice hook. Its separate repeat commands
+and remaining control/timing gaps are documented there.
+
 Start with [STATUS](docs/STATUS.md), [integration findings](docs/INTEGRATION.md),
 and the [development roadmap](docs/DEVELOPMENT.md). [AGENTS.md](AGENTS.md)
 contains the short development instructions.
@@ -43,6 +48,7 @@ they do not replace that pointer. Verification remains active under Python
 
 - `machines/sine/`: assembly, linker placement, and the machine definition.
 - `machines/sine-controls/`: experimental pitch, duration and level wiring.
+- `machines/plaits-va/`: pinned-source C99 translation and experimental wrappers.
 - `profiles/dt2-1.16/`: stock image hashes and version-specific integration data.
 - `lab/`: lab-owned CPU build, DSP replay, validation, and reporting adapters.
 - `tests/`: source-only harness tests and a hash-only private-fixture manifest.
@@ -90,7 +96,7 @@ algorithm changes need reviewed expectations and signal checks. Do not make a
 failing comparison pass by regenerating its expected hash automatically.
 
 The fixed SINE baseline has no controls; the separate SINE controls variant
-connects pitch, duration and level.
+connects pitch, duration and level. Plaits VA adds a compiled engine experiment.
 Sample-free startup, downstream processing, more tracks and physical resource
 measurements remain open. See [DEVELOPMENT](docs/DEVELOPMENT.md).
 

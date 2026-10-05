@@ -1,0 +1,17 @@
+{
+  "name": "P-VA",
+  "machine_type": 7,
+  "clone_of": 6,
+  "profile": "dt2-1.16",
+  "engine": "Plaits VirtualAnalogEngine VA_VARIANT 2",
+  "tracks": [1],
+  "parameters": {
+    "note": "TRIG note plus TUNE, same convention as SINE controls",
+    "harmonics": {"wire_offset": "0xdc", "scale": 32768, "panel_verified": false},
+    "timbre": {"wire_offset": "0xe0", "scale": 32768, "panel_verified": false},
+    "morph": {"wire_offset": "0xe2", "scale": 32768, "panel_verified": false},
+    "length": "LEN, 10..500 ms wrapper envelope",
+    "level": "LEV, 0..0.125 wrapper gain"
+  },
+  "note": "Alternative to SINE in the same experimental type-7 slot; not simultaneous machine registration. Macros latch on trigger, labels inherited. Emulator only."
+}

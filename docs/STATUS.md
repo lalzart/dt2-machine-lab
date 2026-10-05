@@ -36,6 +36,15 @@ and level. Stored locks reach the DSP in step previews, and an unlocked step
 restores the base values. PLAY startup emits the locked values; continuous
 pattern traversal remains unverified.
 
+The [Plaits VA experiment](PLAITS-VA.md) now runs a C99 translation of the
+original VA2 engine on the host and as compiled SHARC instructions. Host audio
+matches upstream exactly; short target comparisons pass, with a documented
+long-render numeric difference. Prepared firmware replay produces the new
+audio and recovers the existing pitch/length/level locks. Repeat, stock-hook
+compatibility and disabled-hook checks pass. New macro panel controls and
+locks are unverified. A named `P-VA` CPU candidate is built but not UI-tested;
+the actual replay reuses the SINE type-7 CPU capture.
+
 Clean fixture generation, sample-free startup, final output, live audio, and
 physical CPU/DSP timing remain open.
 

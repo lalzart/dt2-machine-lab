@@ -1,0 +1,23 @@
+{
+  "source": "https://github.com/pichenettes/eurorack",
+  "revision": "08460a69a7e1f7a81c5a2abcc7189c9a6b7208d4",
+  "stmlib_revision": "e3bd7c9cc00e4364166f9905c0509b6ffd0535ec",
+  "license": "MIT; retain full notices in derived C and copied pitch tables",
+  "files": {
+    "plaits/dsp/dsp.h": "0ef1f2c2eecfd54fc6da40de0117e68e3804e412c55b575c027eba35f7439625",
+    "plaits/dsp/engine/engine.h": "c31fa0ad1585c4fff9451d844dab4bfaff1823dc677cebf182957827518a43ef",
+    "plaits/dsp/engine/virtual_analog_engine.h": "1ebb726a80325c1e8c697534629d8cb503041aa654d674e745959dc805a78a6f",
+    "plaits/dsp/engine/virtual_analog_engine.cc": "775957d866da2560409574bd99ab91147e17a1e3d843e0c5741dc51d54dd6651",
+    "plaits/dsp/oscillator/oscillator.h": "635fa2d1b53b9ea789f4022f2c7865d9d5b6908a5ab4be68ae20842d74a02d15",
+    "plaits/dsp/oscillator/variable_shape_oscillator.h": "57213ecb20b6ec4914eb08c244adf697f0cf2388c0631deb52c34b79f693e51f",
+    "plaits/dsp/oscillator/variable_saw_oscillator.h": "9043ecf46a7c51ec0ad4187eae2b2ea8e87935fea14fa9e6090898ae21350ee2",
+    "stmlib/stmlib.h": "3afc8589a951e882d9eea16b3eda8623dd6fb0079dd11dfbce817e65be6cfba9",
+    "stmlib/dsp/dsp.h": "98b42900c4accbe9fbb2cfe2ec6fada024b57ec9a1becff008b0f35bd4fd8ddb",
+    "stmlib/dsp/parameter_interpolator.h": "4b05028c320e6946418a36e9662a4e5a142e5bfab0423835a77d074d9c7fc217",
+    "stmlib/dsp/polyblep.h": "b36025a8a9b2e9a37156e45cfdee937451f788529089b51b9f490da1a5b0063b",
+    "stmlib/dsp/units.h": "70cf104c06f0e34ada90416f121417a13d17b6736116f0fc07063c1cd2084877",
+    "stmlib/dsp/units.cc": "0acbe230ffaa2d181ba285fce54f2fd0b2339b3ec163a1dd00c946e6bf82ea4a",
+    "stmlib/utils/buffer_allocator.h": "5f29d58fa9fd5cb0872326cf42b17345a059940c485c6b64a44353d38e7bc2e0"
+  },
+  "proposal_sha256": "aed3bdcceee5fa386aa93574abc4c69f90dd92e51c6873461fef3c8d41332a2a"
+}

@@ -55,6 +55,12 @@ stack, numeric and memory behavior. Selache contains a C99 compiler; the
 current working path validates assembly/linking, not a C++ synth port.
 Keep host algorithm tests and compare executed SHARC results against them.
 
+2026-10-05 update: the [Plaits VA experiment](PLAITS-VA.md) now provides that
+compiled-C path and a source comparator. It also renders through the prepared
+firmware voice hook. Its remaining control, numeric and memory-placement gaps
+should guide the next iteration; the wider startup/output/device gaps above
+still apply.
+
 ## Load measurements
 
 Current reports separate whole-handler **emulated instructions** from **host
