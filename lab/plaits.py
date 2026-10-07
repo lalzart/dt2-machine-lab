@@ -57,7 +57,7 @@ def compile_target(integrated=False, *, variant="reference", output=None, family
         raise ValueError(f"Unknown Plaits variant: {variant}")
     if variant == "shared" and not integrated:
         raise ValueError("Lane sharing requires the firmware wrapper")
-    if family not in ("va", "trio", "bank") or (
+    if family not in ("va", "trio", "bank", "controls", "integration") or (
         family != "va" and variant != "reference"
     ):
         raise ValueError("Unknown family or unsupported multi-model optimization")
@@ -79,6 +79,14 @@ def compile_target(integrated=False, *, variant="reference", output=None, family
                 "selcc",
             ]
         )
+    if family in ("controls", "integration"):
+        from lab.plaits_controls import validate_sources
+
+        validate_sources()
+    if family == "integration":
+        from lab.plaits_integration import validate_sources as validate_integration
+
+        validate_integration()
     machine = ROOT / ("machines/plaits-" + family)
     source = machine / ("machine.c" if integrated else "target.c")
     if variant != "reference":
@@ -103,10 +111,10 @@ def compile_target(integrated=False, *, variant="reference", output=None, family
         ]
     )
     assembly = (out / "kernel-original.s").read_text()
-    if family in ("trio", "bank"):
+    if family in ("trio", "bank", "controls", "integration"):
         assembly = checked_trio_tables(assembly, ROOT / "machines/plaits-trio/tables.h")
-    if family == "bank":
-        assembly = checked_trio_tables(assembly, machine / "tables.h")
+    if family in ("bank", "controls", "integration"):
+        assembly = checked_trio_tables(assembly, ROOT / "machines/plaits-bank/tables.h")
     # Full-width RFRAME is not emitted correctly by the current assembler.
     # Only expand the known problematic stand-alone integer ADD instructions.
     assembly = re.sub(
@@ -246,6 +254,8 @@ def build_blob(integrated=False, *, variant="reference", output=None, family="va
                     "va": (768 if integrated else 252),
                     "trio": (696 if integrated else 256),
                     "bank": (704 if integrated else 260),
+                    "controls": (704 if integrated else 260),
+                    "integration": (704 if integrated else 260),
                 }[family],
                 "render_cache_bytes": 1036 if variant == "shared" else 0,
                 "placement": "emulator-only; stock loader disjointness is not runtime memory ownership",
@@ -259,6 +269,30 @@ def build_blob(integrated=False, *, variant="reference", output=None, family="va
 
 def build_cpu(*, family="va"):
     """A named type-7 CPU candidate. The current replay capture predates this label."""
+    if family == "integration":
+        from lab.plaits_integration import patch_cpu as integrate
+        from lab.plaits_integration import validate_sources as validate_integration
+
+        validate_integration()
+        baseline = build_cpu(family="controls")
+        data, integration = integrate(
+            (OUT / "PLAITS_MAIN_OS.bin").read_bytes(),
+            json.loads((OUT / "macro-cpu-patches.json").read_text()),
+        )
+        (OUT / "PLAITS_R2_MAIN_OS.bin").write_bytes(
+            (OUT / "PLAITS_MAIN_OS.bin").read_bytes()
+        )
+        (OUT / "PLAITS_MAIN_OS.bin").write_bytes(data)
+        (OUT / "integration-cpu-patches.json").write_text(
+            json.dumps(integration, indent=2) + "\n"
+        )
+        return {
+            **baseline,
+            "sha256": integration["sha256"],
+            "family": "integration",
+            "baseline_sha256": baseline["sha256"],
+            "writes": baseline["writes"] + len(integration["writes"]),
+        }
     import machinebuild
     import machinepatch
     import machineprofile
@@ -268,12 +302,14 @@ def build_cpu(*, family="va"):
     digest, profile = machineprofile.profile_for(STOCK_MAIN)
     if digest != PROFILE["stock_main_sha256"] or profile is not machineprofile.DT2_116:
         raise ValueError("Unexpected CPU firmware")
-    if family not in ("va", "trio", "bank"):
+    if family not in ("va", "trio", "bank", "controls"):
         raise ValueError("Unknown CPU machine family")
     name, short = ("P-VA", "PVA") if family == "va" else ("PLAITS", "PLT")
     fields = PROFILE["cpu"]["descriptor_fields"]
-    if family in ("trio", "bank"):
+    if family in ("trio", "bank", "controls"):
         fields = (0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0, 0xFE, 0x0A)
+    if family == "controls":
+        fields = (0xF8, 275, 0xFA, 276, 277, 0xFD, 0, 0xFE, 0x0A)
     spec = machinepatch.MachineSpec(
         name=name,
         short=short,
@@ -285,7 +321,7 @@ def build_cpu(*, family="va"):
     writes, data = machinebuild.plan_and_verify(
         STOCK_MAIN, profile, spec, machinepatch.PARTS
     )
-    if family in ("trio", "bank"):
+    if family in ("trio", "bank", "controls"):
         # Dormant Manual Slice C row: no exposed stock descriptor uses 0xFA.
         # Keep shared PLAY/SAMP/SLICE metadata unchanged; only MODEL is dedicated.
         data = bytearray(data)
@@ -319,10 +355,27 @@ def build_cpu(*, family="va"):
             if data[off : off + len(before)] != before:
                 raise ValueError(f"MODEL metadata guard failed at {address:#x}")
             data[off : off + len(after)] = after
+    if family == "controls":
+        from lab.plaits_controls import patch_cpu, validate_sources
+
+        validate_sources()
+        data, metadata = patch_cpu(STOCK_MAIN.read_bytes(), data)
+        from lab.coldfire import audit_image, fix_rank
+
+        data, correction = fix_rank(data)
+        audit = audit_image(
+            STOCK_MAIN.read_bytes(), data, writes, extra, metadata, correction
+        )
+        (OUT / "coldfire-audit.json").write_text(json.dumps(audit, indent=2) + "\n")
+        (OUT / "macro-cpu-patches.json").write_text(
+            json.dumps(metadata, indent=2) + "\n"
+        )
     (OUT / "PLAITS_MAIN_OS.bin").write_bytes(data)
     return {
         "sha256": hashlib.sha256(data).hexdigest(),
-        "writes": len(writes) + (6 if family in ("trio", "bank") else 0),
+        "writes": len(writes)
+        + (6 if family in ("trio", "bank", "controls") else 0)
+        + (len(metadata["writes"]) if family == "controls" else 0),
         "machine_id": 7,
         "name": name,
         "scope": "Image construction; UI and control transport require a separate capture",
