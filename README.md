@@ -25,6 +25,39 @@ The [six-voice Plaits bank](docs/PLAITS-BANK.md) adds waveshaping/wavefolding,
 harmonic additive synthesis and granular formants as MODEL 3–5, preserving the
 original VA/FM/BD models. It uses the same prepared emulator integration.
 
+The [Plaits macro controls experiment](docs/PLAITS-CONTROLS.md) gives that bank
+dedicated HARM/TIMB/MORP controls, continuous macro updates and a repeatable
+panel-lock capture and buffered audio audition.
+
+The [R3 integration](docs/PLAITS-INTEGRATION-R3-RESULTS.md) adds millisecond
+duration, named models, macro LFO destinations and a track-1 selection guard.
+It is a separate local build with focused CPU, panel and compiled DSP checks.
+
+The [pattern lab](docs/PATTERN-LAB.md) connects the firmware's normal sequencer
+clock and checks a 16-step edit/PLAY/stop/edit/restart workflow for the stock
+sampler and Plaits. It captures the actual performance for buffered WAV replay.
+
+[Upload preparation](docs/UPLOAD-PREFLIGHT.md) records the stock 1.16 upgrade
+and recovery route, the checked custom container, and remaining hardware gates.
+
+The [Flex sampling prototype](docs/FLEX-LITE-UI-RESULTS.md) adds a remembered
+destination to the original recorder: record, stop, trim, then USE a temporary
+RAM sample. It supports modeled WAV input and buffered ONESHOT audition through
+`python3 scripts/try-flex-lite.py` (legacy command name). This is a host-side
+emulator adapter, not an on-device machine or an uploadable firmware patch.
+Its recorder service and temporary sample source still depend on Python.
+
+The [native Flex implementation](docs/FLEX-NATIVE.md) now builds the recorder
+workflow as ColdFire device instructions, with automatic sample persistence on
+project save. Native UI and original project save/stock reload checks are separate
+from the earlier Python prototype. A local experimental Plaits R3 + Flex package
+is available. After USE, open the recorder and press **FUNC + RECORD** while
+idle to name and save the selected track's Flex sample to +Drive; NO cancels.
+The latest package also includes the mono-flag correction for the photographed
+hardware USE error. Native naming, storage and project reload checks pass;
+hardware confirmation remains pending. See the native notes for results and
+current limitations.
+
 Start with [STATUS](docs/STATUS.md), [integration findings](docs/INTEGRATION.md),
 and the [development roadmap](docs/DEVELOPMENT.md). [AGENTS.md](AGENTS.md)
 contains the short development instructions.
@@ -64,6 +97,7 @@ they do not replace that pointer. Verification remains active under Python
 - `machines/plaits-va/`: pinned-source C99 translation and experimental wrappers.
 - `machines/plaits-trio/`: VA/FM/BD source port, control map and upstream oracle.
 - `machines/plaits-bank/`: six-model extension, generated source and upstream oracle.
+- `machines/plaits-controls/`: dedicated macro control map and continuous adapter.
 - `profiles/dt2-1.16/`: stock image hashes and version-specific integration data.
 - `lab/`: lab-owned CPU build, DSP replay, validation, and reporting adapters.
 - `tests/`: source-only harness tests and a hash-only private-fixture manifest.
