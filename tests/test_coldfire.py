@@ -32,6 +32,13 @@ class ColdFireTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 audit_code(bytes.fromhex(code), RANK)
 
+    def test_stock_absolute_short_pea_allocation_literal(self):
+        self.assertEqual(
+            audit_code(bytes.fromhex("48780024"), RANK)[0]["kind"], "PEA absolute-short"
+        )
+        with self.assertRaises(ValueError):
+            audit_code(bytes.fromhex("487800"), RANK)
+
     def test_native_virtual_call_address_registers(self):
         for register in range(8):
             code = (0x4E90 + register).to_bytes(2, "big")
@@ -40,9 +47,22 @@ class ColdFireTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 audit_code(bytes.fromhex(code), RANK)
 
+    def test_source_ownership_integer_forms(self):
+        for code in ("5380", "5382", "4a80", "4a82", "4a83"):
+            self.assertEqual(len(audit_code(bytes.fromhex(code), RANK)), 1)
+        with self.assertRaises(ValueError):
+            audit_code(bytes.fromhex("4a88"), RANK)
+
     def test_fix_refuses_unknown_input(self):
         with self.assertRaisesRegex(ValueError, "byte guard"):
             fix_rank(bytes(0x320000))
+
+    def test_feedback_forms_reject_truncation_and_other_registers(self):
+        for code in ("02800000007f", "02810000fc00", "ee89", "e889", "9283"):
+            self.assertEqual(len(audit_code(bytes.fromhex(code), RANK)), 1)
+        for code in ("02800000", "02820000007f", "ee8a", "e88a"):
+            with self.assertRaises(ValueError):
+                audit_code(bytes.fromhex(code), RANK)
 
 
 if __name__ == "__main__":

@@ -27,6 +27,7 @@ if Path(sys.executable).resolve() != config["python"].resolve():
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("output", type=Path)
 parser.add_argument("--snapshot", type=Path, required=True)
+parser.add_argument("--managed-sources", action="store_true")
 args = parser.parse_args()
 doctor()
 require(
@@ -90,7 +91,9 @@ class ObservedFirmware(check.Firmware):
 def install(fw):
     from lab.flex_native_build import BASE, patch_cpu
 
-    image, metadata = patch_cpu(STOCK_MAIN.read_bytes())
+    image, metadata = patch_cpu(
+        STOCK_MAIN.read_bytes(), managed_sources=args.managed_sources
+    )
     for patch in metadata["writes"]:
         address = patch["address"]
         before, after = bytes.fromhex(patch["before"]), bytes.fromhex(patch["after"])
@@ -206,7 +209,12 @@ try:
             native._hle(0x40001608, lock)
             native._hle(0x4000172A, unlock)
             native._hle(0x400124A0, service)
-            for slot, count in ((1, frames), (128, frames), (300, 140), (300, MAX_FRAMES + 1)):
+            for slot, count in (
+                (1, frames),
+                (128, frames),
+                (300, 140),
+                (300, MAX_FRAMES + 1),
+            ):
                 result = native.call(accept, [head, start, count, int(stereo), slot])
                 require(
                     result == 0xFFFFFFFF and native.u32(head) == 0,
@@ -216,12 +224,23 @@ try:
             # Native failure path after original heap allocation and recorder copy.
             native._hle(check.LOAD_SAMPLE, lambda arg: 1)
             result = native.call(accept, [head, start, frames, int(stereo), 300])
-            require(
-                result == 0xFFFFFFFF
-                and native.u32(head) == 0
-                and native.u32(head + 4) == 0,
-                "Failed loader retained resource",
-            )
+            if args.managed_sources:
+                failed_node = native.u32(head)
+                require(
+                    result == 0xFFFFFFFF
+                    and failed_node != 0
+                    and native.u32(head + 4) == 1
+                    and native.u32(failed_node + 20) == 0
+                    and native.u32(failed_node + 56) == 1,
+                    "Failed loader did not retire source and preserve tombstone",
+                )
+            else:
+                require(
+                    result == 0xFFFFFFFF
+                    and native.u32(head) == 0
+                    and native.u32(head + 4) == 0,
+                    "Failed loader retained resource",
+                )
             require(
                 native.u32(head + 48) == list(USE_ERRORS).index("load")
                 and native.u32(head + 52) == 1,
@@ -237,7 +256,7 @@ try:
             require(
                 node != 0xFFFFFFFF
                 and native.u32(head) == node
-                and native.u32(head + 4) == 1,
+                and native.u32(head + 4) == (2 if args.managed_sources else 1),
                 "Native acceptance failed",
             )
             data_address = native.u32(node + 20)
@@ -346,6 +365,48 @@ try:
                 native.read(pool + 300 * 16, 16) == native.read(node + 4, 16),
                 "Assignment did not register project reference",
             )
+            if args.managed_sources:
+                candidate_slot = next(
+                    s
+                    for s in range(600, 1024)
+                    if s % 128
+                    and native.u32(pool + s * 16) == 0xFFFFFFFF
+                    and native.u32(check.LOADER_KEYS + s * 16) == 0xFFFFFFFF
+                    and native.u32(check.LOADER_LEN + s * 4) == 0
+                )
+                before_pool = native.read(pool, 1024 * 16)
+                before_kit = native.read(kit, 16 * 0x450)
+                candidate = native.call(
+                    accept, [head, start, frames, int(stereo), candidate_slot]
+                )
+                require(candidate != 0xFFFFFFFF, "Assignment-failure candidate")
+                for offset, value in (
+                    (20, candidate),
+                    (36, candidate_slot),
+                    (16, track),
+                    (44, kit + 4),
+                ):
+                    native.write(head + offset, struct.pack(">I", value))
+                # Only the old error-dialog tail is modeled; real assign,
+                # candidate invalidation, allocator and slot teardown execute.
+                native._hle(patches["error_trampoline"], lambda arg: 0)
+                native.call(patches["use_finish"], [0, 0])
+                native.uc.hook_del(
+                    native.service_hooks.pop(patches["error_trampoline"])
+                )
+                require(
+                    native.u32(candidate + 20) == 0
+                    and native.u32(candidate + 56) == 1
+                    and native.u32(check.LOADER_LEN + candidate_slot * 4) == 0
+                    and native.u32(check.LOADER_KEYS + candidate_slot * 16)
+                    == 0xFFFFFFFF,
+                    "Assignment failure did not clean candidate source/slot",
+                )
+                require(
+                    native.read(pool, 1024 * 16) == before_pool
+                    and native.read(kit, 16 * 0x450) == before_kit,
+                    "Assignment failure changed prior project/track",
+                )
             # An unloaded slot can still be referenced by the project. The
             # native worker must skip it without changing that reference.
             occupied_ref = entries[0]["ref"]
@@ -548,6 +609,7 @@ try:
                     native_assignment_track=track + 1,
                     only_slot_field_changed=True,
                     failed_load_resource_rollback=True,
+                    transactional_assignment_failure_cleanup=args.managed_sources,
                     loader_error_reason_preserved=True,
                     native_file_save_and_fresh_stock_reload=True,
                     explicit_named_save_and_project_reload=True,

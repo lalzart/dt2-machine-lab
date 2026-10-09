@@ -291,7 +291,7 @@ def resource_handler(address, lookup, operation, fallback):
     return c.finish(address)
 
 
-def accept_recording(address, copier, errors):
+def accept_recording(address, copier, errors, *, separate_source=False, discard=0):
     """Emit node* accept(state, start, frames, stereo, empty_slot), or -1.
 
     State is {head, successful_count}; caller serializes access and owns its
@@ -342,15 +342,26 @@ def accept_recording(address, copier, errors):
     c.label("size")
     c.imm("0680", 80)
     c.emit("2840")
-    c.imm("0680", 64)
+    if separate_source:
+        c.emit("7040")
+    else:
+        c.imm("0680", 64)
     error_stage(c, errors, "memory")
     c.emit("2f00")
     c.imm("4eb9", 0x4011E8F0)
     c.emit("588f 2640")
     c.imm("0c80", 0)
     c.branch(7, "invalid")
+    if separate_source:
+        c.emit("2f0c")
+        c.imm("4eb9", 0x4011E8F0)
+        c.emit("588f 27400014")
+        c.imm("0c80", 0)
+        c.branch(7, "free")
     error_stage(c, errors, "copy")
-    c.emit("2f05 2f04 2f03 2f0c 41eb0040 2f08")
+    c.emit("2f05 2f04 2f03 2f0c")
+    c.emit("206b0014" if separate_source else "41eb0040")
+    c.emit("2f08")
     c.imm("4eb9", copier)
     c.emit("4fef0014")
     c.imm("0c80", -1)
@@ -358,7 +369,9 @@ def accept_recording(address, copier, errors):
     c.emit("2692 202a0004")
     c.imm("0680", FIRST_ID)
     c.emit("27400004 274c000c 202a0004 5280 27400010")
-    c.emit("41eb0040 27480014 27420018 7000")
+    if not separate_source:
+        c.emit("41eb0040 27480014")
+    c.emit("27420018 7000")
     # Node +28 is the durable-reference cache flag, +32..47 the reference.
     # Keep the remainder of the 64-byte node header initialized as well.
     for offset in range(28, 64, 4):
@@ -372,7 +385,9 @@ def accept_recording(address, copier, errors):
         c.imm("23c0", global_address)
     c.emit("7000")
     c.imm("23c0", 0x409418C4)
-    c.emit("2f0c 41eb0040 2f08")
+    c.emit("2f0c")
+    c.emit("206b0014" if separate_source else "41eb0040")
+    c.emit("2f08")
     c.imm("4eb9", 0x4015AA20)
     c.emit("508f")
     c.imm("4eb9", 0x4015A6DC)
@@ -382,18 +397,36 @@ def accept_recording(address, copier, errors):
     c.label("odd_hash")
     c.emit("27400008")
     c.imm("4eb9", 0x400016D2)
-    c.emit("588f 248b")
+    c.emit("588f")
+    if discard:
+        # Consume an identity before any resource client can observe it.
+        c.emit("202a0004 5280 25400004")
+    c.emit("248b")
     error_stage(c, errors, "load")
     c.emit("2f02 41eb0004 2f08")
     c.imm("4eb9", 0x40154540)
     c.emit("508f 25400034")
     c.imm("0c80", 0)
     c.branch(7, "published")
-    c.emit("2493 2f02")
-    c.imm("4eb9", 0x401540C6)
-    c.imm("4eb9", 0x40153BEA)
-    c.emit("588f")
+    if discard:
+        c.emit("2f0b")
+        c.imm("4eb9", discard)
+        c.emit("588f")
+        c.branch(0, "invalid")
+    else:
+        c.emit("2493 2f02")
+        c.imm("4eb9", 0x401540C6)
+        c.imm("4eb9", 0x40153BEA)
+        c.emit("588f")
     c.label("free")
+    if separate_source:
+        c.emit("202b0014")
+        c.imm("0c80", 0)
+        c.branch(7, "free_descriptor")
+        c.emit("2f00")
+        c.imm("4eb9", 0x4011E8FC)
+        c.emit("588f")
+        c.label("free_descriptor")
     c.emit("2f0b")
     c.imm("4eb9", 0x4011E8FC)
     c.emit("588f")
@@ -402,7 +435,9 @@ def accept_recording(address, copier, errors):
     c.branch(0, "return")
     c.label("published")
     c.emit("7200 25410030")
-    c.emit("202a0004 5280 25400004 200b")
+    if not discard:
+        c.emit("202a0004 5280 25400004")
+    c.emit("200b")
     c.label("return")
     c.emit("4cd73c3c 4fef0020 4e75")
     return c.finish(address)
@@ -484,7 +519,7 @@ def exclusive_open_guard(address, caller_return):
     return c.finish(address)
 
 
-def save_recording(address):
+def save_recording(address, *, backing_reader=0):
     """Emit int save(node, new_absolute_path, output_reference).
 
     MUST install the paired exclusive_open_guard with the returned call site.
@@ -510,17 +545,36 @@ def save_recording(address):
     c.imm("0c80", 0)
     c.branch(6, "close_failed")
     c.emit("2a6a0014")
+    if backing_reader:
+        c.emit("202f0050 4a80")
+        c.branch(7, "source_ready")
+        c.emit("2a40")
+        c.label("source_ready")
     c.label("chunk")
     c.imm("243c", 0x8000)
     c.emit("b484")
     c.branch(3, "bounded")
     c.emit("2404")
     c.label("bounded")
+    if backing_reader:
+        c.emit("202f0050 4a80")
+        c.branch(7, "write_chunk")
+        c.emit("202a000c 2204 9081 2f00 2f02 2f0d 2f0a")
+        c.imm("4eb9", backing_reader)
+        c.emit("4fef0010 b082")
+        c.branch(6, "close_failed")
+        c.label("write_chunk")
     c.emit("41ef001c 2f08 2f02 2f0d")
     c.imm("4eb9", 0x4015838E)
     c.emit("4fef000c b082")
     c.branch(6, "close_failed")
-    c.emit("204d 2002 d1c0 2a48 2004 2202 9081 2800")
+    if backing_reader:
+        c.emit("202f0050 4a80")
+        c.branch(6, "advance_count")
+    c.emit("204d 2002 d1c0 2a48")
+    if backing_reader:
+        c.label("advance_count")
+    c.emit("2004 2202 9081 2800")
     c.branch(6, "chunk")
     c.emit("41ef001c 2f08")
     c.imm("4eb9", 0x4015B0CE)
@@ -555,7 +609,7 @@ def save_recording(address):
     return c.finish(address), after_open
 
 
-def persist_project_pool(address, lookup, saver, path_format, directory):
+def persist_project_pool(address, lookup, saver, path_format, directory, *, retire=0):
     """Emit int persist(pool_reference_base), before project serialization.
 
     First save every temporary reference in the 1024-slot project pool. Cache
@@ -588,7 +642,20 @@ def persist_project_pool(address, lookup, saver, path_format, directory):
     c.branch(6, "commit")
     c.emit("202c001c")
     c.imm("0c80", 1)
-    c.branch(7, "advance")
+    if retire:
+        c.branch(6, "need_save")
+        c.emit("41ef001c 2f08 41ec0020 2f08")
+        c.imm("4eb9", RESOURCE_SITES["resolve"][0])
+        c.emit("508f")
+        c.emit("5380")
+        c.branch(7, "advance")
+        c.emit("202c0014")
+        c.imm("0c80", 0)
+        c.branch(7, "invalid")
+        c.emit("7000 2940001c")
+        c.label("need_save")
+    else:
+        c.branch(7, "advance")
     c.imm("4879", directory)
     c.imm("4eb9", 0x40157192)
     c.emit("588f 7400")
@@ -608,6 +675,10 @@ def persist_project_pool(address, lookup, saver, path_format, directory):
     c.branch(0, "invalid")
     c.label("saved")
     c.emit("7001 2940001c")
+    if retire:
+        c.emit("2f0c")
+        c.imm("4eb9", retire)
+        c.emit("588f")
     c.branch(0, "advance")
     c.label("commit")
     c.emit("202c001c")
@@ -691,7 +762,7 @@ def recorder_use_entry(address, state):
     return c.finish(address)
 
 
-def recorder_use_worker(address, state, accept, errors):
+def recorder_use_worker(address, state, accept, errors, *, managed=False):
     """Replacement for the recorder's initial directory-scan worker."""
     c = Code()
     c.emit("4feffff4 48d70c04")
@@ -745,6 +816,8 @@ def recorder_use_worker(address, state, accept, errors):
     c.emit("4fef0014")
     c.imm("0c80", -1)
     c.branch(7, "invalid")
+    if managed:
+        c.emit("25400014")
     c.emit("25420024 7000")
     c.branch(0, "return")
     c.label("advance")
@@ -757,7 +830,7 @@ def recorder_use_worker(address, state, accept, errors):
     return c.finish(address)
 
 
-def recorder_use_finish(address, state, assign, original_error, errors):
+def recorder_use_finish(address, state, assign, original_error, errors, *, discard=0):
     """Commit on the UI thread, close progress/recorder, preserve trim on error."""
     c = Code()
     c.emit("4feffff4 48d70c04")
@@ -770,7 +843,7 @@ def recorder_use_finish(address, state, assign, original_error, errors):
     c.imm("4eb9", assign)
     c.emit("4fef000c")
     c.imm("0c80", 0)
-    c.branch(6, "failed")
+    c.branch(6, "discard" if discard else "failed")
     c.emit("7200 25410030")
     c.emit("202a0010 5280 25400028")
     c.imm("4eb9", 0x4019988A)
@@ -779,6 +852,11 @@ def recorder_use_finish(address, state, assign, original_error, errors):
     c.emit("588f 266f0010 2053 2050 2250 22690028 2f08 4e91 588f")
     c.emit("206a0008 2250 22690028 2f08 4e91 588f 7000 25400008")
     c.emit("4cd70c04 4fef000c 4e75")
+    if discard:
+        c.label("discard")
+        c.emit("2f2a0014")
+        c.imm("4eb9", discard)
+        c.emit("588f")
     c.label("failed")
     c.emit("70ff 2f400014 4cd70c04 4fef000c")
     c.imm("4ef9", original_error)

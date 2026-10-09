@@ -24,6 +24,16 @@ parser.add_argument("output", type=Path)
 parser.add_argument("--plaits-r3", action="store_true")
 parser.add_argument("--plaits-before-midi", action="store_true")
 parser.add_argument(
+    "--managed-sources",
+    action="store_true",
+    help="Experimental native saved-source retirement and failure cleanup",
+)
+parser.add_argument(
+    "--memory-accounting",
+    action="store_true",
+    help="Add an optional read-only native diagnostic entry; no reclamation",
+)
+parser.add_argument(
     "--elekloader-reference",
     type=Path,
     help="Also package an experimental local SYX using the pinned codec",
@@ -44,8 +54,11 @@ if args.plaits_r3:
     build_cpu(family="integration")
     baseline = (out / "PLAITS_MAIN_OS.bin").read_bytes()
     blob = build_blob(True, family="integration", output=out / "firmware")
-image, report = patch_cpu(baseline)
-require(patch_cpu(baseline)[0] == image, "Non-deterministic native overlay")
+image, report = patch_cpu(baseline, managed_sources=args.managed_sources)
+require(
+    patch_cpu(baseline, managed_sources=args.managed_sources)[0] == image,
+    "Non-deterministic native overlay",
+)
 # The native overlay must preserve every byte changed by the Plaits CPU build.
 stock = STOCK_MAIN.read_bytes()
 require(
@@ -68,6 +81,13 @@ if args.plaits_before_midi:
     report["pre_menu_sha256"] = report["sha256"]
     report["sha256"] = hashlib.sha256(image).hexdigest()
     write_json(out / "menu-patches.json", menu)
+if args.memory_accounting and not args.managed_sources:
+    from lab.flex_memory import patch_cpu as patch_memory
+
+    image, accounting = patch_memory(image)
+    report["memory_accounting"] = accounting
+    report["sha256"] = hashlib.sha256(image).hexdigest()
+    write_json(out / "memory-accounting.json", accounting)
 name = "PLAITS_R3_FLEX_MAIN_OS.bin" if args.plaits_r3 else "FLEX_MAIN_OS.bin"
 (out / name).write_bytes(image)
 report.update(
@@ -80,6 +100,9 @@ report.update(
         p: sha256(ROOT / p)
         for p in (
             "lab/flex_native.py",
+            "lab/flex_memory.py",
+            "lab/flex_resources.py",
+            "lab/flex_retirement.py",
             "lab/plaits_menu.py",
             "lab/flex_native_save.py",
             "lab/flex_native_build.py",

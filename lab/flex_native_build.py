@@ -38,9 +38,32 @@ CANDIDATE_GAPS = (
     (0x403016E4, 0x403017DE),
     (0x403018DC, 0x403019D6),
 )
+# Additional candidates from the same exact OS 1.16 caves-small.json scan.
+# Optional ownership experiment only; boot/asset-path validation is separate.
+OWNERSHIP_GAPS = (
+    (0x402FCC5C, 0x402FCD34),
+    (0x40301CDC, 0x40301DB4),
+    (0x402FCA98, 0x402FCB5C),
+    (0x40301B18, 0x40301BDC),
+    (0x402FC718, 0x402FC75C),
+    (0x403020DC, 0x40302134),
+    (0x402FC85C, 0x402FC8A8),
+    (0x40301F98, 0x40301FDC),
+)
 
 
-def build_payload(locations):
+def build_payload(
+    locations,
+    *,
+    compact_resources=False,
+    separate_source=False,
+    memory_accounting=False,
+    durable_reads=False,
+    managed_sources=False,
+):
+    if managed_sources:
+        compact_resources = separate_source = durable_reads = True
+        memory_accounting = True
     p = locations
 
     def at(key):
@@ -69,18 +92,66 @@ def build_payload(locations):
         ),
         "copy": (native.recording_copy(at("copy")), "code"),
         "lookup": (native.resource_lookup(at("lookup"), at("state")), "code"),
-        "accept": (native.accept_recording(at("accept"), at("copy"), errors), "code"),
+        "accept": (
+            native.accept_recording(
+                at("accept"),
+                at("copy"),
+                errors,
+                separate_source=separate_source,
+                discard=(at("discard_candidate") or 1) if managed_sources else 0,
+            ),
+            "code",
+        ),
         "assign": (native.assign_recording(at("assign")), "code"),
     }
-    save, after_open = native.save_recording(at("save"))
-    payload["save"] = (save, "code")
+    save, after_open = native.save_recording(
+        at("save_raw") if managed_sources else at("save"),
+        backing_reader=(at("read_backing") or 1) if managed_sources else 0,
+    )
+    payload["save_raw" if managed_sources else "save"] = (save, "code")
+    if managed_sources:
+        from lab import flex_retirement as owner
+        from lab.flex_resources import split_native
+
+        payload["pin_source"] = (owner.pin_source(at("pin_source")), "code")
+        payload["abort_source"] = (owner.abort_source(at("abort_source")), "code")
+        payload["discard_candidate"] = (
+            owner.discard_candidate(at("discard_candidate"), at("abort_source")),
+            "code",
+        )
+        payload["unpin_source"] = (
+            owner.unpin_source(at("unpin_source"), abort=at("abort_source") or 1),
+            "code",
+        )
+        keys = ("retire_source", "retire_source_1")
+        for key, part in zip(
+            keys,
+            split_native(owner.retire_source(0), [at(k) for k in keys]),
+            strict=True,
+        ):
+            payload[key] = (part, "code")
+        payload["save"] = (
+            owner.save_owned(
+                at("save"),
+                at("pin_source"),
+                at("unpin_source"),
+                at("read_backing"),
+                at("save_raw"),
+            ),
+            "code",
+        )
     payload["exclusive_open"] = (
         native.exclusive_open_guard(at("exclusive_open"), after_open),
         "code",
     )
     payload["persist"] = (
         native.persist_project_pool(
-            at("persist"), at("lookup"), at("save"), at("path_format"), at("directory")
+            at("persist"),
+            at("lookup"),
+            at("save"),
+            at("path_format"),
+            at("directory"),
+            retire=(at("retire_source") or 1) if managed_sources else 0,
         ),
         "code",
     )
@@ -93,7 +164,9 @@ def build_payload(locations):
         "code",
     )
     payload["use_worker"] = (
-        native.recorder_use_worker(at("use_worker"), at("state"), at("accept"), errors),
+        native.recorder_use_worker(
+            at("use_worker"), at("state"), at("accept"), errors, managed=managed_sources
+        ),
         "code",
     )
     payload["error_trampoline"] = (
@@ -102,14 +175,19 @@ def build_payload(locations):
     )
     payload["use_finish"] = (
         native.recorder_use_finish(
-            at("use_finish"), at("state"), at("assign"), at("error_trampoline"), errors
+            at("use_finish"),
+            at("state"),
+            at("assign"),
+            at("error_trampoline"),
+            errors,
+            discard=(at("discard_candidate") or 1) if managed_sources else 0,
         ),
         "code",
     )
     for key, text in {
         "save_title": "SAVE FLEX SAMPLE",
         "save_initial": "FLEX",
-        "save_success": "FLEX: SAMPLE SAVED",
+        "save_success": "FLEX SAVED" if managed_sources else "FLEX: SAMPLE SAVED",
         "save_failure": "FLEX: SAVE FAILED",
         "save_missing": "FLEX: NO FLEX SAMPLE",
         "save_use_first": "FLEX: USE TAKE FIRST",
@@ -137,7 +215,13 @@ def build_payload(locations):
         ),
         "code",
     )
-    payload["save_promote"] = (named.promote(at("save_promote")), "code")
+    payload["save_promote"] = (
+        named.promote(
+            at("save_promote"),
+            retire=(at("retire_source") or 1) if managed_sources else 0,
+        ),
+        "code",
+    )
     payload["save_named"] = (
         named.write_named(
             at("save_named"),
@@ -155,6 +239,9 @@ def build_payload(locations):
             at("save_message"),
             at("save_success"),
             at("save_failure"),
+            success_callback=(at("memory_saved_message") or 1)
+            if managed_sources
+            else 0,
         ),
         "code",
     )
@@ -185,17 +272,110 @@ def build_payload(locations):
             native.resource_handler(at(operation), at("lookup"), operation, at(key)),
             "code",
         )
+    if compact_resources:
+        from lab import flex_resources as shared
+
+        if durable_reads:
+            from lab.flex_retirement import read_backing
+
+            payload["read_backing"] = (read_backing(at("read_backing")), "code")
+
+        payload["resource_fallbacks"] = (
+            b"".join(
+                struct.pack(">I", at(op + "_trampoline")) for op in shared.OPERATIONS
+            ),
+            "data",
+        )
+        resource_keys = ["resource_dispatch", "resource_dispatch_1"]
+        if durable_reads:
+            resource_keys.append("resource_dispatch_2")
+        for i, part in enumerate(
+            shared.parts(
+                [at(key) for key in resource_keys],
+                at("lookup"),
+                at("resource_fallbacks"),
+                durable_reader=(at("read_backing") or 1) if durable_reads else 0,
+                source_pin=(at("pin_source") or 1) if managed_sources else 0,
+                source_unpin=(at("unpin_source") or 1) if managed_sources else 0,
+            )
+        ):
+            payload[resource_keys[i]] = (
+                part,
+                "code",
+            )
+        for operation in shared.OPERATIONS:
+            payload[operation] = (
+                shared.entry(at(operation), operation, at("resource_dispatch")),
+                "code",
+            )
+        if separate_source:
+            original = native.accept_recording(
+                0,
+                at("copy"),
+                errors,
+                separate_source=True,
+                discard=(at("discard_candidate") or 1) if managed_sources else 0,
+            )
+            keys = ("accept", "accept_1", "accept_2")
+            for key, part in zip(
+                keys, shared.split_native(original, [at(k) for k in keys]), strict=True
+            ):
+                payload[key] = (part, "code")
+    if memory_accounting:
+        from lab.flex_memory import snapshot
+
+        payload["memory_snapshot"] = (
+            snapshot(at("memory_snapshot"), separate_source=separate_source),
+            "code",
+        )
+    if managed_sources:
+        from lab.flex_memory import saved_message
+
+        payload["memory_saved_format"] = (
+            b"FLEX SAVED\nRAM %u B\nTAKES %u/32\0",
+            "data",
+        )
+        payload["memory_saved_buffer"] = (bytes(64), "data")
+        payload["memory_saved_message"] = (
+            saved_message(
+                at("memory_saved_message"),
+                at("state"),
+                at("memory_snapshot"),
+                at("memory_saved_format"),
+                at("memory_saved_buffer"),
+                at("save_message"),
+                at("save_success"),
+            ),
+            "code",
+        )
     return payload
 
 
-def patch_cpu(image):
+def patch_cpu(
+    image,
+    *,
+    compact_resources=False,
+    separate_source=False,
+    memory_accounting=False,
+    durable_reads=False,
+    managed_sources=False,
+):
+    if managed_sources:
+        compact_resources = separate_source = durable_reads = True
+        memory_accounting = True
+    require(
+        not durable_reads or compact_resources,
+        "Durable reads require compact resources",
+    )
     baseline = hashlib.sha256(image).hexdigest()
     require(
         baseline in (STOCK_SHA, R3_SHA),
         "Native Flex requires exact stock 1.16 or audited Plaits R3",
     )
     data, writes = bytearray(image), []
-    gaps = [list(g) for g in CANDIDATE_GAPS]
+    gaps = [
+        list(g) for g in CANDIDATE_GAPS + (OWNERSHIP_GAPS if managed_sources else ())
+    ]
     for lo, hi in gaps:
         require(BASE <= lo < hi <= 0x403117C4, "Invalid native Flex placement")
         require(
@@ -203,13 +383,55 @@ def patch_cpu(image):
             f"Occupied native Flex padding {lo:#x}",
         )
     locations = {}
-    sizes = {key: len(value[0]) for key, value in build_payload({}).items()}
-    for key, length in sorted(sizes.items(), key=lambda item: (-item[1], item[0])):
-        choices = [(hi - lo, i) for i, (lo, hi) in enumerate(gaps) if hi - lo >= length]
+    options = dict(
+        compact_resources=compact_resources,
+        separate_source=separate_source,
+        memory_accounting=memory_accounting,
+        durable_reads=durable_reads,
+        managed_sources=managed_sources,
+    )
+    template = build_payload({}, **options)
+    sizes = {key: len(value[0]) for key, value in template.items()}
+    for key, length in sorted(
+        sizes.items(),
+        key=lambda item: (
+            -(
+                sizes["retire_source"]
+                if managed_sources and item[0] == "retire_source_1"
+                else item[1]
+            ),
+            item[0],
+        ),
+    ):
+        # ColdFire code needs word alignment (stock entries include 0x4011e87a).
+        # Keep long data aligned; legacy placement continues to use four bytes.
+        alignment = 2 if managed_sources and template[key][1] != "data" else 4
+        starts = [((lo + alignment - 1) // alignment) * alignment for lo, _ in gaps]
+        choices = [
+            (hi - starts[i], i)
+            for i, (_, hi) in enumerate(gaps)
+            if hi - starts[i] >= length
+        ]
+        # Split routines retain word branches; keep their parts in range.
+        if managed_sources:
+            for family in ("accept", "resource_dispatch", "retire_source"):
+                if key == family or key.startswith(family + "_"):
+                    peers = [
+                        value
+                        for name, value in locations.items()
+                        if name == family or name.startswith(family + "_")
+                    ]
+                    choices = [
+                        (room, i)
+                        for room, i in choices
+                        if all(abs(starts[i] - peer) < 32000 for peer in peers)
+                    ]
         require(choices, f"Native Flex padding exhausted: {key}")
         _, index = min(choices)
-        locations[key] = gaps[index][0]
-        gaps[index][0] += (length + 3) & ~3
+        locations[key] = starts[index]
+        gaps[index][0] = (
+            starts[index] + ((length + alignment - 1) // alignment) * alignment
+        )
 
     def put(address, before, after, label, kind):
         off = address - BASE
@@ -235,7 +457,7 @@ def patch_cpu(image):
             )
         )
 
-    for key, (code, kind) in build_payload(locations).items():
+    for key, (code, kind) in build_payload(locations, **options).items():
         require(len(code) == sizes[key], "Native relocation changed payload size")
         put(locations[key], bytes(len(code)), code, key, kind)
 
@@ -266,6 +488,7 @@ def patch_cpu(image):
         sha256=hashlib.sha256(data).hexdigest(),
         firmware="Digitakt II OS 1.16",
         locations=locations,
+        ownership_options=options,
         writes=writes,
         payload_bytes=sum(sizes.values()),
         status="experimental-native-image",

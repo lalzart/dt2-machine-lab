@@ -12,10 +12,14 @@ OLD_ORDER = (0, 1, 2, 3, 6, 4, 5, 7)
 ORDER = (0, 1, 2, 3, 6, 4, 7, 5)
 # The exact combined R3 + native Flex twenty-second image, before this overlay.
 BASE_SHA = "24b6f9fcdde519299a67738d7d4cb166d90f0e53e15e5dd55e88a7e90fee0363"
+MANAGED_BASE_SHA = "95d0204a362f7758d3ba2a84925d55c314c024ed20bca4ca34dd5b2c25c0d6be"
 
 
 def patch_cpu(image):
-    require(hashlib.sha256(image).hexdigest() == BASE_SHA, "Unknown menu baseline")
+    require(
+        hashlib.sha256(image).hexdigest() in (BASE_SHA, MANAGED_BASE_SHA),
+        "Unknown menu baseline",
+    )
     data = bytearray(image)
     writes = []
     for address, before, after, label in (

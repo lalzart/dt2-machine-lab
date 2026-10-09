@@ -372,3 +372,20 @@ SYX SHA-256: `5891f98485eb5eedf0707f6f302ea56ba3fd017547a25de89752a37611efc7e9`
 reapplication negative control and byte comparison: only four MAIN bytes changed.
 All 40 source tests, Ruff and package container checks passed. Hardware/panel
 behavior was not exercised for this display-only change.
+
+
+## Optional source-ownership experiment (2026-10-08)
+
+`--managed-sources` enables separately allocated source memory, pinned native
+reads/saves, exact-reference save-backed retirement, failed-candidate cleanup and
+post-save counters. Default build bytes are unchanged. The bounded native tests
+pass, including 20-second mono/stereo and stale/missing backing negatives; this is
+not hardware readiness or a complete capacity redesign. Published identities remain
+limited to 32 per boot, and safe heap headroom/project-epoch GC remain unverified.
+See [the source-ownership results](FLEX-MEMORY-IMPLEMENTATION-RESULTS.md).
+
+The [capacity continuation](FLEX-CAPACITY-RESULTS.md) measures the stock CPU heap
+and streams Save As for retired sources using one 32 KiB scratch block. Native
+pressure, partial-read cleanup/retry and complete 20-second stereo PCM reload pass;
+it no longer requires another four-MiB block for that backed Save As. Resident
+saves retain their pins. No new heap reservation or identity recycling is added.

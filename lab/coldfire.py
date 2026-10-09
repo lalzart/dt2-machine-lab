@@ -87,6 +87,8 @@ def audit_code(code, address):
             if mode not in (2, 5) and not (mode == 7 and reg in (0, 1, 2)):
                 raise ValueError("Unreviewed LEA")
             length, kind = 2 + _ea(mode, reg, 4), "LEA"
+        elif op == 0x4878:
+            length, kind = 4, "PEA absolute-short"
         elif op == 0x4879:
             length, kind = 6, "PEA absolute-long"
         elif op in (0x4EF9, 0x4EB9):
@@ -102,6 +104,15 @@ def audit_code(code, address):
             length, kind = (4 if op & 255 == 0 else 2), "BRANCH"
         elif op & 0xFFF8 in (0x0C80, 0x0680):
             length, kind = 6, "CMPI.L" if op & 0xFFF8 == 0x0C80 else "ADDI.L"
+        elif op in (0x0280, 0x0281):
+            # CFPRM ANDI.L immediate,D0/D1; tagged informational reply decode.
+            length, kind = 6, "ANDI.L"
+        elif op in (0xEE89, 0xE889):
+            # CFPRM LSR.L #7,D1: immediate count 1..8, register destination.
+            kind = "LSR.L #7,D1" if op == 0xEE89 else "LSR.L #4,D1"
+        elif op & 0xFFF8 == 0x0080:
+            # CFPRM Rev. 3 ORI.L immediate,Dn; used to preserve SR mode bits.
+            length, kind = 6, "ORI.L"
         elif op & 0xF1FF in (0xD1FC, 0xB1FC):
             length, kind = 6, "ADDA.L" if op & 0xF1FF == 0xD1FC else "CMPA.L"
         elif op & 0xF1F8 in (0xB080, 0xC080):
@@ -112,14 +123,23 @@ def audit_code(code, address):
             length, kind = 4, "MOVEM.L (SP)"
         elif op & 0xFFF8 in (0x40C0, 0x44C0):
             kind = "MOVE SR,Dn" if op & 0xFFF8 == 0x40C0 else "MOVE Dn,CCR"
+        elif op & 0xFFF8 == 0x46C0:
+            # CFPRM supervisor ISA_A MOVE Dy,SR (register source only).
+            kind = "MOVE Dn,SR"
         elif op in (0xE080, 0xE588, 0xE589, 0xED88):
             kind = "ASR/LSL.L immediate,Dn"
         elif op in (0xD1C0, 0xD3C0):
             kind = "ADDA.L D0,An"
         elif op == 0x71D1:
             kind = "MVZ.W (A1),D0"
+        elif op == 0x9283:
+            kind = "SUB.L D3,D1"
         elif op in (0x9081, 0xD080):
             kind = "SUB/ADD.L Dn,D0"
+        elif op & 0xFFF8 == 0x4A80:
+            kind = "TST.L Dn"
+        elif op in (0x5380, 0x5382):
+            kind = "SUBQ.L #1,D0/D2"
         elif op == 0x5280:
             kind = "ADDQ.L #1,D0"
         elif op == 0x57C0:

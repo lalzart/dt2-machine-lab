@@ -12,6 +12,7 @@ import math
 import os
 import struct
 import sys
+from functools import partial
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,6 +25,7 @@ if Path(sys.executable).resolve() != config["python"].resolve():
 p = argparse.ArgumentParser(description=__doc__)
 p.add_argument("output", type=Path)
 p.add_argument("--snapshot", type=Path, required=True)
+p.add_argument("--managed-sources", action="store_true")
 args = p.parse_args()
 doctor()
 out = args.output.resolve()
@@ -60,7 +62,11 @@ report["sources"] = {
 }
 session = card = None
 try:
-    session = Session(Take(pcm, True), out, adapter_factory=NativeFlexInput)
+    session = Session(
+        Take(pcm, True),
+        out,
+        adapter_factory=partial(NativeFlexInput, managed_sources=args.managed_sources),
+    )
     fw, locations = session.flex.fw, session.flex.metadata["locations"]
     card = check.Card(session.inputs["card"])
     card.overlay = dict(session.runtime["events"]["esdhc"].card.overlay)
@@ -142,7 +148,15 @@ try:
     session.advance(8000000)
     session.screenshot("saved")
     require(
-        report["events"][-1] == dict(event="message", text="FLEX: SAMPLE SAVED"),
+        report["events"][-1]
+        == dict(
+            event="message",
+            text=(
+                "FLEX SAVED\nRAM 64 B\nTAKES 1/32"
+                if args.managed_sources
+                else "FLEX: SAMPLE SAVED"
+            ),
+        ),
         "Missing success feedback",
     )
     require(
@@ -153,10 +167,18 @@ try:
     require(
         fw.read(kit, len(track_before)) == track_before, "Saving changed track controls"
     )
-    require(
-        fw.read(fw.u32(node + 20), len(expected)) == expected,
-        "Saving changed RAM audio",
-    )
+    if args.managed_sources:
+        require(
+            fw.u32(node + 20) == 0 and fw.u32(node + 48) == 0,
+            "Saved source was not retired",
+        )
+        # The independent stock reload below remains the byte-for-byte oracle.
+        report["checks"]["named_save_reclaims_ram_source"] = True
+    else:
+        require(
+            fw.read(fw.u32(node + 20), len(expected)) == expected,
+            "Saving changed RAM audio",
+        )
     report["checks"]["named_save_preserves_playback_state"] = True
     session.tap("NO")
     session.chord("FUNC", "RECORD")

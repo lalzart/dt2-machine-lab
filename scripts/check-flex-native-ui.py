@@ -7,6 +7,7 @@ import math
 import os
 import struct
 import sys
+from functools import partial
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,6 +24,7 @@ parser.add_argument(
     action="store_true",
     help="Seed MONO R in the prepared project before exercising native UI USE",
 )
+parser.add_argument("--managed-sources", action="store_true")
 args = parser.parse_args()
 doctor()
 out = args.output.resolve()
@@ -59,7 +61,11 @@ report["sources"] = {
 }
 session = None
 try:
-    session = Session(source(440), out, adapter_factory=NativeFlexInput)
+    session = Session(
+        source(440),
+        out,
+        adapter_factory=partial(NativeFlexInput, managed_sources=args.managed_sources),
+    )
     flex, fw = session.flex, session.flex.fw
     write_json(out / "native-patches.json", flex.metadata)
     (out / "FLEX_MAIN_OS.bin").write_bytes(flex.image)

@@ -34,7 +34,17 @@ class Memory:
 
 
 class NativeFlexInput:
-    def __init__(self, gui, clock_state, source, card, main, *, enabled=True):
+    def __init__(
+        self,
+        gui,
+        clock_state,
+        source,
+        card,
+        main,
+        *,
+        enabled=True,
+        managed_sources=False,
+    ):
         require(enabled, "Native check requires the native overlay")
         self.input = RecorderInput(source)
         self.phase, self.error = "ready", None
@@ -42,7 +52,7 @@ class NativeFlexInput:
         self.pages, self.events, self.hooks = [], [], []
         self.lock_depth = 0
         self.fw = None
-        image, self.metadata = patch_cpu(main)
+        image, self.metadata = patch_cpu(main, managed_sources=managed_sources)
         self.image = image
         original_build = gui.build
 

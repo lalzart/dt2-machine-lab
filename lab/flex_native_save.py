@@ -162,7 +162,7 @@ def open_name(address, manage, callback, push, title, initial):
     return c.finish(address)
 
 
-def promote(address):
+def promote(address, *, retire=0):
     """Promote only aliases of this take; retain unrelated temporary samples."""
     c = Code()
     c.emit("4feffff0 48d71c04 246f0014 266f0018 286f001c")
@@ -184,7 +184,16 @@ def promote(address):
     c.label("next")
     c.emit("47eb0010 200b b081")
     c.branch(6, "slot")
-    c.emit("204c 43ea0020 22d8 22d8 22d8 22d8 7001 2540001c 7000")
+    if retire:
+        from lab.flex_retirement import mask
+
+        mask(c)
+    c.emit("204c 43ea0020 22d8 22d8 22d8 22d8 7001 2540001c")
+    if retire:
+        c.emit("46c1 2f0a")
+        c.imm("4eb9", retire)
+        c.emit("588f")
+    c.emit("7000")
     c.emit("4cd71c04 4fef0010 4e75")
     return c.finish(address)
 
@@ -244,15 +253,20 @@ def write_named(address, pool, saver, promote_at, directory):
     return c.finish(address)
 
 
-def named_callback(address, writer, show_message, success, failure):
+def named_callback(
+    address, writer, show_message, success, failure, *, success_callback=0
+):
     c = Code()
     c.emit("206f0008 2f10 206f0008 2f280004 2f10")
     c.imm("4eb9", writer)
     c.emit("4fef000c")
     c.imm("0c80", 0)
     c.branch(6, "failed")
-    c.imm("4879", success)
-    c.branch(0, "show")
+    if success_callback:
+        c.imm("4ef9", success_callback)
+    else:
+        c.imm("4879", success)
+        c.branch(0, "show")
     c.label("failed")
     c.imm("4879", failure)
     c.label("show")
