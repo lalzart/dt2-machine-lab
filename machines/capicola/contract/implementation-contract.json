@@ -1,0 +1,72 @@
+{
+  "acceptance_tests": [
+    "Exact host keyframes/PCM",
+    "State and bounds checks",
+    "Target tolerance if executable"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement the documented finite-file adapter",
+      "Use existing build tools"
+    ],
+    "must_not": [
+      "Change pinned dependencies",
+      "Flash hardware",
+      "Commit or publish",
+      "Relax failing tolerances"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "C99 core and upstream-header oracle",
+    "Repeatable comparison runner",
+    "Results and gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Establish a sample-oriented stretch core before firmware integration.",
+    "primary_claim": "C99 matches the explicitly adapted upstream-header oracle."
+  },
+  "inputs": [
+    "Pinned public AGPL source",
+    "Deterministic synthetic PCM"
+  ],
+  "proposal": {
+    "approval": {
+      "state": "approved",
+      "reference": "User follow-up on 2026-10-07 requests implementing Capicola after reviewing the feasibility proposal."
+    },
+    "path": "docs/CAPICOLA-PROTOTYPE.md",
+    "revision": "1",
+    "sha256": "b9e26c88b831ab9554fb2448d03b1f194663d2b68c9bbd0ecc68635132ec15f3"
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Mono finite-sample host renderer",
+      "C99 translation",
+      "Standalone SHARC feasibility"
+    ],
+    "out": [
+      "Firmware integration",
+      "Hardware",
+      "Publication",
+      "Stereo",
+      "Looping"
+    ]
+  },
+  "status": "ready",
+  "target": "C99 host and standalone SHARC under DTII 1.16 fixture",
+  "title": "Capicola finite sample core",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/report.json",
+    "evidence_level": "host-signal",
+    "success_observation": "Exact host keyframes and PCM, bounded output and correct duration with negative controls."
+  }
+}

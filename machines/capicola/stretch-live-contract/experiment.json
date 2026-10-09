@@ -1,0 +1,171 @@
+{
+  "artifact_retention": {
+    "policy": "reproducible-only",
+    "location": "out/runs/<unique>"
+  },
+  "comparator_condition_id": "oracle",
+  "conditions": [
+    {
+      "id": "oracle",
+      "purpose": "Independent floating-position model over exact frozen keys",
+      "events": [
+        {
+          "frame": 0,
+          "event": "start"
+        }
+      ]
+    },
+    {
+      "id": "candidate",
+      "purpose": "R3 live wrapper behind native type 2; sixteen synthetic 512-frame mono sources",
+      "events": [
+        {
+          "frame": 0,
+          "event": "start"
+        },
+        {
+          "frame": 128,
+          "event": "PLAY/trim update without trigger"
+        },
+        {
+          "frame": 160,
+          "event": "latest queued region/mode update"
+        }
+      ]
+    },
+    {
+      "id": "latched-controls",
+      "purpose": "The frozen reader with latched PLAY/trim must fail the live PCM comparison",
+      "events": [
+        {
+          "frame": 0,
+          "event": "start"
+        },
+        {
+          "frame": 128,
+          "event": "ignore PLAY/trim update"
+        }
+      ]
+    },
+    {
+      "id": "pressure",
+      "purpose": "Insufficient space must preserve stock playback and pinned banks",
+      "events": [
+        {
+          "frame": 0,
+          "event": "count source whose bank exceeds free arena"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "name": "report.json",
+      "kind": "metrics"
+    },
+    {
+      "name": "cases.json and live-cases.json",
+      "kind": "control comparison cases"
+    },
+    {
+      "name": "distinct-renderers.f32",
+      "kind": "raw renderer PCM"
+    },
+    {
+      "name": "downstream.json",
+      "kind": "modeled master and DAC-ring PCM"
+    }
+  ],
+  "sample_rate_hz": 48000,
+  "schema_version": "sonic-research-lab-experiment-v1",
+  "seed": 1,
+  "status": "ready",
+  "supported_block_frames": [
+    1,
+    7,
+    32,
+    127
+  ],
+  "timeline_convention": "Prepare sixteen sources; trigger 32 lanes; change native PLAY/trim without retrigger; edit all sixteen tracks every block; exercise finite completion, reload and pressure fallback.",
+  "title": "Live STRETCH PLAY and trim transitions on sixteen sources",
+  "tolerances": {
+    "host_max": 0.0001,
+    "target_max": 0.0001,
+    "target_rms": 1e-05,
+    "pitch_hz": 2,
+    "peak_slack": 1e-06,
+    "host_rms": 1e-05,
+    "keyframe_time": 5.960464477539063e-08
+  },
+  "input_frames": 576000,
+  "pitches": [
+    0.03125,
+    0.5,
+    1,
+    2,
+    32
+  ],
+  "advances": [
+    0.0009765625,
+    0.02125,
+    0.5,
+    1,
+    2,
+    16
+  ],
+  "leashes": [
+    16,
+    128
+  ],
+  "recipes": {
+    "silence": "int16 zero",
+    "impulse": "int16 24000 at n//2, otherwise zero",
+    "sine": "int(8000*sin(2*pi*220*i/48000))",
+    "two-tone": "int(8000*(sin(2*pi*220*i/48000)+sin(2*pi*331*i/48000)))",
+    "noise": "Python random.Random(1).randrange(-16000,16001) per frame"
+  },
+  "decimal_rates": [
+    [
+      1,
+      0.7
+    ],
+    [
+      0.7,
+      1
+    ],
+    [
+      1.1,
+      0.7
+    ]
+  ],
+  "oracle_adaptation": "Independent composition of the unchanged Python sparse reader; explicit absolute-position mapping and smooth 64-output crossfade.",
+  "capacity": 576004,
+  "normalization": "signed int16 /32768; stride 2 inserts -sample into skipped words",
+  "target_frames": 1024,
+  "host_frames": [
+    1,
+    1024,
+    576000
+  ],
+  "combined_fixture": "Preserved integration runner two-tone 8192 frames; normalized quantization and duplicated PCM as defined there.",
+  "play_modes": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "regions": [
+    [
+      0,
+      2400
+    ],
+    [
+      600,
+      1800
+    ],
+    [
+      1200,
+      2400
+    ]
+  ]
+}

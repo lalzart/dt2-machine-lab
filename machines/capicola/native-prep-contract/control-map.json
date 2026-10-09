@@ -1,0 +1,18 @@
+{
+  "application_feedback": [],
+  "endpoint_device_evidence": {
+    "notes": "No physical-device claim is made by this contract.",
+    "state": "deferred"
+  },
+  "gesture_state_machines": [],
+  "not_applicable_rationale": "No panel controls in this slice; begin/step/bind/cancel service ABI and caller ownership are defined in the proposal and prepare.h.",
+  "schema_version": "sonic-research-lab-control-map-v1",
+  "semantic_bindings": [],
+  "source_of_truth": {
+    "strategy": "not-applicable",
+    "artifact": "docs/CAPICOLA-NATIVE-PREP.md"
+  },
+  "status": "not-applicable",
+  "surface_assignments": [],
+  "title": "Native preparation API"
+}

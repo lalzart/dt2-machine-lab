@@ -1,0 +1,74 @@
+{
+  "acceptance_tests": [
+    "Exact repeated and legacy builds",
+    "Containment and unknown-address rejection",
+    "Captured sample load, automatic prep and full voice comparison",
+    "Poisoned former state region remains untouched",
+    "Stock/Plaits parity, units and SINE replay"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement the documented finite-file adapter",
+      "Use existing build tools"
+    ],
+    "must_not": [
+      "Change pinned dependencies",
+      "Flash hardware",
+      "Commit or publish",
+      "Relax failing tolerances",
+      "Change the preserved double core/oracle or their original contract"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Guarded native CPU/DSP integration",
+    "Repeatable capture and signal comparison runners",
+    "Results and remaining integration gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Integrate the twelve-second mono stretch core with the existing OS1.16 sample path while preserving original machines.",
+    "primary_claim": "All combined working data, stacks and tables fit inside the existing owned sample reservation; legacy data addresses are unused by the relocated candidate."
+  },
+  "inputs": [
+    "Pinned public AGPL source",
+    "Exact private OS1.16 images and fixtures",
+    "Captured CPU panel frames and LP0 sample transfers"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-RESIDENT-STATE.md",
+    "sha256": "003e8ebc2d984d1654201fd4f5ebe9e85b56f1aaa13cfec874caefbb420ee214",
+    "revision": "1",
+    "approval": {
+      "state": "approved",
+      "reference": "User agreed to memory-ownership continuation after the implementation roadmap, 2026-10-08"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Guarded optional generated-assembly address relocation",
+      "Owned external state layout and loader initialization",
+      "Legacy build preservation and native signal comparisons"
+    ],
+    "out": [
+      "Claiming L2 code ownership",
+      "Hardware deadline proof",
+      "Installable package"
+    ]
+  },
+  "status": "ready",
+  "target": "C99 host and standalone SHARC under DTII 1.16 fixture",
+  "title": "Capicola reserved working state",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/report.json and reserved-bank emulator images",
+    "evidence_level": "target-build",
+    "success_observation": "Native candidate uses owned external working data and leaves the poisoned old state range untouched while preserving prepared keys and output."
+  }
+}

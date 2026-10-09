@@ -1,0 +1,163 @@
+{
+  "artifact_retention": {
+    "policy": "reproducible-only",
+    "location": "out/runs/<unique>"
+  },
+  "comparator_condition_id": "oracle",
+  "conditions": [
+    {
+      "id": "oracle",
+      "purpose": "Independent floating-position model over exact frozen keys",
+      "events": [
+        {
+          "frame": 0,
+          "event": "start"
+        }
+      ]
+    },
+    {
+      "id": "candidate",
+      "purpose": "Multi-bank native renderer, sixteen distinct synthetic PCM sources",
+      "events": [
+        {
+          "frame": 0,
+          "event": "start"
+        },
+        {
+          "frame": 512,
+          "event": "pitch/advance update"
+        }
+      ]
+    },
+    {
+      "id": "wrong-pitch",
+      "purpose": "Negative comparator",
+      "events": [
+        {
+          "frame": 0,
+          "event": "start wrong pitch"
+        }
+      ]
+    },
+    {
+      "id": "pressure",
+      "purpose": "Insufficient space must preserve stock playback and pinned banks",
+      "events": [
+        {
+          "frame": 0,
+          "event": "count source whose bank exceeds free arena"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "name": "report.json",
+      "kind": "metrics"
+    },
+    {
+      "name": "source-lock.json",
+      "kind": "hashes"
+    },
+    {
+      "name": "case-*.f32",
+      "kind": "raw PCM"
+    },
+    {
+      "name": "case-*.wav",
+      "kind": "audition PCM"
+    }
+  ],
+  "sample_rate_hz": 48000,
+  "schema_version": "sonic-research-lab-experiment-v1",
+  "seed": 1,
+  "status": "ready",
+  "supported_block_frames": [
+    1,
+    7,
+    32,
+    127
+  ],
+  "timeline_convention": "Select sixteen distinct sources; prepare serially; trigger all tracks; update pitch/BARS; share source; reload one source; exhaust budget; switch away/retry.",
+  "title": "Sixteen distinct-source playback and bounded bank lifecycle",
+  "tolerances": {
+    "host_max": 0.0001,
+    "target_max": 0.0001,
+    "target_rms": 1e-05,
+    "pitch_hz": 2,
+    "peak_slack": 1e-06,
+    "host_rms": 1e-05,
+    "keyframe_time": 5.960464477539063e-08
+  },
+  "input_frames": 576000,
+  "pitches": [
+    0.03125,
+    0.5,
+    1,
+    2,
+    32
+  ],
+  "advances": [
+    0.0009765625,
+    0.02125,
+    0.5,
+    1,
+    2,
+    16
+  ],
+  "leashes": [
+    16,
+    128
+  ],
+  "recipes": {
+    "silence": "int16 zero",
+    "impulse": "int16 24000 at n//2, otherwise zero",
+    "sine": "int(8000*sin(2*pi*220*i/48000))",
+    "two-tone": "int(8000*(sin(2*pi*220*i/48000)+sin(2*pi*331*i/48000)))",
+    "noise": "Python random.Random(1).randrange(-16000,16001) per frame"
+  },
+  "decimal_rates": [
+    [
+      1,
+      0.7
+    ],
+    [
+      0.7,
+      1
+    ],
+    [
+      1.1,
+      0.7
+    ]
+  ],
+  "oracle_adaptation": "Scratch copy of original core with only capacities expanded",
+  "capacity": 576004,
+  "normalization": "signed int16 /32768; stride 2 inserts -sample into skipped words",
+  "target_frames": 1024,
+  "host_frames": [
+    1,
+    1024,
+    576000
+  ],
+  "combined_fixture": "Preserved integration runner two-tone 8192 frames; normalized quantization and duplicated PCM as defined there.",
+  "play_modes": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "regions": [
+    [
+      0,
+      2400
+    ],
+    [
+      600,
+      1800
+    ],
+    [
+      1200,
+      2400
+    ]
+  ]
+}

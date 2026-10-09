@@ -1,0 +1,18 @@
+{
+  "application_feedback": [],
+  "endpoint_device_evidence": {
+    "notes": "No physical-device claim is made by this contract.",
+    "state": "deferred"
+  },
+  "gesture_state_machines": [],
+  "not_applicable_rationale": "Offline core API only; scalar pitch/advance/leash are frozen in the proposal.",
+  "schema_version": "sonic-research-lab-control-map-v1",
+  "semantic_bindings": [],
+  "source_of_truth": {
+    "strategy": "not-applicable",
+    "artifact": "docs/CAPICOLA-PROTOTYPE.md"
+  },
+  "status": "not-applicable",
+  "surface_assignments": [],
+  "title": "Capicola finite sample core"
+}

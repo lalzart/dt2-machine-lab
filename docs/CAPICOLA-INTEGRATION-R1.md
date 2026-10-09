@@ -1,0 +1,21 @@
+# Capicola integration R1: combined voice hook
+
+2026-10-07, revision 1. User authorized starting integration into the current Plaits/Flex custom OS. Working artifact: guarded combined MAIN/BLOB emulator images and a compiled voice-hook comparison report. Source-reimplementation lane; preserve the twelve-second capacity core and existing Plaits/Flex implementations and dependency pins.
+
+EVIDENCE: Plaits R3 uses the stock OS 1.16 voice hook at 0x1c4f15, two track-1 lane records (0x2412cc / 0x2414a4), and paired 96 kHz work-buffer writes from 48 kHz source samples. Stock record+0 is a raw sample pointer. INFERENCE: a dispatcher can share that hook without changing Plaits synthesis. UNRESOLVED: native sample analysis, allocator ownership, CPU selector/parameter metadata and actual deadline margin.
+
+## Scope and architecture
+
+Add a separate optional `capicola` DSP build family, preserving `integration` output and checks. Its dispatcher runs unchanged Plaits R3 for type 7, Capicola for provisional type 8 on track 1, and the original stock fallback for all other types/voices. Extend the test image's DSP remap table to nine entries (type 8 maps to existing stock preparation row 5). This is a provisional injected selector, not a CPU menu item. Rebuild the exact existing combined Plaits R3 + native Flex + menu MAIN and prove its bytes unchanged. Do not package or flash this first integration slice.
+
+Prepare a single immutable mono keyframe bank using the existing host analyzer; twelve-second maximum and existing max 1e-4 / RMS 1e-5 tolerances remain unchanged. Publish an explicit emulator handoff containing magic/version, ready, source pointer identity, pitch/advance/gain/leash and generation. Metadata lives at 0x200e4000, bank at 0x200e4100, two readers at 0x200e4200. These are disjoint from Plaits lane state. Key arrays remain in the reserved emulator arena at 0x83000000. All these placements are emulator-only, not firmware-owned memory claims.
+
+The adapter must check readiness, ABI, sample identity, generation, normalized controls, frame/count/capacity limits and array layout before reading. Missing, stale or malformed bank is handled silence, never an accidental stock sound. Stop on invalidation or leaving type 8. Retrigger restarts the selected lane; lanes share a read-only bank and independent transport. Snapshot pitch/advance/gain/leash on trigger. Default test controls pitch/advance 1, leash 128, gain 0.125; allow core pitch/advance 0.5–2 and leash16–128, gain0–0.125. No live macro or panel-control claim. Output one cap_tick per pair in the 64-float work buffer, with gain, matching the existing 48-to-96 kHz adapter convention.
+
+No expensive analysis, allocator or bank mutation occurs in the audio callback. Handoff/bank publication is serialized with rendering in this prepared test. The source-pointer identity check is a first ownership guard, not a replacement for a native loader lifecycle. Shared same-address reuse still requires caller-controlled generation invalidation.
+
+## Verification and completion
+
+Freeze current source hashes. Compile combined C and guarded wrapper. Direct compiled comparisons: all six Plaits models against existing R3, both lanes; Capicola against host core with pair duplication, decimal controls, duration/retrigger/repeat, missing bank, mismatched source/generation, malformed bank, invalid controls and unsupported voice. Preserve state/key arrays and destination sentinels. Include a disabled-bank negative control. Exercise the actual stock voice-render entry and combined jump hook; compare with direct adapter output and verify stock fallback parity. If the complete frame path supports the provisional selector, run bounded modified captured frames, labeling injected selector/bank state honestly.
+
+Build MAIN by existing builders and verify exact latest Plaits/Flex/menu bytes, plus deterministic DSP rebuild. Run configured unittest suite and SINE replay after source freezes. Save unique out/runs reports, images and voice-buffer audio. No final mix, CPU-menu, native-loader, listening or hardware claim. Results live in CAPICOLA-INTEGRATION-R1-RESULTS.md; remaining native loader/CPU menu work is explicit rather than presented as installed firmware.

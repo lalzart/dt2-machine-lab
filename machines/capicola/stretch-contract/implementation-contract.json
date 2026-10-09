@@ -1,0 +1,77 @@
+{
+  "acceptance_tests": [
+    "Independent numerical transport oracle and old forward-reader parity",
+    "Exact duration, state continuity, loops and safety extremes",
+    "Native type-2 preparation and direct-destination audio",
+    "Unready/unsupported fallback and all-track shared-bank independence",
+    "Old images, stock/Plaits compatibility, units and SINE"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement the documented finite-file adapter",
+      "Use existing build tools"
+    ],
+    "must_not": [
+      "Change pinned dependencies",
+      "Flash hardware",
+      "Commit or publish",
+      "Relax failing tolerances",
+      "Change the preserved double core/oracle or their original contract"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Guarded native CPU/DSP integration",
+    "Repeatable capture and signal comparison runners",
+    "Results and remaining integration gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Integrate the twelve-second mono stretch core with the existing OS1.16 sample path while preserving original machines.",
+    "primary_claim": "Capicola transport uses native type-2 timing and all PLAY modes through the original STRETCH renderer destination; no separate CPU selector."
+  },
+  "inputs": [
+    "Pinned public AGPL source",
+    "Exact private OS1.16 images and fixtures",
+    "Captured CPU panel frames and LP0 sample transfers"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-STRETCH-R1.md",
+    "sha256": "d07f665e18dea862483c4a21d71d0168ca601d8830cbdfe7825a0224e0f1e35b",
+    "revision": "1",
+    "approval": {
+      "state": "approved",
+      "reference": "User corrected to existing STRETCH and requested uninterrupted implementation on 2026-10-08"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Full native pitch and timing range; trimmed forward/reverse and loops",
+      "Separate type-2 renderer hook and native preparation",
+      "32 independent readers sharing one admitted mono bank",
+      "Stock fallback and preserved old experiments"
+    ],
+    "out": [
+      "Multiple distinct cached banks",
+      "Stereo source analysis",
+      "GAP control with unverified semantics",
+      "Hardware timing and installable package",
+      "Mid-note region/mode changes"
+    ]
+  },
+  "status": "ready",
+  "target": "C99 host and standalone SHARC under DTII 1.16 fixture",
+  "title": "Capicola existing STRETCH renderer R1",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/report.json and reserved-bank emulator images",
+    "evidence_level": "target-build",
+    "success_observation": "Original type-2 controls produce Capicola destination PCM matching the host oracle; unavailable banks use stock; previous images remain exact."
+  }
+}

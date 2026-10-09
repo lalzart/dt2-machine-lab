@@ -1,0 +1,73 @@
+{
+  "acceptance_tests": [
+    "Plaits six-model parity",
+    "Capicola paired-buffer host parity and ownership guards",
+    "Actual stock voice hook and fallback checks",
+    "SINE regression"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement the documented finite-file adapter",
+      "Use existing build tools"
+    ],
+    "must_not": [
+      "Change pinned dependencies",
+      "Flash hardware",
+      "Commit or publish",
+      "Relax failing tolerances",
+      "Change the preserved double core/oracle or their original contract"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "C99 core and upstream-header oracle",
+    "Repeatable comparison runner",
+    "Results and gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Establish a sample-oriented stretch core before firmware integration.",
+    "primary_claim": "Capicola shares the existing Plaits/Flex voice hook with guarded prepared-bank ownership and stock/Plaits parity."
+  },
+  "inputs": [
+    "Pinned public AGPL source",
+    "Deterministic synthetic PCM"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-INTEGRATION-R1.md",
+    "sha256": "29f9e47a48d39bc96f4467a5f634c4f7bca49228e08807c421daca19b88530b7",
+    "revision": "1",
+    "approval": {
+      "state": "approved",
+      "reference": "User asked to start integration, 2026-10-07"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Combined DSP dispatcher and guarded prepared sample handoff",
+      "Exact existing Plaits/Flex MAIN rebuild",
+      "Compiled adapter and stock voice-entry comparisons"
+    ],
+    "out": [
+      "CPU menu and native sample loader",
+      "Hardware",
+      "Installable package",
+      "Stereo"
+    ]
+  },
+  "status": "ready",
+  "target": "C99 host and standalone SHARC under DTII 1.16 fixture",
+  "title": "Capicola combined voice-hook integration R1",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/report.json and combined emulator MAIN/BLOB",
+    "evidence_level": "target-build",
+    "success_observation": "Combined compiled hook comparisons pass with unchanged existing MAIN and Plaits audio."
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "acceptance_tests": [
+    "Exact repeat and unchanged previous build hashes",
+    "Trigger-free preparation and first-trigger oracle audio",
+    "Progress, selection cancellation, reload and invalid-slot fail-closed checks",
+    "Poisoned former state unchanged",
+    "Stock and Plaits parity, units and SINE"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement the documented finite-file adapter",
+      "Use existing build tools"
+    ],
+    "must_not": [
+      "Change pinned dependencies",
+      "Flash hardware",
+      "Commit or publish",
+      "Relax failing tolerances",
+      "Change the preserved double core/oracle or their original contract"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Guarded native CPU/DSP integration",
+    "Repeatable capture and signal comparison runners",
+    "Results and remaining integration gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Integrate the twelve-second mono stretch core with the existing OS1.16 sample path while preserving original machines.",
+    "primary_claim": "A selected eligible mono slot reaches READY before any trigger or voice assignment, with exact keys and preserved playback."
+  },
+  "inputs": [
+    "Pinned public AGPL source",
+    "Exact private OS1.16 images and fixtures",
+    "Captured CPU panel frames and LP0 sample transfers"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-SELECTION-PREP.md",
+    "sha256": "aa0261f4a9dab2aa0c153fa30c8406e6fc584a732c85bfb8cc31d8da22ea3bf2",
+    "revision": "1",
+    "approval": {
+      "state": "approved",
+      "reference": "User: Okay, let us continue, after implementation explanation on 2026-10-08"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Optional selection-based source resolver",
+      "Versioned native preparation status",
+      "Captured LP0 and trigger-free command replay",
+      "Legacy compatibility and cancellation checks"
+    ],
+    "out": [
+      "On-device readiness UI or unverified reply fields",
+      "Hardware deadline proof",
+      "Installable package"
+    ]
+  },
+  "status": "ready",
+  "target": "C99 host and standalone SHARC under DTII 1.16 fixture",
+  "title": "Capicola preparation on selection",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/report.json and reserved-bank emulator images",
+    "evidence_level": "target-build",
+    "success_observation": "Native selected slot becomes READY without voice-pointer injection or any trigger; first later trigger matches oracle and stale/invalid sources are silent."
+  }
+}

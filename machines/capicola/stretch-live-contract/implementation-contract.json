@@ -1,0 +1,74 @@
+{
+  "acceptance_tests": [
+    "Independent live-control host PCM and state oracle",
+    "Native live parameter changes, rapid queue and sixteen-source playback",
+    "Invalidation/fallback and exact R1/R2 images",
+    "Stock/Plaits parity, full source units and SINE"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement the documented finite-file adapter",
+      "Use existing build tools"
+    ],
+    "must_not": [
+      "Change pinned dependencies",
+      "Flash hardware",
+      "Commit or publish",
+      "Relax failing tolerances",
+      "Change the preserved double core/oracle or their original contract"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Guarded native CPU/DSP integration",
+    "Repeatable capture and signal comparison runners",
+    "Results and remaining integration gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Integrate the twelve-second mono stretch core with the existing OS1.16 sample path while preserving original machines.",
+    "primary_claim": "PLAY/trim changes affect active Capicola readers with bounded transitions; sixteen-bank semantics remain unchanged."
+  },
+  "inputs": [
+    "Pinned public AGPL source",
+    "Exact private OS1.16 images and fixtures",
+    "Captured CPU panel frames and LP0 sample transfers"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-STRETCH-R3.md",
+    "sha256": "e97ea1c8bc12d27c631acefa81b963cc23372b3c5dc01ca30907f27f3664a3e0",
+    "revision": "3",
+    "approval": {
+      "state": "approved",
+      "reference": "User Please proceed following R2 playback results and live-control next steps, 2026-10-08"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Live mode/trim controls with explicit 64-sample transition",
+      "Preserved sixteen-source cache and native STRETCH controls",
+      "Native phase/output investigation with evidence-scoped bookkeeping"
+    ],
+    "out": [
+      "Stereo",
+      "Expanded memory",
+      "Full UI/hardware claims",
+      "Installable packaging"
+    ]
+  },
+  "status": "ready",
+  "target": "C99 host and standalone SHARC under DTII 1.16 fixture",
+  "title": "Capicola live STRETCH controls R3",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/report.json and reserved-bank emulator images",
+    "evidence_level": "target-build",
+    "success_observation": "Original type-2 controls produce Capicola destination PCM matching the host oracle; unavailable banks use stock; previous images remain exact."
+  }
+}

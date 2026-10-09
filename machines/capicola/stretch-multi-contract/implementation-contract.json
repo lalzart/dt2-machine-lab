@@ -1,0 +1,74 @@
+{
+  "acceptance_tests": [
+    "Host cache allocation/lifecycle and exact independent bank comparison",
+    "Native sixteen-source destination PCM and continuous controls",
+    "Sharing, selective reload, pinned eviction, exhaustion fallback and retry",
+    "R1 exact build, stock/Plaits compatibility, source units and SINE"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement the documented finite-file adapter",
+      "Use existing build tools"
+    ],
+    "must_not": [
+      "Change pinned dependencies",
+      "Flash hardware",
+      "Commit or publish",
+      "Relax failing tolerances",
+      "Change the preserved double core/oracle or their original contract"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Guarded native CPU/DSP integration",
+    "Repeatable capture and signal comparison runners",
+    "Results and remaining integration gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Integrate the twelve-second mono stretch core with the existing OS1.16 sample path while preserving original machines.",
+    "primary_claim": "Sixteen distinct sources that fit the fixed arena can use Capicola concurrently; exhaustion preserves stock playback and pinned banks."
+  },
+  "inputs": [
+    "Pinned public AGPL source",
+    "Exact private OS1.16 images and fixtures",
+    "Captured CPU panel frames and LP0 sample transfers"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-STRETCH-R2.md",
+    "sha256": "9b126332d15db8ed562630945b40c55de4300436885e3c70215a2c898a02c071",
+    "revision": "2",
+    "approval": {
+      "state": "approved",
+      "reference": "User requested continued playback work after discussion of multiple sample banks, 2026-10-08"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Up to sixteen distinct prepared sources within existing 8 MiB",
+      "32 independent readers, per-source invalidation and pinned bank retention",
+      "Preserved STRETCH controls, transport and stock fallback"
+    ],
+    "out": [
+      "Expanded reservation",
+      "Stereo analysis",
+      "Live mode/trim changes",
+      "Hardware timing or installable package"
+    ]
+  },
+  "status": "ready",
+  "target": "C99 host and standalone SHARC under DTII 1.16 fixture",
+  "title": "Capicola existing STRETCH multi-source playback R2",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/report.json and reserved-bank emulator images",
+    "evidence_level": "target-build",
+    "success_observation": "Original type-2 controls produce Capicola destination PCM matching the host oracle; unavailable banks use stock; previous images remain exact."
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "application_feedback": [],
+  "endpoint_device_evidence": {
+    "notes": "No physical-device claim is made by this contract.",
+    "state": "deferred"
+  },
+  "gesture_state_machines": [],
+  "not_applicable_rationale": "",
+  "schema_version": "sonic-research-lab-control-map-v1",
+  "semantic_bindings": [
+    {
+      "id": "pitch",
+      "description": "Native voice+0x1cc, 1/32..32"
+    },
+    {
+      "id": "advance",
+      "description": "Native voice+0x1c8, 1/65536..64"
+    },
+    {
+      "id": "region",
+      "description": "Native Q31 start/end, decoded integer bounds"
+    },
+    {
+      "id": "play",
+      "description": "Native reverse/loop flags"
+    },
+    {
+      "id": "level",
+      "description": "Original downstream native level and envelope"
+    }
+  ],
+  "source_of_truth": {
+    "strategy": "exhaustive-compare",
+    "artifact": "docs/CAPICOLA-STRETCH-R1.md"
+  },
+  "status": "ready",
+  "surface_assignments": [
+    {
+      "selector": "TUNE",
+      "binding": "pitch"
+    },
+    {
+      "selector": "BARS",
+      "binding": "advance"
+    },
+    {
+      "selector": "STRT/LEN",
+      "binding": "region"
+    },
+    {
+      "selector": "PLAY",
+      "binding": "play"
+    },
+    {
+      "selector": "LEV",
+      "binding": "level"
+    }
+  ],
+  "title": "Original STRETCH controls"
+}

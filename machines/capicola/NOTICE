@@ -1,0 +1,11 @@
+This experiment is derived from Capicola by Matthew Nielsen / Heavylight
+Industries, https://github.com/heavylight-industries/capicola,
+revision 120b0b843c18bda373d96eb79d49805545f61556, licensed under AGPL-3.0.
+
+The analyzer, spline formulas, sparse reconstruction, and adaptive-splice
+principles retain their source lineage. The C99 translation and finite-sample
+transport are modifications by the machine-lab project. See the contract for
+intentional deviations. LICENSE contains the upstream license text.
+
+No Elektron firmware is included. This source experiment does not establish
+redistribution permission for a combined proprietary firmware image.

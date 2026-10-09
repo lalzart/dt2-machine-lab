@@ -1,0 +1,154 @@
+{
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "scripts/check-capicola-capacity.py",
+        "out/runs/<unique>"
+      ],
+      "cost": "fast",
+      "evidence_level": "source",
+      "freshness_inputs": [
+        "machines/capicola",
+        "docs/CAPICOLA-TWELVE-SECONDS.md"
+      ],
+      "id": "source-review"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/check-capicola-capacity.py",
+        "out/runs/<unique>"
+      ],
+      "cost": "fast",
+      "evidence_level": "host-structural",
+      "freshness_inputs": [
+        "machines/capicola",
+        "docs/CAPICOLA-TWELVE-SECONDS.md"
+      ],
+      "id": "focused-structural"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/check-capicola-capacity.py",
+        "out/runs/<unique>"
+      ],
+      "cost": "native",
+      "evidence_level": "host-signal",
+      "freshness_inputs": [
+        "machines/capicola",
+        "docs/CAPICOLA-TWELVE-SECONDS.md"
+      ],
+      "id": "objective-render"
+    },
+    {
+      "id": "capacity-lifecycle",
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_capicola_capacity.py",
+        "-v"
+      ],
+      "cost": "fast",
+      "evidence_level": "host-structural",
+      "freshness_inputs": [
+        "machines/capicola",
+        "tests/test_capicola_capacity.py"
+      ]
+    },
+    {
+      "id": "capacity-target",
+      "command": [
+        "python3",
+        "scripts/check-capicola-capacity-target.py",
+        "out/runs/<unique>"
+      ],
+      "cost": "native",
+      "evidence_level": "target-build",
+      "freshness_inputs": [
+        "machines/capicola",
+        "scripts/check-capicola-capacity-target.py"
+      ]
+    }
+  ],
+  "evidence_levels": [
+    {
+      "check_ids": [],
+      "level": "research",
+      "promotion_rule": "Cited sources support the selected mechanism.",
+      "status": "available"
+    },
+    {
+      "check_ids": [],
+      "level": "proposal",
+      "promotion_rule": "The approved proposal fingerprint matches the implementation contract.",
+      "status": "available"
+    },
+    {
+      "check_ids": [
+        "source-review"
+      ],
+      "level": "source",
+      "promotion_rule": "Implementation exists with provenance and complete-diff review.",
+      "status": "planned"
+    },
+    {
+      "check_ids": [
+        "focused-structural",
+        "capacity-lifecycle"
+      ],
+      "level": "host-structural",
+      "promotion_rule": "Focused state, bounds, negative, and adapter-parity checks pass.",
+      "status": "planned"
+    },
+    {
+      "check_ids": [
+        "objective-render"
+      ],
+      "level": "host-signal",
+      "promotion_rule": "Objective renders meet frozen tolerances and repeatability requirements.",
+      "status": "planned"
+    },
+    {
+      "check_ids": [
+        "capacity-target"
+      ],
+      "level": "target-build",
+      "promotion_rule": "The named target compiler and linker accept the artifact.",
+      "status": "planned"
+    },
+    {
+      "check_ids": [],
+      "level": "real-time",
+      "promotion_rule": "Worst-case and p99 callback measurements meet a declared budget.",
+      "status": "deferred"
+    },
+    {
+      "check_ids": [],
+      "level": "connected-device",
+      "promotion_rule": "Authorized device I/O, controls, feedback, and lifecycle checks pass.",
+      "status": "deferred"
+    },
+    {
+      "check_ids": [],
+      "level": "listening",
+      "promotion_rule": "A documented, appropriately blinded listening protocol supports the claim.",
+      "status": "deferred"
+    },
+    {
+      "check_ids": [],
+      "level": "production-integration",
+      "promotion_rule": "Canonical identities, graphs, providers, packaging, and release gates are accepted separately.",
+      "status": "deferred"
+    }
+  ],
+  "schema_version": "sonic-research-lab-validation-plan-v1",
+  "status": "ready"
+}

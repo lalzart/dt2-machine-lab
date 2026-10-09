@@ -1,0 +1,76 @@
+{
+  "acceptance_tests": [
+    "Exact repeat and unchanged previous images",
+    "Native state/progress and unchanged voice signal",
+    "Reply sentinel and parity, SPI2 transport and CPU receive DMA",
+    "Visible screen progress and negative reply fallback",
+    "Units, Ruff and SINE"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement the documented finite-file adapter",
+      "Use existing build tools"
+    ],
+    "must_not": [
+      "Change pinned dependencies",
+      "Flash hardware",
+      "Commit or publish",
+      "Relax failing tolerances",
+      "Change the preserved double core/oracle or their original contract"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Guarded native CPU/DSP integration",
+    "Repeatable capture and signal comparison runners",
+    "Results and remaining integration gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Integrate the twelve-second mono stretch core with the existing OS1.16 sample path while preserving original machines.",
+    "primary_claim": "Native DSP preparation status reaches the CPU reply buffer and visible screen through the existing SPI link."
+  },
+  "inputs": [
+    "Pinned public AGPL source",
+    "Exact private OS1.16 images and fixtures",
+    "Captured CPU panel frames and LP0 sample transfers"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-FEEDBACK.md",
+    "sha256": "65e7ab947b5e4a2bcd737325f9438050e7d4afe480c507cbfb5142f6f1736a2a",
+    "revision": "1",
+    "approval": {
+      "state": "approved",
+      "reference": "User: Okay, let us continue then, following the screen-feedback roadmap on 2026-10-08"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Optional tagged preparation reply halfword",
+      "Guarded native CPU display overlay",
+      "Native reply transport and visible progress checks",
+      "Legacy and signal compatibility"
+    ],
+    "out": [
+      "Hardware timing proof",
+      "Installable package",
+      "Project persistence changes",
+      "Continuous SRC refresh"
+    ]
+  },
+  "status": "ready",
+  "target": "C99 host and standalone SHARC under DTII 1.16 fixture",
+  "title": "Capicola native preparation feedback",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/report.json and reserved-bank emulator images",
+    "evidence_level": "target-build",
+    "success_observation": "Native reply snapshots reach the CPU through DSPI2/eDMA and its driver, then show preparation ranges and READY when SRC opens. Native SPI2 transmission is separately checked; continuous refresh and coupled timing remain deferred."
+  }
+}

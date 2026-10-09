@@ -1,0 +1,73 @@
+{
+  "acceptance_tests": [
+    "Native selector, permissions, metadata and control transport",
+    "Panel selection and RATE endpoint capture",
+    "Captured LP0 sample assignment, automatic preparation and full voice PCM comparison",
+    "Stock/Plaits parity, unit suite and SINE replay"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement the documented finite-file adapter",
+      "Use existing build tools"
+    ],
+    "must_not": [
+      "Change pinned dependencies",
+      "Flash hardware",
+      "Commit or publish",
+      "Relax failing tolerances",
+      "Change the preserved double core/oracle or their original contract"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Guarded native CPU/DSP integration",
+    "Repeatable capture and signal comparison runners",
+    "Results and remaining integration gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Integrate the twelve-second mono stretch core with the existing OS1.16 sample path while preserving original machines.",
+    "primary_claim": "Native CPU selectors and controls reach the automatic Capicola renderer while preserving original machines."
+  },
+  "inputs": [
+    "Pinned public AGPL source",
+    "Exact private OS1.16 images and fixtures",
+    "Captured CPU panel frames and LP0 sample transfers"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-CONTROLS.md",
+    "sha256": "866e37a8e517e19ecfbd343783929a9ffc2b0b695c0e8694803456f1ebb89d0d",
+    "revision": "1",
+    "approval": {
+      "state": "approved",
+      "reference": "User asked to proceed with Capicola implementation 2026-10-08"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Guarded CPU type8 tables and dispatch",
+      "Dormant CFADE row as RATE",
+      "Target note/tune/rate/level mapping"
+    ],
+    "out": [
+      "Hardware deadline proof",
+      "Installable package",
+      "Stereo and other tracks"
+    ]
+  },
+  "status": "ready",
+  "target": "C99 host and standalone SHARC under DTII 1.16 fixture",
+  "title": "Capicola selector and controls",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/report.json and reserved-bank emulator images",
+    "evidence_level": "target-build",
+    "success_observation": "CAPICOLA selects through the panel, RATE reaches the wire, and stock-assigned PCM prepares and renders with max error <=1e-4 and RMS <=1e-5."
+  }
+}

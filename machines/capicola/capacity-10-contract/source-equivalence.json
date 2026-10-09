@@ -1,0 +1,137 @@
+{
+  "dependencies": [
+    {
+      "id": "host-cxx",
+      "revision": "AppleClang 16.0.0.16000026 C++17",
+      "license": "Existing platform toolchain; no library source copied",
+      "authentication": "compiler --version and binary hashes in run report",
+      "distribution_disposition": "local build only"
+    }
+  ],
+  "fidelity": {
+    "preserve": [
+      "Analyzer arithmetic",
+      "Sparse interpolation",
+      "Pitch versus timing cursor",
+      "Smoothstep splices"
+    ],
+    "allowed_changes": [
+      "Finite-file start/end and edge envelope",
+      "Separate arrays and bounded indices",
+      "Leash-duration cap 960",
+      "Q24 split timestamps with exact binary32 control increments and <=2^-24 keyframe-time error",
+      "Ten-second caller-owned shared bank, measurement pass and generation invalidation",
+      "Three-limb duration multiplication"
+    ],
+    "excluded": [
+      "Live writer guards",
+      "Detector",
+      "Stereo",
+      "Shaping",
+      "Firmware UI"
+    ]
+  },
+  "files": [
+    {
+      "path": "lib/Analyzer.h",
+      "sha256": "be727f4e710fcc4d7f9894368c1b91d7a2f1d6dac44e3e144de9e04870ec79a6",
+      "role": "normative",
+      "license": "AGPL-3.0; retain Matthew Nielsen / Heavylight Industries attribution"
+    },
+    {
+      "path": "lib/SparseLine.h",
+      "sha256": "5d1551d075c0cbb2aa00aaa872315c763fc91a3a88f7eebf41aa8da55c2d296e",
+      "role": "normative",
+      "license": "AGPL-3.0; retain Matthew Nielsen / Heavylight Industries attribution"
+    },
+    {
+      "path": "lib/Granule.h",
+      "sha256": "365858963edf5a7120f8cb5f0722c6d11f98778c0ffa08b8d9374ab67051f084",
+      "role": "normative",
+      "license": "AGPL-3.0; retain Matthew Nielsen / Heavylight Industries attribution"
+    },
+    {
+      "path": "lib/DeluxeLine.h",
+      "sha256": "01805646c64cdc9307906c93bf19c0e82322763e1279f4925958542d020d8ebc",
+      "role": "normative",
+      "license": "AGPL-3.0; retain Matthew Nielsen / Heavylight Industries attribution"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "role": "supporting",
+      "license": "AGPL-3.0; retain Matthew Nielsen / Heavylight Industries attribution"
+    }
+  ],
+  "intentional_deviations": [
+    {
+      "description": "Finite one-shot transport replaces moving-writer rescue; same explicit policy in C++ oracle and C99.",
+      "reason": "Digitakt sample playback starts at zero and has a defined duration.",
+      "approval": "User implementation request; bounded local experiment documented before edits.",
+      "validation": "Duration, start/end, reset, source comparison."
+    },
+    {
+      "description": "Split Q24 timestamps and bounded indices replace double positions.",
+      "reason": "Pinned target double is float32.",
+      "validation": "Frozen local-time and PCM error tests."
+    },
+    {
+      "description": "Separate bank storage and expand bounded input to ten seconds.",
+      "reason": "User capacity request without callback allocations or per-voice sample copies.",
+      "validation": "Count parity, capacity sentinels, shared-reader lifecycle and host/target PCM."
+    }
+  ],
+  "not_applicable_rationale": "",
+  "oracle": {
+    "kind": "signal-tolerance",
+    "fixtures": [
+      "contract/experiment.json deterministic recipes"
+    ],
+    "commands": [
+      "python3 scripts/check-capicola.py out/runs/<unique>"
+    ],
+    "metrics": [
+      "keyframe count and bytes",
+      "PCM bytes",
+      "duration",
+      "finite/peak",
+      "pitch"
+    ],
+    "tolerances": {
+      "max": 0.0001,
+      "rms": 1e-05,
+      "keyframe_time": 5.960464477539063e-08
+    }
+  },
+  "reuse": {
+    "controller_map": {
+      "strategy": "not-applicable",
+      "artifact": "No controller in this core experiment",
+      "sha256": "ca37876e2f056629826e5e115cf8b396cecff28d6b7e71102c6cbcea1f6eb629"
+    },
+    "ui_shell": {
+      "strategy": "not-applicable",
+      "artifact": "No UI in this experiment",
+      "sha256": "890e56efcbbfa7c78aef5e211d3dc926dc9b8ceeff73cb20cff2dc3ae97e8c4c"
+    }
+  },
+  "schema_version": "sonic-research-lab-source-equivalence-v1",
+  "source_authority": {
+    "source_id": "capicola-1.0.0",
+    "repository_id": "https://github.com/heavylight-industries/capicola",
+    "revision": "120b0b843c18bda373d96eb79d49805545f61556",
+    "observed_branch": "main",
+    "dirty_state": "clean clone",
+    "source_root_id": "capicola"
+  },
+  "status": "ready",
+  "unresolved_items": [],
+  "work_type": "source-reimplementation",
+  "baseline_files": {
+    "core.c": "38d7e9242e5987908ffa9ed5d708d80e64712c08744ead8e0832472604273711",
+    "core.h": "08da25ff524ddb0b2fa0cd02b0aacc32e5ca28485c3e4d5fceb2f25ff2c04024",
+    "oracle.cc": "418e4b7d0c61d5037be94143d2229dafd7d47ef80fd41de430d14c2d8475d3db",
+    "split.c": "9676a143d0ca0ca171e622bcbc8438d42e4126057f554cbb6a8300126664c61a",
+    "split.h": "53b1dbdb29b0b56d2563469ded35fdf56a28f6854e72e2cef3c82e6aaf6cdbe7"
+  }
+}
