@@ -16,6 +16,12 @@ def main():
     commands.add_parser(
         "doctor", help="verify dependency pins and private fixture hashes"
     )
+    from lab.diagnostics import add_arguments
+    from lab.diagnostics import main as diagnostics_main
+
+    add_arguments(
+        commands.add_parser("diagnostics", help="show saved resource measurements")
+    )
     for name in ("build", "render", "profile", "test"):
         sub = commands.add_parser(name)
         sub.add_argument("machine", choices=["sine"])
@@ -27,6 +33,8 @@ def main():
                 help="run the prepared-fixture regression suite",
             )
     args = parser.parse_args()
+    if args.command == "diagnostics":
+        return diagnostics_main(args)
     try:
         provenance = doctor()
     except (ValueError, OSError, KeyError, subprocess.SubprocessError) as exc:
