@@ -16,6 +16,12 @@ The optional [Plaits resource experiment](docs/PLAITS-OPTIMIZATION.md) compares
 the reference with MAIN-only rendering and safe sharing between matching lanes.
 It retains exact audio comparisons and reports emulator instruction savings.
 
+The [resource monitor](docs/RESOURCE-MONITOR.md) imports saved DSP and memory
+records into a local diagnostic screen. The [stock OS 1.16 baseline](docs/STOCK-RESOURCE-BASELINE.md)
+compares six stock pad/settings workloads, installed-hook overhead and separate
+active SINE/Plaits clips. These report emulator work and paused heap snapshots;
+physical CPU/DSP utilization remains unmeasured.
+
 The [three-model Plaits prototype](docs/PLAITS-TRIO.md) adds two-operator FM
 and analog bass drum beside VA. A dedicated MODEL control recalls engines
 through real stored-lock CPU captures and prepared SHARC replay. Its repeat
@@ -58,6 +64,42 @@ hardware USE error. Native naming, storage and project reload checks pass;
 hardware confirmation remains pending. See the native notes for results and
 current limitations.
 
+The active [Capicola direction](docs/CAPICOLA-STRETCH-REPLACEMENT.md) replaces
+the DSP behind the existing **STRETCH** machine, retaining its selector,
+controls and locks. The [R3 playback implementation](docs/CAPICOLA-STRETCH-R3-RESULTS.md)
+adds live PLAY and STRT/LEN edits with short crossfades, native completion,
+and modeled master/DAC-ring checks. Sixteen distinct mono banks and thirty-two
+reader lanes retain the existing 8 MiB budget and stock fallback under pressure.
+Host comparisons, native playback, 138 source tests and SINE pass. Simultaneous
+edits add significant emulator work; physical timing, full playhead/progress
+bookkeeping, runtime ownership and hardware validation remain open.
+The [combined firmware build](docs/COMBINED-FIRMWARE-RESULTS.md) packages this
+STRETCH replacement with Plaits R3 and the latest managed streaming Flex.
+It is a local experimental OS 1.16 SYX, with build/container, separate emulator
+startup and regression checks; it has not been sent to hardware.
+The [R2 multiple-bank work](docs/CAPICOLA-STRETCH-R2-RESULTS.md) and
+[R1 replacement](docs/CAPICOLA-STRETCH-R1-RESULTS.md) are preserved.
+Separate CAPICOLA selector/RATE work is superseded.
+
+The preserved [Capicola integration prototype](docs/CAPICOLA-CONTROLS-RESULTS.md) has a
+track-1 selector, pitch/rate/level controls and automatic mono sample preparation
+in the OS1.16 emulator. Captured CPU sample transfers and triggers produce
+native DSP voice output matching the host reference. Input remains capped at
+12 seconds; one bank uses an 8 MiB reservation from the sample pool. Preparation
+currently takes about twice the sample duration and needs a later trigger to
+start playback. Automatic readiness refresh, project persistence, full memory ownership and
+physical timing remain open; there is no hardware-ready Capicola package.
+The optional [reserved-state build](docs/CAPICOLA-RESIDENT-STATE-RESULTS.md) now
+places working data and stacks inside that existing reservation, with native
+startup, reload and compatibility checks. Instruction-code ownership in L2
+and physical memory latency still need validation.
+The new [selection-preparation candidate](docs/CAPICOLA-SELECTION-PREP-RESULTS.md)
+starts work when an eligible sample is selected, before the first trigger, and
+exposes native progress and rejection status. The optional
+[feedback build](docs/CAPICOLA-FEEDBACK-RESULTS.md) now shows preparation ranges
+and READY when SRC opens, using the existing DSP reply. Native SPI return and
+buffered CPU display checks pass; automatic caption refresh remains pending.
+
 Start with [STATUS](docs/STATUS.md), [integration findings](docs/INTEGRATION.md),
 and the [development roadmap](docs/DEVELOPMENT.md). [AGENTS.md](AGENTS.md)
 contains the short development instructions.
@@ -89,6 +131,13 @@ A successful audio run produces `sine-440.wav`. `out/latest.json` points to
 the latest successful run. Failed and timed-out runs retain a failure report;
 they do not replace that pointer. Verification remains active under Python
 `-O`. A source or fixture change during a run prevents a passing result.
+
+Earlier stages remain documented: [pool reservation](docs/CAPICOLA-OWNED-MEMORY-RESULTS.md),
+[native preparation](docs/CAPICOLA-NATIVE-PREP-RESULTS.md),
+[R1 reader integration](docs/CAPICOLA-INTEGRATION-R1-RESULTS.md), and
+[twelve-second capacity](docs/CAPICOLA-TWELVE-SECONDS-RESULTS.md).
+Their open-item lists describe those historical stages; current integration
+results are linked above.
 
 ## Layout and dependencies
 
@@ -152,6 +201,7 @@ measurements remain open. See [DEVELOPMENT](docs/DEVELOPMENT.md).
 Elekloader is recorded as an optional future integration in
 [ECOSYSTEM](docs/ECOSYSTEM.md). It is not a dependency of the current DSP test.
 
-Firmware and derived files stay private and ignored. This repository currently
-builds emulator overrides and captures voice-buffer PCM. It does not establish
-final mixer/DAC behavior, physical timing, or hardware operation.
+Firmware and derived files stay private and ignored. This repository builds
+emulator overrides, local experimental containers and bounded audio captures.
+Modeled final-output checks, physical timing and hardware operation remain
+separate observations.
