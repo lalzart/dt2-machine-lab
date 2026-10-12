@@ -1,0 +1,73 @@
+{
+  "acceptance_tests": [
+    "Host key parity across budgets and strides",
+    "Cancellation and unpublished-bank guards",
+    "Compiled SHARC worker comparison",
+    "SINE replay"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement the documented finite-file adapter",
+      "Use existing build tools"
+    ],
+    "must_not": [
+      "Change pinned dependencies",
+      "Flash hardware",
+      "Commit or publish",
+      "Relax failing tolerances",
+      "Change the preserved double core/oracle or their original contract"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "C99 core and upstream-header oracle",
+    "Repeatable comparison runner",
+    "Results and gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Establish a sample-oriented stretch core before firmware integration.",
+    "primary_claim": "Stock allocator excludes an eight-MiB bank range used by the compiled preparation/voice adapter."
+  },
+  "inputs": [
+    "Pinned public AGPL source",
+    "Deterministic synthetic PCM"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-OWNED-MEMORY.md",
+    "sha256": "c4ec4ea1fb0810bab4efd09c36ed0494788bc697e357ae715223b653d05aaac8",
+    "revision": "1",
+    "approval": {
+      "state": "approved",
+      "reference": "User asked to proceed with Capicola implementation 2026-10-08"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Guarded six-site CPU capacity overlay",
+      "Reserved-bank DSP family",
+      "Native allocator bounds and combined audio comparisons"
+    ],
+    "out": [
+      "Stock scheduler",
+      "CPU menu",
+      "Hardware",
+      "Installable package"
+    ]
+  },
+  "status": "ready",
+  "target": "C99 host and standalone SHARC under DTII 1.16 fixture",
+  "title": "Capicola sample-pool reservation",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/report.json and reserved-bank emulator images",
+    "evidence_level": "target-build",
+    "success_observation": "Native allocation boundary negative controls and combined audio comparisons pass."
+  }
+}

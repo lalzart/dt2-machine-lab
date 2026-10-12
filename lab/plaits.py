@@ -6,6 +6,7 @@ import re
 import struct
 import subprocess
 
+from lab import capicola_layout
 from lab.dsp import assemble, header
 from lab.runtime import OUT, ROOT, SELACHE, STOCK_BLOB
 
@@ -49,17 +50,35 @@ def checked_trio_tables(assembly, source):
     return assembly
 
 
-def compile_target(integrated=False, *, variant="reference", output=None, family="va"):
+def compile_target(
+    integrated=False, *, variant="reference", output=None, family="va", layout="legacy"
+):
     """No dependencies edited; inspect actual emitted/linked instruction extents."""
     from sharc_selache import compare_listing, find_elf_section, swap_parcels
 
+    capicola_layout.validate_layout(layout, integrated, family)
     if variant not in ("reference", "main-only", "shared"):
         raise ValueError(f"Unknown Plaits variant: {variant}")
     if variant == "shared" and not integrated:
         raise ValueError("Lane sharing requires the firmware wrapper")
-    if family not in ("va", "trio", "bank") or (
-        family != "va" and variant != "reference"
-    ):
+    if family not in (
+        "va",
+        "trio",
+        "bank",
+        "controls",
+        "integration",
+        "capicola",
+        "capicola-prep",
+        "capicola-owned",
+        "capicola-auto",
+        "capicola-controls",
+        "capicola-selection",
+        "capicola-feedback",
+        "capicola-live-feedback",
+        "capicola-stretch",
+        "capicola-stretch-multi",
+        "capicola-stretch-live",
+    ) or (family != "va" and variant != "reference"):
         raise ValueError("Unknown family or unsupported multi-model optimization")
     out = output or OUT
     out.mkdir(parents=True, exist_ok=True)
@@ -79,6 +98,96 @@ def compile_target(integrated=False, *, variant="reference", output=None, family
                 "selcc",
             ]
         )
+    if family in (
+        "controls",
+        "integration",
+        "capicola",
+        "capicola-prep",
+        "capicola-owned",
+        "capicola-auto",
+        "capicola-controls",
+        "capicola-selection",
+        "capicola-feedback",
+        "capicola-live-feedback",
+        "capicola-stretch",
+        "capicola-stretch-multi",
+        "capicola-stretch-live",
+    ):
+        from lab.plaits_controls import validate_sources
+
+        validate_sources()
+    if family in (
+        "integration",
+        "capicola",
+        "capicola-prep",
+        "capicola-owned",
+        "capicola-auto",
+        "capicola-controls",
+        "capicola-selection",
+        "capicola-feedback",
+        "capicola-live-feedback",
+        "capicola-stretch",
+        "capicola-stretch-multi",
+        "capicola-stretch-live",
+    ):
+        from lab.plaits_integration import validate_sources as validate_integration
+
+        validate_integration()
+    if family in (
+        "capicola",
+        "capicola-prep",
+        "capicola-owned",
+        "capicola-auto",
+        "capicola-controls",
+        "capicola-selection",
+        "capicola-feedback",
+        "capicola-live-feedback",
+        "capicola-stretch",
+        "capicola-stretch-multi",
+        "capicola-stretch-live",
+    ):
+        contract = (
+            "stretch-live-contract"
+            if family == "capicola-stretch-live"
+            else "stretch-multi-contract"
+            if family == "capicola-stretch-multi"
+            else "integration-contract"
+        )
+        lock = json.loads(
+            (
+                ROOT / "machines/capicola" / contract / "source-equivalence.json"
+            ).read_text()
+        )
+        for relative, digest in lock["integration_baseline_files"].items():
+            # These CPU-only tools are not inputs to the SHARC compiler. Their
+            # newer Flex experiments must not block a frozen DSP comparison.
+            # CPU overlays separately enforce exact MAIN image SHA/byte guards.
+            if relative in (
+                "lab/flex_native.py",
+                "lab/flex_native_build.py",
+                "lab/plaits_menu.py",
+            ):
+                continue
+            if hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() != digest:
+                raise ValueError(f"Capicola integration baseline drift: {relative}")
+    if (
+        family
+        in (
+            "capicola",
+            "capicola-prep",
+            "capicola-owned",
+            "capicola-auto",
+            "capicola-controls",
+            "capicola-selection",
+            "capicola-feedback",
+            "capicola-live-feedback",
+            "capicola-stretch",
+            "capicola-stretch-multi",
+            "capicola-stretch-live",
+        )
+        and not integrated
+    ):
+        raise ValueError("Capicola family requires the combined voice wrapper")
     machine = ROOT / ("machines/plaits-" + family)
     source = machine / ("machine.c" if integrated else "target.c")
     if variant != "reference":
@@ -103,15 +212,48 @@ def compile_target(integrated=False, *, variant="reference", output=None, family
         ]
     )
     assembly = (out / "kernel-original.s").read_text()
-    if family in ("trio", "bank"):
+    if family in (
+        "trio",
+        "bank",
+        "controls",
+        "integration",
+        "capicola",
+        "capicola-prep",
+        "capicola-owned",
+        "capicola-auto",
+        "capicola-controls",
+        "capicola-selection",
+        "capicola-feedback",
+        "capicola-live-feedback",
+        "capicola-stretch",
+        "capicola-stretch-multi",
+        "capicola-stretch-live",
+    ):
         assembly = checked_trio_tables(assembly, ROOT / "machines/plaits-trio/tables.h")
-    if family == "bank":
-        assembly = checked_trio_tables(assembly, machine / "tables.h")
+    if family in (
+        "bank",
+        "controls",
+        "integration",
+        "capicola",
+        "capicola-prep",
+        "capicola-owned",
+        "capicola-auto",
+        "capicola-controls",
+        "capicola-selection",
+        "capicola-feedback",
+        "capicola-live-feedback",
+        "capicola-stretch",
+        "capicola-stretch-multi",
+        "capicola-stretch-live",
+    ):
+        assembly = checked_trio_tables(assembly, ROOT / "machines/plaits-bank/tables.h")
     # Full-width RFRAME is not emitted correctly by the current assembler.
     # Only expand the known problematic stand-alone integer ADD instructions.
     assembly = re.sub(
         r"(?m)^(\s*R\d+ = R\d+ \+ R\d+;)$", r".NOCOMPRESS;\n\1\n.COMPRESS;", assembly
     )
+    if layout == "reserved-state":
+        assembly = capicola_layout.relocate_assembly(assembly, "kernel", family=family)
     (out / "kernel.s").write_text(assembly)
     wrapper = ".SECTION/PM seg_pmco;\n.GLOBAL start;\n"
     if integrated:
@@ -133,6 +275,29 @@ def compile_target(integrated=False, *, variant="reference", output=None, family
         )
         wrapper += " ".join(f"L{i}=0;" for i in range(8))
         wrapper += "\nI7=0x200dff00; I6=I7; R4=0x200e0000;\nJUMP kernel. (DB);\nDM(I7,M7)=0; DM(I7,M7)=done-1;\ndone: RTS;\n"
+    if family in (
+        "capicola-auto",
+        "capicola-controls",
+        "capicola-selection",
+        "capicola-feedback",
+        "capicola-live-feedback",
+        "capicola-stretch",
+        "capicola-stretch-multi",
+        "capicola-stretch-live",
+    ):
+        from lab.capicola_automatic import assembly_wrappers
+
+        wrapper += assembly_wrappers()
+    if family in (
+        "capicola-stretch",
+        "capicola-stretch-multi",
+        "capicola-stretch-live",
+    ):
+        from lab.capicola_stretch import assembly_wrapper
+
+        wrapper += assembly_wrapper()
+    if layout == "reserved-state":
+        wrapper = capicola_layout.relocate_assembly(wrapper, "wrapper")
     (out / "wrapper.s").write_text(wrapper)
     (out / "memory.ldf").write_text("""ARCHITECTURE(ADSP-21569)
 MEMORY {
@@ -146,6 +311,14 @@ PROCESSOR core0 { OUTPUT($COMMAND_LINE_OUTPUT_FILE) ENTRY(start)
  }
 }
 """)
+    if layout == "reserved-state":
+        linker = out / "memory.ldf"
+        linker.write_text(
+            linker.read_text().replace(
+                "START(0x200c0000) END(0x200cffff)",
+                f"START({capicola_layout.STATE_BASE:#x}) END({capicola_layout.STATE_BASE + 0xFFFF:#x})",
+            )
+        )
     for stem in ("wrapper", "kernel"):
         command(
             [
@@ -179,13 +352,17 @@ PROCESSOR core0 { OUTPUT($COMMAND_LINE_OUTPUT_FILE) ENTRY(start)
     return code, data
 
 
-def build_blob(integrated=False, *, variant="reference", output=None, family="va"):
+def build_blob(
+    integrated=False, *, variant="reference", output=None, family="va", layout="legacy"
+):
     import sharcldr
 
     from lab.runtime import PROFILE
 
     out = output or OUT
-    code, data = compile_target(integrated, variant=variant, output=out, family=family)
+    code, data = compile_target(
+        integrated, variant=variant, output=out, family=family, layout=layout
+    )
     raw = bytearray(STOCK_BLOB.read_bytes())
     if hashlib.sha256(raw).hexdigest() != PROFILE["stock_blob_sha256"]:
         raise ValueError("Unexpected stock DSP image")
@@ -194,6 +371,10 @@ def build_blob(integrated=False, *, variant="reference", output=None, family="va
     for lo, hi in zip(memory._segments[0], memory._segments[1], strict=True):
         if lo < 0x200F2000 and hi > 0x20080000:
             raise ValueError("Experimental arena overlaps a stock loader segment")
+    if layout == "reserved-state":
+        capicola_layout.check_stock_disjoint(
+            zip(memory._segments[0], memory._segments[1], strict=True)
+        )
     if integrated:
         hook = sharcldr.offset_for_address(blocks, 0x1C4F15)
         displaced = bytes(raw[hook : hook + 6])
@@ -211,9 +392,35 @@ def build_blob(integrated=False, *, variant="reference", output=None, family="va
         expected = assemble(".section/pm seg_pmco;\nI3=0x2567c0;\n").boot_bytes
         if raw[offset : offset + 6] != expected:
             raise ValueError("Unexpected remap pointer bytes")
+        remap_address = (
+            capicola_layout.address(0x200F0000)
+            if layout == "reserved-state"
+            else 0x200F0000
+        )
         raw[offset : offset + 6] = assemble(
-            ".section/pm seg_pmco;\nI3=0x200f0000;\n"
+            f".section/pm seg_pmco;\nI3={remap_address:#x};\n"
         ).boot_bytes
+    if family in (
+        "capicola-auto",
+        "capicola-controls",
+        "capicola-selection",
+        "capicola-feedback",
+        "capicola-live-feedback",
+        "capicola-stretch",
+        "capicola-stretch-multi",
+        "capicola-stretch-live",
+    ):
+        from lab.capicola_automatic import patch_hooks
+
+        code = patch_hooks(raw, blocks, code, out)
+    if family in (
+        "capicola-stretch",
+        "capicola-stretch-multi",
+        "capicola-stretch-live",
+    ):
+        from lab.capicola_stretch import patch_hook
+
+        patch_hook(raw, blocks, out)
     import struct
 
     arena = bytearray(0x72000)
@@ -221,13 +428,46 @@ def build_blob(integrated=False, *, variant="reference", output=None, family="va
         raise ValueError("Plaits placement overflow")
     arena[: len(code)] = code
     arena[0x40000 : 0x40000 + len(data)] = data
-    arena[0x70000:0x70020] = struct.pack("<8I", 0, 1, 2, 3, 4, 0, 5, 5)
+    remap = (0, 1, 2, 3, 4, 0, 5, 5) + (
+        (5,)
+        if family
+        in (
+            "capicola",
+            "capicola-prep",
+            "capicola-owned",
+            "capicola-auto",
+            "capicola-controls",
+            "capicola-selection",
+            "capicola-feedback",
+            "capicola-live-feedback",
+        )
+        else ()
+    )
+    arena[0x70000 : 0x70000 + len(remap) * 4] = struct.pack(
+        "<" + str(len(remap)) + "I", *remap
+    )
     split = blocks[-1]["offset"]
     if blocks[-1]["flags"] != ["bit0", "FINAL"] or blocks[-1]["byte_count"]:
         raise ValueError("Unexpected final loader block")
     result = (
         bytes(raw[:split]) + header(0x20080000, len(arena)) + arena + bytes(raw[split:])
     )
+    if layout == "reserved-state":
+        placement = capicola_layout.manifest(len(code), len(data), family=family)
+        state = bytearray(capicola_layout.STATE_BYTES)
+        state[: len(data)] = data
+        state[0x30000 : 0x30000 + len(remap) * 4] = struct.pack(
+            "<" + str(len(remap)) + "I", *remap
+        )
+        result = (
+            bytes(raw[:split])
+            + header(capicola_layout.CODE_BASE, len(code))
+            + code
+            + header(capicola_layout.STATE_BASE, len(state))
+            + state
+            + bytes(raw[split:])
+        )
+        (out / "memory-layout.json").write_text(json.dumps(placement, indent=2) + "\n")
     parsed = sharcldr.parse_blocks(result)
     if parsed[-1]["payload_offset"] != len(result):
         raise ValueError("Bad candidate loader stream")
@@ -237,7 +477,9 @@ def build_blob(integrated=False, *, variant="reference", output=None, family="va
             {
                 "code_bytes": len(code),
                 "data_bytes": len(data),
-                "arena_bytes": len(arena),
+                "arena_bytes": len(code) + len(state)
+                if layout == "reserved-state"
+                else len(arena),
                 "compiler_sha256": hashlib.sha256(COMPILER.read_bytes()).hexdigest(),
                 "integrated": integrated,
                 "variant": variant,
@@ -246,9 +488,27 @@ def build_blob(integrated=False, *, variant="reference", output=None, family="va
                     "va": (768 if integrated else 252),
                     "trio": (696 if integrated else 256),
                     "bank": (704 if integrated else 260),
+                    "controls": (704 if integrated else 260),
+                    "integration": (704 if integrated else 260),
+                    "capicola": 872,
+                    "capicola-prep": 872,
+                    "capicola-owned": 872,
+                    "capicola-auto": 872,
+                    "capicola-controls": 872,
+                    "capicola-selection": 872,
+                    "capicola-feedback": 872,
+                    "capicola-live-feedback": 872,
+                    "capicola-stretch": 4928,
+                    "capicola-stretch-multi": 4928,
+                    "capicola-stretch-live": 9536,
                 }[family],
                 "render_cache_bytes": 1036 if variant == "shared" else 0,
-                "placement": "emulator-only; stock loader disjointness is not runtime memory ownership",
+                "placement": (
+                    "working data in reserved sample pool; L2 code ownership and hardware timing remain unverified"
+                    if layout == "reserved-state"
+                    else "emulator-only; stock loader disjointness is not runtime memory ownership"
+                ),
+                **({"layout": layout} if layout != "legacy" else {}),
             },
             indent=2,
         )
@@ -259,6 +519,30 @@ def build_blob(integrated=False, *, variant="reference", output=None, family="va
 
 def build_cpu(*, family="va"):
     """A named type-7 CPU candidate. The current replay capture predates this label."""
+    if family == "integration":
+        from lab.plaits_integration import patch_cpu as integrate
+        from lab.plaits_integration import validate_sources as validate_integration
+
+        validate_integration()
+        baseline = build_cpu(family="controls")
+        data, integration = integrate(
+            (OUT / "PLAITS_MAIN_OS.bin").read_bytes(),
+            json.loads((OUT / "macro-cpu-patches.json").read_text()),
+        )
+        (OUT / "PLAITS_R2_MAIN_OS.bin").write_bytes(
+            (OUT / "PLAITS_MAIN_OS.bin").read_bytes()
+        )
+        (OUT / "PLAITS_MAIN_OS.bin").write_bytes(data)
+        (OUT / "integration-cpu-patches.json").write_text(
+            json.dumps(integration, indent=2) + "\n"
+        )
+        return {
+            **baseline,
+            "sha256": integration["sha256"],
+            "family": "integration",
+            "baseline_sha256": baseline["sha256"],
+            "writes": baseline["writes"] + len(integration["writes"]),
+        }
     import machinebuild
     import machinepatch
     import machineprofile
@@ -268,12 +552,14 @@ def build_cpu(*, family="va"):
     digest, profile = machineprofile.profile_for(STOCK_MAIN)
     if digest != PROFILE["stock_main_sha256"] or profile is not machineprofile.DT2_116:
         raise ValueError("Unexpected CPU firmware")
-    if family not in ("va", "trio", "bank"):
+    if family not in ("va", "trio", "bank", "controls"):
         raise ValueError("Unknown CPU machine family")
     name, short = ("P-VA", "PVA") if family == "va" else ("PLAITS", "PLT")
     fields = PROFILE["cpu"]["descriptor_fields"]
-    if family in ("trio", "bank"):
+    if family in ("trio", "bank", "controls"):
         fields = (0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0, 0xFE, 0x0A)
+    if family == "controls":
+        fields = (0xF8, 275, 0xFA, 276, 277, 0xFD, 0, 0xFE, 0x0A)
     spec = machinepatch.MachineSpec(
         name=name,
         short=short,
@@ -285,7 +571,7 @@ def build_cpu(*, family="va"):
     writes, data = machinebuild.plan_and_verify(
         STOCK_MAIN, profile, spec, machinepatch.PARTS
     )
-    if family in ("trio", "bank"):
+    if family in ("trio", "bank", "controls"):
         # Dormant Manual Slice C row: no exposed stock descriptor uses 0xFA.
         # Keep shared PLAY/SAMP/SLICE metadata unchanged; only MODEL is dedicated.
         data = bytearray(data)
@@ -319,10 +605,27 @@ def build_cpu(*, family="va"):
             if data[off : off + len(before)] != before:
                 raise ValueError(f"MODEL metadata guard failed at {address:#x}")
             data[off : off + len(after)] = after
+    if family == "controls":
+        from lab.plaits_controls import patch_cpu, validate_sources
+
+        validate_sources()
+        data, metadata = patch_cpu(STOCK_MAIN.read_bytes(), data)
+        from lab.coldfire import audit_image, fix_rank
+
+        data, correction = fix_rank(data)
+        audit = audit_image(
+            STOCK_MAIN.read_bytes(), data, writes, extra, metadata, correction
+        )
+        (OUT / "coldfire-audit.json").write_text(json.dumps(audit, indent=2) + "\n")
+        (OUT / "macro-cpu-patches.json").write_text(
+            json.dumps(metadata, indent=2) + "\n"
+        )
     (OUT / "PLAITS_MAIN_OS.bin").write_bytes(data)
     return {
         "sha256": hashlib.sha256(data).hexdigest(),
-        "writes": len(writes) + (6 if family in ("trio", "bank") else 0),
+        "writes": len(writes)
+        + (6 if family in ("trio", "bank", "controls") else 0)
+        + (len(metadata["writes"]) if family == "controls" else 0),
         "machine_id": 7,
         "name": name,
         "scope": "Image construction; UI and control transport require a separate capture",

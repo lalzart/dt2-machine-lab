@@ -1,0 +1,73 @@
+{
+  "acceptance_tests": [
+    "Host key parity across budgets and strides",
+    "Cancellation and unpublished-bank guards",
+    "Compiled SHARC worker comparison",
+    "SINE replay"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement the documented finite-file adapter",
+      "Use existing build tools"
+    ],
+    "must_not": [
+      "Change pinned dependencies",
+      "Flash hardware",
+      "Commit or publish",
+      "Relax failing tolerances",
+      "Change the preserved double core/oracle or their original contract"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "C99 core and upstream-header oracle",
+    "Repeatable comparison runner",
+    "Results and gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Establish a sample-oriented stretch core before firmware integration.",
+    "primary_claim": "Native bounded preparation replaces host analysis for immutable PCM with explicit bank lifecycle."
+  },
+  "inputs": [
+    "Pinned public AGPL source",
+    "Deterministic synthetic PCM"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-NATIVE-PREP.md",
+    "sha256": "d2f8e9d7e1e1e9bd8716eb262e1904cc34a3c243928c756c1d72e1fad5790707",
+    "revision": "1",
+    "approval": {
+      "state": "approved",
+      "reference": "User requested proceed with integration 2026-10-08"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Bounded native int16 two-pass bank worker",
+      "Host lifecycle and native target comparisons",
+      "Combined worker service and voice-hook tests with native-analyzed banks"
+    ],
+    "out": [
+      "CPU menu",
+      "Stock scheduler and allocator",
+      "Hardware",
+      "Installable package"
+    ]
+  },
+  "status": "ready",
+  "target": "C99 host and standalone SHARC under DTII 1.16 fixture",
+  "title": "Capicola native preparation worker",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/report.json and compiled worker",
+    "evidence_level": "target-build",
+    "success_observation": "Host key parity, lifecycle guards and native worker comparisons pass."
+  }
+}

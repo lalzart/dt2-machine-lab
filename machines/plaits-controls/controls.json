@@ -1,0 +1,87 @@
+{
+  "machine_type": 7,
+  "model_names": [
+    "VA",
+    "FM",
+    "BD",
+    "WS",
+    "ADD",
+    "GRAIN"
+  ],
+  "latch": "model, pitch, length, level latch on trigger; harmonics/timbre/morph update every adapter call",
+  "note": {
+    "wire": "0x02",
+    "dm": "0x2558de",
+    "scale": 256
+  },
+  "tune": {
+    "encoder": "A",
+    "wire": "0xda",
+    "dm": "0x2559b6",
+    "scale": 256,
+    "offset_after_sum": -55
+  },
+  "harmonics": {
+    "encoder": "B",
+    "wire": "0xdc",
+    "dm": "0x2559b8",
+    "scale": 32512,
+    "min_raw": 0,
+    "max_raw": 32512,
+    "default_raw": 16384,
+    "param_code": 275,
+    "label": "HARM"
+  },
+  "model": {
+    "encoder": "C",
+    "wire": "0xde",
+    "dm": "0x2559ba",
+    "scale": 256,
+    "param_code": 250,
+    "max_raw": 1280,
+    "label": "MODEL"
+  },
+  "timbre": {
+    "encoder": "D",
+    "wire": "0xe0",
+    "dm": "0x2559bc",
+    "scale": 32512,
+    "min_raw": 0,
+    "max_raw": 32512,
+    "default_raw": 16384,
+    "param_code": 276,
+    "label": "TIMB"
+  },
+  "morph": {
+    "encoder": "E",
+    "wire": "0xe6",
+    "dm": "0x2559c2",
+    "scale": 32512,
+    "min_raw": 0,
+    "max_raw": 32512,
+    "default_raw": 16384,
+    "param_code": 277,
+    "label": "MORP"
+  },
+  "length": {
+    "encoder": "F",
+    "wire": "0xe8",
+    "dm": "0x2559c4",
+    "source_samples_numerator": 25,
+    "source_samples_denominator": 32,
+    "min": 960,
+    "max": 48000
+  },
+  "level": {
+    "encoder": "H",
+    "wire": "0xec",
+    "dm": "0x2559c8",
+    "scale": 262144,
+    "max": 0.125
+  },
+  "accent": {
+    "value": 0.8,
+    "note": "fixed default; velocity/accent transport excluded"
+  },
+  "scope": "Dedicated macro metadata and continuous macro adapter; prepared emulator, track 1. Model/pitch/length/level remain trigger-latched. Project reload and physical operation unverified."
+}

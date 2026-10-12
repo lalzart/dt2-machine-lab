@@ -1,0 +1,74 @@
+{
+  "acceptance_tests": [
+    "Twelve-second host reference comparisons",
+    "Capacity guards and shared-reader lifecycle",
+    "Target full sine and dense/long-tail windows",
+    "Existing SINE replay"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement the documented finite-file adapter",
+      "Use existing build tools"
+    ],
+    "must_not": [
+      "Change pinned dependencies",
+      "Flash hardware",
+      "Commit or publish",
+      "Relax failing tolerances",
+      "Change the preserved double core/oracle or their original contract"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "C99 core and upstream-header oracle",
+    "Repeatable comparison runner",
+    "Results and gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Establish a sample-oriented stretch core before firmware integration.",
+    "primary_claim": "Twelve-second normalized mono input fits a bounded measured shared bank; exact transport and PCM tolerance preserved."
+  },
+  "inputs": [
+    "Pinned public AGPL source",
+    "Deterministic synthetic PCM"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-TWELVE-SECONDS.md",
+    "sha256": "92693b3cb9865b3a517ad191e9e7bcee38d53cbf4719f6378e9013e9840ae472",
+    "revision": "2",
+    "approval": {
+      "state": "approved",
+      "reference": "User explicitly selected final 12-second limit, 2026-10-07"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Caller-owned shared bank and generation-invalidated readers",
+      "Twelve-second count/load and bounded duration arithmetic",
+      "Host and standalone target comparisons"
+    ],
+    "out": [
+      "Firmware integration",
+      "Hardware",
+      "Publication",
+      "Stereo",
+      "Looping"
+    ]
+  },
+  "status": "ready",
+  "target": "C99 host and standalone SHARC under DTII 1.16 fixture",
+  "title": "Capicola twelve-second shared bank",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/report.json",
+    "evidence_level": "host-signal",
+    "success_observation": "Long and dense host input loads without truncation; shared readers and target comparisons pass frozen thresholds."
+  }
+}

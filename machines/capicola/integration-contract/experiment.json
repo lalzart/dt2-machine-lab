@@ -1,0 +1,159 @@
+{
+  "artifact_retention": {
+    "policy": "reproducible-only",
+    "location": "out/runs/<unique>"
+  },
+  "comparator_condition_id": "oracle",
+  "conditions": [
+    {
+      "id": "oracle",
+      "purpose": "Original Analyzer/SparseLine with documented finite transport",
+      "events": [
+        {
+          "frame": 0,
+          "event": "load/start",
+          "pitch": [
+            0.5,
+            1,
+            2
+          ],
+          "advance": [
+            0.5,
+            1,
+            2
+          ],
+          "leash": [
+            16,
+            128
+          ]
+        }
+      ]
+    },
+    {
+      "id": "candidate",
+      "purpose": "C99 source-equivalence candidate",
+      "events": [
+        {
+          "frame": 0,
+          "event": "load/start",
+          "pitch": [
+            0.5,
+            1,
+            2
+          ],
+          "advance": [
+            0.5,
+            1,
+            2
+          ],
+          "leash": [
+            16,
+            128
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wrong-pitch",
+      "purpose": "Falsifying reference with deliberately wrong pitch",
+      "events": [
+        {
+          "frame": 0,
+          "event": "load/start",
+          "pitch": [
+            0.5,
+            1,
+            2
+          ],
+          "advance": [
+            0.5,
+            1,
+            2
+          ],
+          "leash": [
+            16,
+            128
+          ]
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "name": "report.json",
+      "kind": "metrics"
+    },
+    {
+      "name": "source-lock.json",
+      "kind": "hashes"
+    },
+    {
+      "name": "case-*.f32",
+      "kind": "raw PCM"
+    },
+    {
+      "name": "case-*.wav",
+      "kind": "audition PCM"
+    }
+  ],
+  "sample_rate_hz": 48000,
+  "schema_version": "sonic-research-lab-experiment-v1",
+  "seed": 1,
+  "status": "ready",
+  "supported_block_frames": [
+    1,
+    32,
+    64,
+    127
+  ],
+  "timeline_convention": "Zero-based frames; load then start at output frame zero; stop at ceil(N/advance).",
+  "title": "Twelve-second capacity",
+  "tolerances": {
+    "host_max": 0.0001,
+    "target_max": 0.0001,
+    "target_rms": 1e-05,
+    "pitch_hz": 2,
+    "peak_slack": 1e-06,
+    "host_rms": 1e-05,
+    "keyframe_time": 5.960464477539063e-08
+  },
+  "input_frames": 576000,
+  "pitches": [
+    0.5,
+    1,
+    2
+  ],
+  "advances": [
+    0.5,
+    1,
+    2
+  ],
+  "leashes": [
+    16,
+    128
+  ],
+  "recipes": {
+    "silence": "0",
+    "impulse": "0.75 at frame 552000 else zero",
+    "sine": "0.5*sin(2*pi*220*n/48000)",
+    "two-tone": "0.25*(sin(2*pi*220*n/48000)+sin(2*pi*331*n/48000))",
+    "noise": "xorshift32 seed 1; 0.5*((r>>8)/8388608-1)",
+    "drums": "every 12000 frames: 0.7*sin(2*pi*60*t)*exp(-30*t), t=(n%12000)/48000"
+  },
+  "decimal_rates": [
+    [
+      1,
+      0.7
+    ],
+    [
+      0.7,
+      1
+    ],
+    [
+      1.1,
+      0.7
+    ]
+  ],
+  "oracle_adaptation": "Scratch copy of original core with only capacities expanded",
+  "capacity": 576004
+}

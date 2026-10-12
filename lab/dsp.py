@@ -150,7 +150,7 @@ def build_route_blob(sine=False, controls=False):
 
 
 class Dsp:
-    def __init__(self, blob=None):
+    def __init__(self, blob=None, *, library=None):
         import sharc_harness as h
         import sharc_transpile_run as native
         import sharcldr
@@ -168,7 +168,7 @@ class Dsp:
         at += 4 + size
         if blob is not None:
             image = native.pack_image(sharcldr.LoadedMemory.from_stream(blob))
-        self.core = native.NativeCore(image, str(LIB))
+        self.core = native.NativeCore(image, str(library or LIB))
         rc = self.core._lib.sharc_native_import_state(
             self.core._handle, state, len(state)
         )

@@ -6,11 +6,12 @@ from pathlib import Path
 from lab.project import require
 
 
-def read_frames(path):
+def read_frames(path, *, max_frames=4096):
+    require(1 <= max_frames <= 32768, "DTFR allocation bound outside 1..32768")
     raw = Path(path).read_bytes()
     require(len(raw) >= 12 and raw[:8] == b"DTFR\x01\0\0\0", "Not a DTFR v1 capture")
     count = struct.unpack_from("<I", raw, 8)[0]
-    require(1 <= count <= 4096, "DTFR frame count outside 1..4096")
+    require(1 <= count <= max_frames, f"DTFR frame count outside 1..{max_frames}")
     frames, offset = [], 12
     for _ in range(count):
         require(offset + 4 <= len(raw), "Truncated DTFR frame header")

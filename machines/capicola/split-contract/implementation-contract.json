@@ -1,0 +1,74 @@
+{
+  "acceptance_tests": [
+    "Exact host keyframes/PCM",
+    "State and bounds checks",
+    "Target tolerance if executable"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement the documented finite-file adapter",
+      "Use existing build tools"
+    ],
+    "must_not": [
+      "Change pinned dependencies",
+      "Flash hardware",
+      "Commit or publish",
+      "Relax failing tolerances",
+      "Change the preserved double core/oracle or their original contract"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "C99 core and upstream-header oracle",
+    "Repeatable comparison runner",
+    "Results and gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Establish a sample-oriented stretch core before firmware integration.",
+    "primary_claim": "Split timestamps remove absolute float drift while preserving baseline within max 1e-4 RMS 1e-5."
+  },
+  "inputs": [
+    "Pinned public AGPL source",
+    "Deterministic synthetic PCM"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-SPLIT-TIME.md",
+    "sha256": "b41aec8d58ac01d4b24b77cd74285b33fb408819501f2347147b4005a6e3c9ea",
+    "revision": "1",
+    "approval": {
+      "state": "approved",
+      "reference": "User continuation after the timestamp precision blocker report, 2026-10-07"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Mono finite-sample host renderer",
+      "C99 translation",
+      "Standalone SHARC feasibility",
+      "Split timestamp representation and full standalone target comparisons"
+    ],
+    "out": [
+      "Firmware integration",
+      "Hardware",
+      "Publication",
+      "Stereo",
+      "Looping"
+    ]
+  },
+  "status": "ready",
+  "target": "C99 host and standalone SHARC under DTII 1.16 fixture",
+  "title": "Capicola split timestamp SHARC experiment",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/report.json",
+    "evidence_level": "host-signal",
+    "success_observation": "Exact host keyframes and PCM, bounded output and correct duration with negative controls."
+  }
+}

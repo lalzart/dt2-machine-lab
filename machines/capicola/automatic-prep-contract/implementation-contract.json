@@ -1,0 +1,72 @@
+{
+  "acceptance_tests": [
+    "Exact host/native prepared keys",
+    "Page, header, reset and guard-copy invalidation",
+    "Frame-driven bounded preparation and publication",
+    "Stock/Plaits parity, unit suite and SINE replay"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement the documented finite-file adapter",
+      "Use existing build tools"
+    ],
+    "must_not": [
+      "Change pinned dependencies",
+      "Flash hardware",
+      "Commit or publish",
+      "Relax failing tolerances",
+      "Change the preserved double core/oracle or their original contract"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Guarded native CPU/DSP integration",
+    "Repeatable capture and signal comparison runners",
+    "Results and remaining integration gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Integrate the twelve-second mono stretch core with the existing OS1.16 sample path while preserving original machines.",
+    "primary_claim": "Stock frame completion drives bounded preparation, and sample transfer events invalidate overlapping source lifetimes."
+  },
+  "inputs": [
+    "Pinned public AGPL source",
+    "Deterministic synthetic PCM"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-AUTOMATIC-PREP.md",
+    "sha256": "b6d9912f3ea7f8f4173b28bd0f87eb605b7f0486f9f2207c8df6782eee84823f",
+    "revision": "1",
+    "approval": {
+      "state": "approved",
+      "reference": "User asked to proceed with Capicola implementation 2026-10-08"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Guarded block completion and sample transfer hooks",
+      "Native source lifecycle and automatic bank preparation",
+      "Native frame, transfer and render comparisons"
+    ],
+    "out": [
+      "Hardware deadline proof",
+      "Installable package",
+      "CPU menu in this validation slice"
+    ]
+  },
+  "status": "ready",
+  "target": "C99 host and standalone SHARC under DTII 1.16 fixture",
+  "title": "Capicola automatic native preparation",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/report.json and reserved-bank emulator images",
+    "evidence_level": "target-build",
+    "success_observation": "Native audio blocks publish exact prepared keys; overlap and metadata changes invalidate stale banks; later triggers match the host oracle."
+  }
+}
