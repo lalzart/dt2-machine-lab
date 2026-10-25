@@ -5,6 +5,7 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 # lab.runtime installs the tooling path before these imports.
 # isort: off
@@ -55,8 +56,16 @@ class Type7aRuntimeTests(unittest.TestCase):
                 self.assertEqual(old.stopped, "unsupported Type7a predicate")
 
     def test_refuses_pinned_tree_and_source_drift(self):
-        with self.assertRaisesRegex(ValueError, "Refuse pinned"):
-            apply(REPO)
+        # Even a broken path guard must not let this negative test patch the
+        # real dependency. Cover direct and symlink aliases before any command.
+        with patch("lab.type7a_runtime.subprocess.run", side_effect=AssertionError("pinned patch invoked")):
+            with self.assertRaisesRegex(ValueError, "Refuse pinned"):
+                apply(REPO)
+            with tempfile.TemporaryDirectory() as directory:
+                alias = Path(directory) / "pinned-alias"
+                alias.symlink_to(REPO.resolve(), target_is_directory=True)
+                with self.assertRaisesRegex(ValueError, "Refuse pinned"):
+                    apply(alias)
         root = Path(self.temp.name)
         with self.assertRaisesRegex(ValueError, "source drift"):
             apply(root)  # Already patched: never apply a second time.

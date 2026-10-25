@@ -34,7 +34,7 @@ def apply(directory):
     """Patch one known file in an explicit copy, never inside .deps."""
     c = contract()
     directory = Path(directory).resolve()
-    require(not directory.is_relative_to(ROOT / ".deps"), "Refuse pinned edit")
+    require(not directory.is_relative_to((ROOT / ".deps").resolve()), "Refuse pinned edit")
     source = directory / c["source_equivalence"]["source"]
     require(sha256(source) == c["source_equivalence"]["sha256"], "Type7a source drift")
     subprocess.run(
