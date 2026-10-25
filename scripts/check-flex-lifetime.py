@@ -33,7 +33,13 @@ p.add_argument(
     default=ROOT.parent
     / "Digitect firmware research project/work/digikit/snapshots/dt2-1.16/running.snap",
 )
+p.add_argument("--shared-save", action="store_true")
+p.add_argument("--cpu-extension", action="store_true", help="Prepared-fixture component test; cold reset is checked separately")
+p.add_argument("--package", type=Path, help="Check the exact CPU image from a local extension package")
 args = p.parse_args()
+if args.package:
+    args.cpu_extension = args.managed_sources = True
+require(not args.cpu_extension or args.managed_sources, "Extension uses managed sources")
 if args.managed_sources:
     args.compact_resources = args.separate_source = True
 require(
@@ -121,19 +127,45 @@ heap_trace = None
 try:
     fw.call(0x40154358, [])
     check.check_mount(fw, entries[0]["ref"])
+    if args.cpu_extension:
+        from lab.cpu_extension import build_cpu
+
+        def patch_cpu(stock, **options):
+            if args.package:
+                from lab.cpu_fixture import load_package
+
+                image, combined, _manifest = load_package(args.package)
+            else:
+                image, combined = build_cpu(stock)
+            return image, dict(combined, locations=combined["flex"]["locations"])
+
     image, meta = patch_cpu(
         STOCK_MAIN.read_bytes(),
         compact_resources=args.compact_resources,
         separate_source=args.separate_source,
         memory_accounting=args.separate_source,
         managed_sources=args.managed_sources,
+        shared_save=args.shared_save,
     )
     report["compact_resources"] = args.compact_resources
     loc = meta["locations"]
-    for w in meta["writes"]:
-        old = bytes.fromhex(w["before"])
-        require(fw.read(w["address"], len(old)) == old, "Patch guard")
-        fw.write(w["address"], bytes.fromhex(w["after"]))
+    if args.cpu_extension:
+        from lab.cpu_fixture import install as install_cpu
+
+        install_cpu(fw.write, image, meta, read=fw.read)
+    else:
+        for w in meta["writes"]:
+            old = bytes.fromhex(w["before"])
+            require(fw.read(w["address"], len(old)) == old, "Patch guard")
+            fw.write(w["address"], bytes.fromhex(w["after"]))
+    if args.cpu_extension:
+        # Both components inhabit this actual image. Exercise Arp initialization
+        # against the same native heap as Flex before its lifecycle scenario.
+        fw.call(meta['arp']['locations']['ensure'], [])
+        arp_state = fw.u32(meta['arp']['locations']['pointer'])
+        require(arp_state != 0, 'Combined Arp native initialization failed')
+        report['cpu_extension'] = dict(main_sha256=meta['sha256'], arp_state=arp_state,
+                                       reservation=meta['reservation'])
     if args.separate_source:
         accounting_entry = loc["memory_snapshot"]
         accounting = dict(
@@ -218,7 +250,7 @@ try:
     read_parts = [
         w
         for w in meta["writes"]
-        if w["label"]
+        if w["label"].split("/")[-1]
         in (
             ("resource_dispatch", "resource_dispatch_1", "resource_dispatch_2")
             if args.compact_resources

@@ -1,0 +1,160 @@
+{
+  "advances": [
+    0.0009765625,
+    0.02125,
+    0.5,
+    1,
+    2,
+    16
+  ],
+  "artifact_retention": {
+    "location": "out/runs/<unique>",
+    "policy": "reproducible-only"
+  },
+  "capacity": 576004,
+  "combined_fixture": "Preserved integration runner two-tone 8192 frames; normalized quantization and duplicated PCM as defined there.",
+  "comparator_condition_id": "original-granule",
+  "conditions": [
+    {
+      "events": [
+        {
+          "event": "Initialize/preload; seek96000; render144000",
+          "frame": 0
+        }
+      ],
+      "id": "original-granule",
+      "purpose": "Unmodified authoritative Granule, no boundary guard"
+    },
+    {
+      "events": [
+        {
+          "event": "Initialize/preload; seek96000; render144000",
+          "frame": 0
+        }
+      ],
+      "id": "quality",
+      "purpose": "Proposed adaptive policy"
+    },
+    {
+      "events": [
+        {
+          "event": "Initialize/preload; seek96000; render144000",
+          "frame": 0
+        }
+      ],
+      "id": "old-capped",
+      "purpose": "Causal negative: original20ms ceiling"
+    }
+  ],
+  "decimal_rates": [
+    [
+      1,
+      0.7
+    ],
+    [
+      0.7,
+      1
+    ],
+    [
+      1.1,
+      0.7
+    ]
+  ],
+  "fixtures": {
+    "advance": [
+      0.425
+    ],
+    "frequencies": [
+      55,
+      220,
+      110
+    ],
+    "input_frames": 576000,
+    "leash": 128,
+    "pitch": [
+      0.5,
+      1,
+      2
+    ],
+    "quantization": "int16; chord ratios1/1.25992105/1.49830708",
+    "render_frames": 144000,
+    "start": 96000
+  },
+  "host_frames": [
+    1,
+    1024,
+    576000
+  ],
+  "input_frames": 576000,
+  "leashes": [
+    16,
+    128
+  ],
+  "normalization": "signed int16 /32768; stride 2 inserts -sample into skipped words",
+  "oracle_adaptation": "Independent composition of the unchanged Python sparse reader; explicit absolute-position mapping and smooth 64-output crossfade.",
+  "outputs": [
+    {
+      "kind": "metrics",
+      "name": "report.json"
+    },
+    {
+      "kind": "equal-gain PCM",
+      "name": "comparison.wav"
+    }
+  ],
+  "pitches": [
+    0.03125,
+    0.5,
+    1,
+    2,
+    32
+  ],
+  "play_modes": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "recipes": {
+    "impulse": "int16 24000 at n//2, otherwise zero",
+    "noise": "Python random.Random(1).randrange(-16000,16001) per frame",
+    "silence": "int16 zero",
+    "sine": "int(8000*sin(2*pi*220*i/48000))",
+    "two-tone": "int(8000*(sin(2*pi*220*i/48000)+sin(2*pi*331*i/48000)))"
+  },
+  "regions": [
+    [
+      0,
+      2400
+    ],
+    [
+      600,
+      1800
+    ],
+    [
+      1200,
+      2400
+    ]
+  ],
+  "sample_rate_hz": 48000,
+  "schema_version": "sonic-research-lab-experiment-v1",
+  "seed": 1,
+  "status": "ready",
+  "supported_block_frames": [
+    32
+  ],
+  "target_frames": 1024,
+  "timeline_convention": "ON while unready falls stock; OFF ready trigger; block4 ON without trigger; block8 retrigger Cap; block12 OFF without trigger; block16 retrigger stock; repeat16tracks",
+  "title": "Capicola adaptive-splice correction",
+  "tolerances": {
+    "host_max": 0.0001,
+    "host_rms": 1e-05,
+    "keyframe_time": 5.960464477539063e-08,
+    "peak_slack": 1e-06,
+    "pitch_hz": 2,
+    "removed_image": 0,
+    "stock_pcm": 0,
+    "target_max": 0.0001,
+    "target_rms": 1e-05
+  }
+}

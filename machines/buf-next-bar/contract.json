@@ -1,0 +1,128 @@
+{
+  "status": "ready",
+  "schema": 1,
+  "work_type": "new-design",
+  "approval": "User architecture alignment brief 2026-10-22: global BUF publication, empty initialization, performance edits and bounded native memory reuse; user 2026-10-23 continuation: native two/four-bar LEN 32/64, bounded capture/publication/cancellation/FREEZE validation",
+  "proposal": "BUF-WORKFLOW-CONTRACT.md",
+  "proposal_sha256": "f44c6448221f5324c22db3863d689e12fe8b17eb052289e1be4fdb3474f0bceb",
+  "target": "OS 1.16 native BUF next-bar emulator; ONESHOT is the initial reader qualification",
+  "working_artifact": "scripts/check-buf-next-bar.py",
+  "evidence_level": "native input/worker/sequence/CPU-DSP execution with modeled peripherals and stock voice PCM",
+  "dependencies": {
+    "digikit": {
+      "patches": [],
+      "revision": "277760aad51b036a4756db051409d4d3b1eeccbc",
+      "url": "https://github.com/m-dwyer/digikit.git"
+    },
+    "native": {
+      "optimized_blocks": false,
+      "profile": "release",
+      "runtime_decode": true,
+      "source_revision": "277760aad51b036a4756db051409d4d3b1eeccbc"
+    },
+    "python": {
+      "major_minor": "3.12",
+      "packages": {
+        "capstone": "5.0.7",
+        "networkx": "3.4.2",
+        "pypcode": "4.0.0",
+        "unicorn": "2.1.4"
+      },
+      "requirements": "DigiKit uv.lock",
+      "uv_lock_sha256": "b693fa89efb8cc826f4a414a555f5e243cdcc0c616cdc48127b7f67226f80450"
+    },
+    "references": {
+      "elekloader": {
+        "reviewed_revision": "793b2e473dc0f0fa1a6d6f14e69a8cc166ce9300",
+        "role": "optional future packaging and UI/control integration; not a build dependency",
+        "url": "https://github.com/irpina/elekloader"
+      }
+    },
+    "schema": 1,
+    "selache": {
+      "build": [
+        "cargo",
+        "build",
+        "--release",
+        "--locked"
+      ],
+      "revision": "2b26d3b75c53063575bc5c820fa0d38879335187",
+      "url": "https://github.com/js216/selache.git"
+    },
+    "unicorn": {
+      "installer": "tools/install-patched-unicorn.sh",
+      "installer_sha256": "124ad9c12264be1eda9853d473856b3782dec69649744884008bb1aa61e5c872",
+      "patches": {
+        "unicorn-2.1.4-count-hook-fast-path.patch": "5f7523267ed0a6324496c7ea665d6ea22d84f30d82199218f66594291adc3e17",
+        "unicorn-2.1.4-m68k-emac-fractional.patch": "8f497c939b7b772a0a00a7d16ad85e8a1a6865b772191ca5ca131fb477824603",
+        "unicorn-2.1.4-m68k-emac-mac-load.patch": "ac128dd6836997de55e0d2ad70d7a2978639168090f552c5634da50fddc70bfe",
+        "unicorn-2.1.4-m68k-flush-flags-sync.patch": "9f76167940573e1e33582f6e4fbef10d95528dfa26090406a9b40a4b45712807",
+        "unicorn-2.1.4-m68k-hook-ccr-sync.patch": "56de71acf2adbd5ca2f448095478e65e49fd79d378aeb5b5e4217d2c90f52f4e"
+      },
+      "revision": "8028ec436f2d9376525352dd38ed9ed6b9f6be10",
+      "url": "https://github.com/unicorn-engine/unicorn.git",
+      "version": "2.1.4"
+    }
+  },
+  "controls": "Global recorder DEST or explicit Sketch BUF; next-bar ARM with R.LEN 16/32/64, automatic publication without assignment; existing FREEZE frontends retained",
+  "state_matrix": "idle/armed/capturing/normalizing/publishing/cancel-wait, reset and stale context",
+  "source_equivalence": "Reuse stock recorder, loader, generation seats and publication; optional worker/commit emitters remove track dependence only in NextBarUI; default emitter bytes preserved",
+  "experiment": {
+    "seed": 0,
+    "conditions": [
+      "native-wrap",
+      "no-wrap",
+      "duplicate",
+      "unsupported-master",
+      "clock-jump",
+      "transport-reset",
+      "next-edge",
+      "stale-context",
+      "cancel",
+      "stock-passthrough",
+      "late-edge",
+      "missed-edge",
+      "normalize",
+      "queue-fail",
+      "worker-fail",
+      "assign-fail",
+      "publishing-cancel",
+      "native-panel",
+      "no-clock-control",
+      "coupled-stock-pcm"
+    ],
+    "comparator": "No native wrap notification must prevent capture/publication",
+    "tolerance": "exact bytes with separately reported native service latency",
+    "retention": "Fresh ignored runs, frozen sources, preserve failures"
+  },
+  "validation": "Short focused instruction tests, empty-buffer selector and performance workflow, bounded release/reuse at integration",
+  "results": "docs/BUF-WORKFLOW-ALIGNMENT.md",
+  "gaps": "Normal 16-step clock only; shorter lengths, LEN 128 and MAX refuse. Existing ten-second capacity remains; overlong captures cancel without replacing accepted PCM. Publication timing is modeled, and physical timing, final output, broader playback/retirement, persistence and hardware remain open.",
+  "decisions": "Native interrupt observes only; native GUI start/stop and stock background copy/load; no host scheduler",
+  "constants": {
+    "BASE": 285212672,
+    "END": 285245440,
+    "CLOCK_SITE": 1074629742,
+    "ARM_SITE": 1073831836,
+    "ARM_CALLER": 1073834926,
+    "LATENCY": 8192,
+    "BARS": 1,
+    "RLEN": 4,
+    "SUPPORTED_RLEN": [
+      4,
+      5,
+      6
+    ],
+    "MAX_CAPTURE_FRAMES": 480000
+  },
+  "duration_extension": {
+    "rlen_bars": {
+      "4": 1,
+      "5": 2,
+      "6": 4
+    },
+    "clock": "Consecutive native first-step bar receipts, not host time",
+    "capacity": "Existing 480000-frame maximum enforced with the native sample clock",
+    "results": "docs/BUF-MULTIBAR.md"
+  }
+}

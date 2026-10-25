@@ -1,0 +1,197 @@
+{
+  "checks": [
+    {
+      "id": "source-review",
+      "evidence_level": "source",
+      "command": [
+        "python3",
+        "scripts/check-arp-modes.py",
+        "out/runs/<unique>"
+      ],
+      "cost": "fast",
+      "freshness_inputs": [
+        "docs/ARP-INTEGRATION.md",
+        "lab/arp_modes.py",
+        "lab/coldfire.py"
+      ]
+    },
+    {
+      "id": "focused-structural",
+      "evidence_level": "host-structural",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "tests.test_arp_modes",
+        "-v"
+      ],
+      "cost": "fast",
+      "freshness_inputs": [
+        "lab/arp_modes.py",
+        "tests/test_arp_modes.py"
+      ]
+    },
+    {
+      "id": "panel-integration",
+      "evidence_level": "host-structural",
+      "command": [
+        "python3",
+        "scripts/capture-arp-modes.py",
+        "out/runs/<unique>"
+      ],
+      "cost": "bounded CPU",
+      "freshness_inputs": [
+        "lab/arp_integration.py",
+        "scripts/capture-arp-modes.py"
+      ]
+    },
+    {
+      "id": "objective-render",
+      "evidence_level": "host-signal",
+      "command": [
+        "python3",
+        "scripts/render-arp-up.py",
+        "out/runs/<capture>",
+        "out/runs/<audio>"
+      ],
+      "cost": "native offline replay",
+      "freshness_inputs": [
+        "control.dtfr",
+        "lab/pattern_dsp.py"
+      ]
+    },
+    {
+      "id": "record-save",
+      "evidence_level": "host-structural",
+      "command": [
+        "python3",
+        "scripts/check-arp-record-save.py",
+        "out/runs/<unique>"
+      ],
+      "cost": "bounded native firmware",
+      "freshness_inputs": [
+        "lab/arp_persistence.py",
+        "scripts/check-arp-record-save.py"
+      ]
+    },
+    {
+      "id": "project-load",
+      "evidence_level": "host-structural",
+      "command": [
+        "python3",
+        "scripts/check-arp-project-load.py",
+        "out/runs/<capture>",
+        "out/runs/<unique>"
+      ],
+      "cost": "bounded native CPU",
+      "freshness_inputs": [
+        "lab/arp_integration.py",
+        "lab/arp_storage.py",
+        "scripts/check-arp-project-load.py"
+      ]
+    },
+    {
+      "id": "overlay-profile",
+      "evidence_level": "host-structural",
+      "command": [
+        "python3",
+        "scripts/profile-arp-storage.py",
+        "out/runs/<unique>"
+      ],
+      "cost": "bounded host",
+      "freshness_inputs": [
+        "lab/arp_storage.py",
+        "scripts/profile-arp-storage.py"
+      ]
+    },
+    {
+      "id": "regression",
+      "evidence_level": "host-structural",
+      "command": [
+        "./labctl",
+        "test",
+        "sine",
+        "--replay"
+      ],
+      "cost": "bounded native replay",
+      "freshness_inputs": [
+        "lab",
+        "scripts",
+        "machines"
+      ]
+    }
+  ],
+  "evidence_levels": [
+    {
+      "check_ids": [],
+      "level": "research",
+      "promotion_rule": "Cited sources support the selected mechanism.",
+      "status": "available"
+    },
+    {
+      "check_ids": [],
+      "level": "proposal",
+      "promotion_rule": "The approved proposal fingerprint matches the implementation contract.",
+      "status": "available"
+    },
+    {
+      "check_ids": [
+        "source-review"
+      ],
+      "level": "source",
+      "promotion_rule": "Implementation exists with provenance and complete-diff review.",
+      "status": "planned"
+    },
+    {
+      "check_ids": [
+        "focused-structural",
+        "panel-integration",
+        "record-save"
+      ],
+      "level": "host-structural",
+      "promotion_rule": "Focused state, bounds, negative, and adapter-parity checks pass.",
+      "status": "planned"
+    },
+    {
+      "check_ids": [
+        "objective-render"
+      ],
+      "level": "host-signal",
+      "promotion_rule": "Native stock voice replay is finite, bounded, nonzero and repeatable; not DAC or hardware",
+      "status": "planned"
+    },
+    {
+      "check_ids": [],
+      "level": "target-build",
+      "promotion_rule": "The named target compiler and linker accept the artifact.",
+      "status": "deferred"
+    },
+    {
+      "check_ids": [],
+      "level": "real-time",
+      "promotion_rule": "Worst-case and p99 callback measurements meet a declared budget.",
+      "status": "deferred"
+    },
+    {
+      "check_ids": [],
+      "level": "connected-device",
+      "promotion_rule": "Authorized device I/O, controls, feedback, and lifecycle checks pass.",
+      "status": "deferred"
+    },
+    {
+      "check_ids": [],
+      "level": "listening",
+      "promotion_rule": "A documented, appropriately blinded listening protocol supports the claim.",
+      "status": "deferred"
+    },
+    {
+      "check_ids": [],
+      "level": "production-integration",
+      "promotion_rule": "Canonical identities, graphs, providers, packaging, and release gates are accepted separately.",
+      "status": "deferred"
+    }
+  ],
+  "schema_version": "sonic-research-lab-validation-plan-v1",
+  "status": "ready",
+  "title": "Arp project recall and emulator optimization"
+}

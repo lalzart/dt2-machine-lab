@@ -1,0 +1,68 @@
+{
+  "acceptance_tests": [
+    "Independent rational timing and dynamic tempo/rate/lifecycle checks",
+    "Real G push/rotation, Tempo panel edits and final UI screenshots",
+    "Native legacy/v2 journal compatibility and project recall",
+    "Legacy exact MAIN, current source checks and package integrity"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement native wrappers, allocate bounded owned state, use original OS APIs",
+      "Build and validate private stock-only SYX"
+    ],
+    "must_not": [
+      "Flash, commit, publish, edit pinned dependencies or unrelated work",
+      "Mark failed or omitted feature evidence as passing"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Native MAIN patch sources and reproducible stock SYX builder",
+    "Bounded native feature verification and remaining gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "primary_claim": "Native tempo getter, four note rates and G focus selector preserve note order and saved settings",
+    "why": "Make the working arp follow device tempo and offer useful musical rates"
+  },
+  "inputs": [
+    "Exact OS1.16 firmware and ready snapshot",
+    "Pinned DigiKit 277760aad51b036a4756db051409d4d3b1eeccbc",
+    "Real panel input and native sample tick"
+  ],
+  "proposal": {
+    "approval": {
+      "reference": "User 2026-10-16: working arp; implement other BPMs, UI and quarter/eighth/sixteenth/32nd rates",
+      "state": "approved"
+    },
+    "path": "docs/ARP-TEMPO-RATES.md",
+    "revision": "1",
+    "sha256": "5e17515b447413f53b8a7619838024b8e6f8b8f7dcc86405fe83e0e356657d2a"
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Optional native tempo/rates backend and selector UI",
+      "Compatible v1 import/v2 packed per-pattern journal",
+      "Stock-only guarded SYX and focused native timing/panel/storage checks"
+    ],
+    "out": [
+      "Flash, publication, commits, dependency edits",
+      "Other tracks, external clock and swing guarantees"
+    ]
+  },
+  "status": "ready",
+  "target": "Native ColdFire MAIN overlay on exact stock Digitakt II OS1.16",
+  "title": "Native arp tempo, rates and selector UI",
+  "work_type": "new-design",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/EXPERIMENTAL_ARP_STOCK_OS1.16_TEMPO_RATE_R1.syx",
+    "evidence_level": "target-build",
+    "success_observation": "Four rates follow original tempo, G push/rotation selects mode/rate, v1/v2 settings recall, protected stock sections"
+  }
+}

@@ -7,7 +7,8 @@ are complete. Caller supplies owned, writable destination memory.
 
 import struct
 
-from lab.coldfire import audit_code
+from lab.coldfire import audit_code as audit_code  # compatibility export
+from lab.emit import Code
 
 LOCK = 0x40012542
 UNLOCK = 0x40012552
@@ -49,11 +50,11 @@ def error_stage(code, errors, name):
     code.emit("25410030")
 
 
-def recorder_error_text(address, state, table):
+def recorder_error_text(address, state, table, *, error_count=None):
     """Replace the original error PEA; preserve its one-pointer stack effect."""
     c = Code()
     c.imm("2039", state + 48)
-    c.imm("0c80", len(USE_ERRORS))
+    c.imm("0c80", len(USE_ERRORS) if error_count is None else error_count)
     c.branch(5, "known")
     c.emit("7000")
     c.label("known")
@@ -62,39 +63,6 @@ def recorder_error_text(address, state, table):
     c.emit("d3c0 2f11")
     c.imm("4ef9", 0x4002198C)
     return c.finish(address)
-
-
-class Code:
-    """Small label assembler; only independently audited instructions emitted."""
-
-    def __init__(self):
-        self.data = bytearray()
-        self.labels = {}
-        self.branches = []
-
-    def emit(self, hex_bytes):
-        self.data.extend(bytes.fromhex(hex_bytes))
-
-    def imm(self, opcode, value):
-        self.emit(opcode)
-        self.data.extend(struct.pack(">I", value & 0xFFFFFFFF))
-
-    def label(self, name):
-        if name in self.labels:
-            raise ValueError("Duplicate native label")
-        self.labels[name] = len(self.data)
-
-    def branch(self, condition, label):
-        self.branches.append((len(self.data), label))
-        self.data.extend(bytes((0x60 | condition, 0, 0, 0)))
-
-    def finish(self, address):
-        result = bytearray(self.data)
-        for offset, label in self.branches:
-            displacement = self.labels[label] - offset - 2
-            result[offset + 2 : offset + 4] = struct.pack(">h", displacement)
-        audit_code(result, address)
-        return bytes(result)
 
 
 def recording_copy(address):
@@ -443,7 +411,20 @@ def accept_recording(address, copier, errors, *, separate_source=False, discard=
     return c.finish(address)
 
 
-def assign_recording(address):
+def sample_machine_guard(c, *, extended=False, invalid="invalid"):
+    """D0 machine identity; optional stock sample engines 0..4 and 6."""
+    if extended:
+        c.imm("0c80", 4)
+        c.branch(3, "sample_machine_ok")
+        c.imm("0c80", 6)
+        c.branch(6, invalid)
+        c.label("sample_machine_ok")
+    else:
+        c.imm("0c80", 0)
+        c.branch(6, invalid)
+
+
+def assign_recording(address, *, sample_machines=False, pending_track=0):
     """Emit int assign(slot, track_index, expected_live_kit).
 
     UI-thread primitive, called after successful publication. Rejects project
@@ -470,8 +451,12 @@ def assign_recording(address):
     c.emit("2440 202f0010")
     c.imm("223c", 0x450)
     c.emit("4c010800 204a d1c0 2448 7000 102a00d6")
-    c.imm("0c80", 0)
-    c.branch(6, "invalid")
+    sample_machine_guard(c, extended=sample_machines)
+    if pending_track:
+        c.emit("2f2f0010")
+        c.imm("4eb9", pending_track)
+        c.emit("588f 4a80")
+        c.branch(6, "invalid")
     # Mirror the original successful ProjectSettings sample load: copy the
     # loaded reference into the pool, not just the track's numeric slot.
     c.imm("4eb9", 0x401988A2)
@@ -609,12 +594,16 @@ def save_recording(address, *, backing_reader=0):
     return c.finish(address), after_open
 
 
-def persist_project_pool(address, lookup, saver, path_format, directory, *, retire=0):
+def persist_project_pool(address, lookup, saver, path_format, directory, *, retire=0,
+                         discarded=False, preserve_missing=False):
     """Emit int persist(pool_reference_base), before project serialization.
 
     First save every temporary reference in the 1024-slot project pool. Cache
     durable refs in owned nodes so retries do not duplicate completed files.
     Only after all saves succeed does a second pass update project references.
+    With preserve_missing, references not owned by an exact current-boot take
+    remain unchanged, like stock missing samples. They must not block saving
+    the rest of a project after reboot, or bind to a new take reusing that ID.
     The caller must serialize project edits for the duration, as for saving.
     """
     c = Code()
@@ -631,13 +620,22 @@ def persist_project_pool(address, lookup, saver, path_format, directory, *, reti
     c.branch(2, "advance")
     c.imm("4eb9", lookup)
     c.imm("b1fc", 0)
-    c.branch(7, "invalid")
+    c.branch(7, "advance" if preserve_missing else "invalid")
     c.emit("2848")
     for offset in range(0, 16, 4):
         c.emit("202b" + struct.pack(">H", offset).hex())
         c.emit("222c" + struct.pack(">H", offset + 4).hex())
         c.emit("b081")
-        c.branch(6, "invalid")
+        c.branch(6, "advance" if preserve_missing else "invalid")
+    if discarded:
+        # Explicitly discarded identities are permanent tombstones. Undo or a
+        # clipboard can restore an old reference: serialize an empty slot,
+        # never try to save its released PCM or recycle that take identity.
+        c.emit("202c0038 4a80")
+        c.branch(7, "live_take")
+        c.emit("70ff 2680 7000 27400004 27400008 2740000c")
+        c.branch(0, "advance")
+        c.label("live_take")
     c.imm("0c84", 0)
     c.branch(6, "commit")
     c.emit("202c001c")
@@ -729,7 +727,7 @@ def project_save_guard(address, persist):
     return c.finish(address)
 
 
-def recorder_use_entry(address, state):
+def recorder_use_entry(address, state, *, follow_selected=False):
     """Capture the completed-trim action, then retain the stock queued-job UI."""
     c = Code()
     c.emit("4fefffd8 48d73cfc")
@@ -737,11 +735,13 @@ def recorder_use_entry(address, state):
     c.emit("202b000c")
     c.imm("0c80", 0)
     c.branch(6, "busy")
-    c.emit("274a0008 202b0028")
-    c.imm("0c80", 0)
-    c.branch(7, "current_track")
-    c.imm("0680", -1)
-    c.branch(0, "track")
+    c.emit("274a0008")
+    if not follow_selected:
+        c.emit("202b0028")
+        c.imm("0c80", 0)
+        c.branch(7, "current_track")
+        c.imm("0680", -1)
+        c.branch(0, "track")
     c.label("current_track")
     c.emit("2f2a00a0")
     c.imm("4eb9", 0x4004ABE8)
@@ -762,7 +762,10 @@ def recorder_use_entry(address, state):
     return c.finish(address)
 
 
-def recorder_use_worker(address, state, accept, errors, *, managed=False):
+def recorder_use_worker(
+    address, state, accept, errors, *, managed=False, sample_machines=False,
+    pending_track=0,
+):
     """Replacement for the recorder's initial directory-scan worker."""
     c = Code()
     c.emit("4feffff4 48d70c04")
@@ -778,8 +781,13 @@ def recorder_use_worker(address, state, accept, errors, *, managed=False):
     error_stage(c, errors, "machine")
     c.imm("223c", 0x450)
     c.emit("4c010800 206a002c d1c0 7000 102800d6")
-    c.imm("0c80", 0)
-    c.branch(6, "invalid")
+    sample_machine_guard(c, extended=sample_machines)
+    if pending_track:
+        error_stage(c, errors, "pending")
+        c.emit("2f2a0010")
+        c.imm("4eb9", pending_track)
+        c.emit("588f 4a80")
+        c.branch(6, "invalid")
     # A CPU-empty slot may still belong to an unloaded project sample.
     # Reserve only a slot that is empty in both representations.
     error_stage(c, errors, "settings")

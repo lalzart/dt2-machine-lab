@@ -1,0 +1,44 @@
+{
+  "application_feedback": [
+    "OFF, READY, CAPI, STOCK, MIX, unknown"
+  ],
+  "endpoint_device_evidence": {
+    "notes": "No physical-device claim is made by this contract.",
+    "state": "deferred"
+  },
+  "gesture_state_machines": [
+    "Author block-level CAPI dispatch; native trigger detection"
+  ],
+  "not_applicable_rationale": "",
+  "schema_version": "sonic-research-lab-control-map-v1",
+  "semantic_bindings": [
+    {
+      "id": "capi",
+      "description": "Existing row204 encoderC OFF0 ON256; preserve wire halfwordDE"
+    },
+    {
+      "id": "status",
+      "description": "Existing tagged state enum, no analyzed-bank preparation"
+    },
+    {
+      "id": "pitch",
+      "description": "Native voice pitch and advance; exact author source mapping"
+    }
+  ],
+  "source_of_truth": {
+    "strategy": "exhaustive-compare",
+    "artifact": "docs/CAPICOLA-REDDIT-PORT.md"
+  },
+  "status": "ready",
+  "surface_assignments": [
+    {
+      "selector": "SRC encoder C, param204/mirror27",
+      "binding": "capi"
+    },
+    {
+      "selector": "SRC caption",
+      "binding": "status"
+    }
+  ],
+  "title": "Existing CAPI switch, author native playback controls"
+}

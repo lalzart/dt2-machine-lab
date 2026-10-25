@@ -1,0 +1,197 @@
+{
+  "baseline_files": {
+    "core.c": "38d7e9242e5987908ffa9ed5d708d80e64712c08744ead8e0832472604273711",
+    "core.h": "08da25ff524ddb0b2fa0cd02b0aacc32e5ca28485c3e4d5fceb2f25ff2c04024",
+    "oracle.cc": "418e4b7d0c61d5037be94143d2229dafd7d47ef80fd41de430d14c2d8475d3db",
+    "split.c": "9676a143d0ca0ca171e622bcbc8438d42e4126057f554cbb6a8300126664c61a",
+    "split.h": "53b1dbdb29b0b56d2563469ded35fdf56a28f6854e72e2cef3c82e6aaf6cdbe7"
+  },
+  "dependencies": [
+    {
+      "authentication": "compiler --version and binary hashes in run report",
+      "distribution_disposition": "local build only",
+      "id": "host-cxx",
+      "license": "Existing platform toolchain; no library source copied",
+      "revision": "AppleClang 16.0.0.16000026 C++17"
+    }
+  ],
+  "fidelity": {
+    "preserve": [
+      "Analyzer/keyframe values",
+      "Original Granule adaptive-splice equations and interpolation",
+      "Separate pitch/time cursors",
+      "Two-grain handoff with outgoing old rate and960-sample source module fade",
+      "Independent stereo channel grain decisions, as original AudioEngine"
+    ],
+    "allowed_changes": [
+      "Q24 timestamps for target numeric precision",
+      "Virtual periodic immutable source medium, finite ideal-controlled transport, reverse/trim mapping",
+      "Queued rapid region edits to preserve audible outgoing grain",
+      "32 channel banks inside existing reservation; both-ready stereo admission"
+    ],
+    "excluded": [
+      "Alchemy CV/panel",
+      "LIVE_EFFECT transient punching, feedback and shaping"
+    ]
+  },
+  "files": [
+    {
+      "license": "AGPL-3.0; retain Matthew Nielsen / Heavylight Industries attribution",
+      "path": "lib/Analyzer.h",
+      "role": "normative",
+      "sha256": "be727f4e710fcc4d7f9894368c1b91d7a2f1d6dac44e3e144de9e04870ec79a6"
+    },
+    {
+      "license": "AGPL-3.0; retain Matthew Nielsen / Heavylight Industries attribution",
+      "path": "lib/SparseLine.h",
+      "role": "normative",
+      "sha256": "5d1551d075c0cbb2aa00aaa872315c763fc91a3a88f7eebf41aa8da55c2d296e"
+    },
+    {
+      "license": "AGPL-3.0; retain Matthew Nielsen / Heavylight Industries attribution",
+      "path": "lib/Granule.h",
+      "role": "normative",
+      "sha256": "365858963edf5a7120f8cb5f0722c6d11f98778c0ffa08b8d9374ab67051f084"
+    },
+    {
+      "license": "AGPL-3.0; retain Matthew Nielsen / Heavylight Industries attribution",
+      "path": "lib/DeluxeLine.h",
+      "role": "normative",
+      "sha256": "01805646c64cdc9307906c93bf19c0e82322763e1279f4925958542d020d8ebc"
+    },
+    {
+      "license": "AGPL-3.0; retain Matthew Nielsen / Heavylight Industries attribution",
+      "path": "LICENSE",
+      "role": "supporting",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "lib/KeyframeRecorder.h",
+      "sha256": "c004c322d8356bd2cdd2b05c8c0a669521f0a15b0cac283af88b3396f94bb5f5",
+      "role": "normative",
+      "license": "AGPL-3.0-only; preserve Matthew Nielsen / Heavylight Industries attribution"
+    },
+    {
+      "path": "lib/Detector.h",
+      "sha256": "a4cd48bf138835dd1d36139c35b3e430434f3a733c785d7198888c928b138b59",
+      "role": "observational",
+      "license": "AGPL-3.0-only; preserve Matthew Nielsen / Heavylight Industries attribution"
+    },
+    {
+      "path": "lib/filter.h",
+      "sha256": "5baf6a60f7fdd434b8e4b73db71bae822b572f6d06263d4fc8cde177fe3fa055",
+      "role": "observational",
+      "license": "AGPL-3.0-only; preserve Matthew Nielsen / Heavylight Industries attribution"
+    },
+    {
+      "path": "lib/Shapers.h",
+      "sha256": "6bf873d351301fe94d1d8d981339609655229126566e47c3b720717c04ac8004",
+      "role": "supporting",
+      "license": "AGPL-3.0-only; Matthew Nielsen / Heavylight Industries"
+    },
+    {
+      "path": "lib/TabulatedFunction.h",
+      "sha256": "adbfe2651446258c5fc1235d28cc951ab5694b16af31d4c60550bf0d0e6bfb70",
+      "role": "supporting",
+      "license": "AGPL-3.0-only; Matthew Nielsen / Heavylight Industries"
+    },
+    {
+      "path": "lib/Tabulator.h",
+      "sha256": "48cfa90ea303c4f495c8b0da12bd679ebcb6848eeee2318c3fdeff0cfddae36f",
+      "role": "supporting",
+      "license": "AGPL-3.0-only; Matthew Nielsen / Heavylight Industries"
+    },
+    {
+      "path": "lib/functors.h",
+      "sha256": "bc29050b1a75555402afe5b89aa94e4e530d046f0eca875d77cded31434447f8",
+      "role": "supporting",
+      "license": "AGPL-3.0-only; Matthew Nielsen / Heavylight Industries"
+    },
+    {
+      "path": "src/audio/audio_engine.cpp",
+      "sha256": "b67070812eba1c32568953b61a1e1c210cb648e2f22fc34d345fbf878ece314c",
+      "role": "normative",
+      "license": "AGPL-3.0-only; Matthew Nielsen / Heavylight Industries"
+    }
+  ],
+  "integration_baseline_files": {
+    "lab/flex_native.py": "1c6b946983cb8cf28bacf99630964da221ef01b26fe46b6fcce921e4fa63a1e6",
+    "lab/flex_native_build.py": "bf8902b6b0fdefb4843c48f5c25437069fd62cdadbfa741c0e2db31796450c3a",
+    "lab/plaits_menu.py": "a260352a087d0fcd06cc0304425a4922f7205437636d1a39995c506145cd5c43",
+    "machines/capicola/cache.c": "6a7fcee224e6c01e112dfc05d0ad8871c9094342b5062b8efb86234dafa8f91d",
+    "machines/capicola/cache.h": "9d6e802165fc7b507cb404072f87454967b4a69068904882c3a60adcf9993ab0",
+    "machines/capicola/capacity.c": "2f639cf4e76adda1bb79b08fa43cdefab6e2938778ae22ec413b2835bedb3c60",
+    "machines/capicola/capacity.h": "384f735de77921faf9bfd4e8f500011857858617cdff0ad3a9bf12787e5f4485",
+    "machines/capicola/prepare.c": "b9299f5d158a866adf924b533cbdd089fb320943c59e6335858361906cb8a356",
+    "machines/capicola/prepare.h": "addc365947e88a4e5df2a45959b786e96a3765e2a55d27004097aaab5f91fec9",
+    "machines/capicola/stretch.c": "505e2a82107b89e727ecd76ffca4fa803f65b160965a9bd919d6eb6fd6fba067",
+    "machines/capicola/stretch.h": "c07abfeb9e131d325d1ce39d60b237dd4ed1d2f90da131ee8f0ea3033238612a",
+    "machines/plaits-integration/machine.c": "90d9802b8019f3b352d3432821631555e1df70a3d2d4ea07ca7da59ba5863dc9"
+  },
+  "intentional_deviations": [
+    {
+      "description": "Finite selected sample is a virtual periodic sparse medium; one-shot ends by ideal transport, no independent head edge fades",
+      "reason": "Immutable sample has no advancing input writer",
+      "approval": "User proper implementation request; explicit proposal before DSP edits",
+      "validation": "Unmodified original Granule over materialized identical periodic keys from full start, including wraps/reverse/finite end"
+    },
+    {
+      "description": "Q24 cursor and2^-22 phase progress floor",
+      "reason": "Target double is binary32; avoid timing loss and stalled phases",
+      "validation": "Source PCM tolerances and numerical bounds"
+    },
+    {
+      "description": "Queue rapid edits until two-grain handoff completes",
+      "reason": "Avoid overwriting audible outgoing grain",
+      "validation": "Event/state/rate retention and repeat"
+    },
+    {
+      "description": "Native planar stereo and both-ready stereo admission;32 channel bank descriptors",
+      "reason": "Normal Digitakt stereo sample workflow; preserve per-channel source algorithm without half-stock notes",
+      "validation": "Native32bank stereo fixture, per-channel host PCM and invalidation"
+    }
+  ],
+  "not_applicable_rationale": "",
+  "oracle": {
+    "commands": [
+      "python3 scripts/check-capicola-source.py out/runs/<unique>"
+    ],
+    "fixtures": [
+      "source-contract/experiment.json"
+    ],
+    "kind": "signal-tolerance",
+    "metrics": [
+      "Original Granule full-start PCM on materialized periodic sparse medium",
+      "Full waveform and original adaptive splice duration",
+      "Transition state, safety and exact repeat"
+    ],
+    "tolerances": {
+      "max": 0.0001,
+      "rms": 1e-05
+    }
+  },
+  "reuse": {
+    "controller_map": {
+      "artifact": "No controller in this core experiment",
+      "sha256": "ca37876e2f056629826e5e115cf8b396cecff28d6b7e71102c6cbcea1f6eb629",
+      "strategy": "not-applicable"
+    },
+    "ui_shell": {
+      "artifact": "No UI in this experiment",
+      "sha256": "890e56efcbbfa7c78aef5e211d3dc926dc9b8ceeff73cb20cff2dc3ae97e8c4c",
+      "strategy": "not-applicable"
+    }
+  },
+  "schema_version": "sonic-research-lab-source-equivalence-v1",
+  "source_authority": {
+    "dirty_state": "clean clone",
+    "observed_branch": "main",
+    "repository_id": "https://github.com/heavylight-industries/capicola",
+    "revision": "120b0b843c18bda373d96eb79d49805545f61556",
+    "source_id": "capicola-1.0.0",
+    "source_root_id": "capicola"
+  },
+  "status": "ready",
+  "unresolved_items": [],
+  "work_type": "source-reimplementation"
+}

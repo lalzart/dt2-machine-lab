@@ -1,0 +1,46 @@
+{
+  "application_feedback": [
+    {
+      "surface": "capture report",
+      "value": "native decisions, calls and ownership"
+    }
+  ],
+  "endpoint_device_evidence": {
+    "notes": "No physical-device claim is made by this contract.",
+    "state": "deferred"
+  },
+  "gesture_state_machines": [
+    {
+      "states": "OFF, armed, playing, panic",
+      "rule": "proposal and state matrix"
+    }
+  ],
+  "not_applicable_rationale": "",
+  "schema_version": "sonic-research-lab-control-map-v1",
+  "semantic_bindings": [
+    {
+      "binding": "UP",
+      "rule": "ascending unique pitches, counted duplicates, fixed fixture sixteenths"
+    }
+  ],
+  "source_of_truth": {
+    "strategy": "exhaustive-compare",
+    "artifact": "docs/ARP-UP.md and experiment.json"
+  },
+  "status": "ready",
+  "surface_assignments": [
+    {
+      "input": "mapped key edges",
+      "target": "native held/owner state"
+    },
+    {
+      "input": "experiment OFF/UP",
+      "target": "native mode"
+    },
+    {
+      "input": "PLAY/STOP/destination change",
+      "target": "native clock/panic"
+    }
+  ],
+  "title": "UP keyboard arp first experiment"
+}

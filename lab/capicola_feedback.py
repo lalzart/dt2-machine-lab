@@ -8,7 +8,7 @@ import hashlib
 import struct
 
 from lab.coldfire import audit_code
-from lab.flex_native import Code
+from lab.emit import Code
 from lab.project import require
 
 BASE = 0x40000400

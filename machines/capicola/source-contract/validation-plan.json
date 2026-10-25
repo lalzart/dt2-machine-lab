@@ -1,0 +1,165 @@
+{
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cost": "bounded",
+      "evidence_level": "source",
+      "freshness_inputs": [
+        "lab",
+        "machines",
+        "scripts",
+        "tests"
+      ],
+      "id": "source"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/check-capicola-source.py",
+        "out/runs/<unique>"
+      ],
+      "cost": "bounded",
+      "evidence_level": "host-structural",
+      "freshness_inputs": [
+        "lab",
+        "machines",
+        "scripts"
+      ],
+      "id": "cpu"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/check-capicola-source-native.py",
+        "out/runs/<unique>",
+        "--package",
+        "out/runs/<package>"
+      ],
+      "cost": "bounded",
+      "evidence_level": "host-signal",
+      "freshness_inputs": [
+        "lab",
+        "machines",
+        "scripts"
+      ],
+      "id": "native"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/build-cpu-extension.py",
+        "out/runs/<unique>",
+        "--all-features",
+        "--capicola-source",
+        "--elekloader-reference",
+        "out/references/elekloader-upload-audit"
+      ],
+      "cost": "bounded",
+      "evidence_level": "target-build",
+      "freshness_inputs": [
+        "lab",
+        "machines",
+        "scripts"
+      ],
+      "id": "build"
+    },
+    {
+      "id": "stereo",
+      "command": [
+        "python3",
+        "scripts/check-capicola-source-stereo.py",
+        "out/runs/<unique>",
+        "--package",
+        "out/runs/<package>"
+      ],
+      "cost": "bounded",
+      "evidence_level": "host-signal",
+      "freshness_inputs": [
+        "lab",
+        "machines",
+        "scripts"
+      ]
+    }
+  ],
+  "evidence_levels": [
+    {
+      "check_ids": [],
+      "level": "research",
+      "promotion_rule": "Cited sources support the selected mechanism.",
+      "status": "available"
+    },
+    {
+      "check_ids": [],
+      "level": "proposal",
+      "promotion_rule": "The approved proposal fingerprint matches the implementation contract.",
+      "status": "available"
+    },
+    {
+      "check_ids": [
+        "source"
+      ],
+      "level": "source",
+      "promotion_rule": "Implementation exists with provenance and complete-diff review.",
+      "status": "planned"
+    },
+    {
+      "check_ids": [
+        "cpu"
+      ],
+      "level": "host-structural",
+      "promotion_rule": "Focused state, bounds, negative, and adapter-parity checks pass.",
+      "status": "planned"
+    },
+    {
+      "check_ids": [
+        "native"
+      ],
+      "level": "host-signal",
+      "promotion_rule": "Objective renders meet frozen tolerances and repeatability requirements.",
+      "status": "planned"
+    },
+    {
+      "check_ids": [
+        "build"
+      ],
+      "level": "target-build",
+      "promotion_rule": "The named target compiler and linker accept the artifact.",
+      "status": "planned"
+    },
+    {
+      "check_ids": [],
+      "level": "real-time",
+      "promotion_rule": "Worst-case and p99 callback measurements meet a declared budget.",
+      "status": "deferred"
+    },
+    {
+      "check_ids": [],
+      "level": "connected-device",
+      "promotion_rule": "Authorized device I/O, controls, feedback, and lifecycle checks pass.",
+      "status": "deferred"
+    },
+    {
+      "check_ids": [],
+      "level": "listening",
+      "promotion_rule": "A documented, appropriately blinded listening protocol supports the claim.",
+      "status": "deferred"
+    },
+    {
+      "check_ids": [],
+      "level": "production-integration",
+      "promotion_rule": "Canonical identities, graphs, providers, packaging, and release gates are accepted separately.",
+      "status": "deferred"
+    }
+  ],
+  "schema_version": "sonic-research-lab-validation-plan-v1",
+  "status": "ready"
+}

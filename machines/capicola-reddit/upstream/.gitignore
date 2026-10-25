@@ -1,0 +1,21 @@
+# Build products (tools/build_gen.sh, test/dt2trace_gen.py); build/stock_section7.bin
+# is extracted from the stock firmware and must never be committed.
+/build/
+
+# Firmware and anything derived from it: images, extracted sections, snapshots.
+*.syx
+sections/
+snapshots/
+out/
+
+__pycache__/
+*.pyc
+*.o
+
+# ./build.sh: the cloned tools, the copy of Elektron's OS file, the images
+/deps/
+/out/
+
+# macOS, and local archives
+.DS_Store
+*.zip

@@ -96,6 +96,9 @@ def audit_code(code, address):
         elif op & 0xFFF8 == 0x4E90:
             # JSR (An), the stock OS virtual-call form (CFPRM JSR control EA).
             kind = "JSR (An)"
+        elif op & 0xFFF8 == 0x4E50:
+            # CFPRM LINK.W An,#d16; displaced exact native prologues.
+            length, kind = 4, "LINK.W"
         elif op in (0x4E75, 0x4E71):
             kind = "RTS" if op == 0x4E75 else "NOP"
         elif op & 0xF000 == 0x6000:
@@ -107,9 +110,9 @@ def audit_code(code, address):
         elif op in (0x0280, 0x0281):
             # CFPRM ANDI.L immediate,D0/D1; tagged informational reply decode.
             length, kind = 6, "ANDI.L"
-        elif op in (0xEE89, 0xE889):
+        elif op in (0xEE89, 0xE889, 0xE488, 0xE489):
             # CFPRM LSR.L #7,D1: immediate count 1..8, register destination.
-            kind = "LSR.L #7,D1" if op == 0xEE89 else "LSR.L #4,D1"
+            kind = {0xEE89: "LSR.L #7,D1", 0xE889: "LSR.L #4,D1", 0xE488: "LSR.L #2,D0", 0xE489: "LSR.L #2,D1"}[op]
         elif op & 0xFFF8 == 0x0080:
             # CFPRM Rev. 3 ORI.L immediate,Dn; used to preserve SR mode bits.
             length, kind = 6, "ORI.L"
@@ -128,18 +131,21 @@ def audit_code(code, address):
             kind = "MOVE Dn,SR"
         elif op in (0xE080, 0xE588, 0xE589, 0xED88):
             kind = "ASR/LSL.L immediate,Dn"
-        elif op in (0xD1C0, 0xD3C0):
+        elif op & 0xF1FF == 0xD1C0:
             kind = "ADDA.L D0,An"
         elif op == 0x71D1:
             kind = "MVZ.W (A1),D0"
         elif op == 0x9283:
             kind = "SUB.L D3,D1"
-        elif op in (0x9081, 0xD080):
+        elif op == 0x9081 or op & 0xF1F8 == 0xD080:
             kind = "SUB/ADD.L Dn,D0"
         elif op & 0xFFF8 == 0x4A80:
             kind = "TST.L Dn"
-        elif op in (0x5380, 0x5382):
-            kind = "SUBQ.L #1,D0/D2"
+        elif op in (0x5380, 0x5381, 0x5382):
+            kind = "SUBQ.L #1,D0/D1/D2"
+        elif op == 0x4299:
+            # CFPRM CLR.L (A1)+; aligned extension BSS clear.
+            kind = "CLR.L (A1)+"
         elif op == 0x5280:
             kind = "ADDQ.L #1,D0"
         elif op == 0x57C0:

@@ -1,0 +1,172 @@
+{
+  "artifact_retention": {
+    "location": "out/runs/<unique>; retain failures and manifests",
+    "policy": "reproducible-only"
+  },
+  "comparator_condition_id": "off",
+  "conditions": [
+    {
+      "events": [
+        {
+          "mode": 0,
+          "op": "initialize",
+          "rate": 2,
+          "tick": 0
+        },
+        {
+          "notes": [
+            67,
+            64,
+            60
+          ],
+          "op": "press",
+          "tick": 100
+        },
+        {
+          "op": "play",
+          "tick": 200
+        },
+        {
+          "op": "release-all",
+          "tick": 80000
+        }
+      ],
+      "id": "off",
+      "purpose": "Stock negative comparator"
+    },
+    {
+      "events": [
+        {
+          "notes": [
+            67,
+            64,
+            60
+          ],
+          "op": "initialize-and-hold",
+          "tick": 0
+        },
+        {
+          "op": "play",
+          "tick": 0
+        },
+        {
+          "max_gap_samples": 24000,
+          "op": "clock-before-and-at-first-eight-deadlines-and-half-gates"
+        }
+      ],
+      "id": "timing-grid",
+      "modes": [
+        1,
+        2,
+        3
+      ],
+      "purpose": "Independent rational sample deadlines",
+      "rates": [
+        4,
+        8,
+        16,
+        32
+      ],
+      "tempos": [
+        30,
+        60,
+        90,
+        102,
+        120,
+        127.5,
+        180,
+        240,
+        300
+      ]
+    },
+    {
+      "events": [
+        {
+          "mode": 1,
+          "op": "initialize-and-hold",
+          "rate": 2,
+          "tempo": 60,
+          "tick": 0
+        },
+        {
+          "op": "tempo",
+          "tick": 5000,
+          "value": 120
+        },
+        {
+          "op": "rate",
+          "tick": 15000,
+          "value": 3
+        },
+        {
+          "op": "late-service-no-burst",
+          "tick": 80000
+        }
+      ],
+      "id": "changes",
+      "purpose": "Piecewise tempo integration, rate edit held retention, late/wrap/invalid safety"
+    },
+    {
+      "events": [
+        {
+          "op": "tempo-panel-set",
+          "values": [
+            60,
+            120,
+            180
+          ]
+        },
+        {
+          "op": "g-push-and-rotate",
+          "rates": [
+            4,
+            8,
+            16,
+            32
+          ]
+        },
+        {
+          "op": "hold-play-record-save-load-and-replay"
+        }
+      ],
+      "id": "panel",
+      "purpose": "Original Tempo UI and G focus, native recorded notes and saved rate recall"
+    }
+  ],
+  "outputs": [
+    {
+      "kind": "native panel notes, interval and UI evidence",
+      "name": "native.json"
+    },
+    {
+      "kind": "actual stock control frames",
+      "name": "control.dtfr"
+    },
+    {
+      "kind": "native firmware selector layout",
+      "name": "menu.png"
+    },
+    {
+      "kind": "rational timing and journal oracle results",
+      "name": "source-tests.log"
+    }
+  ],
+  "sample_rate_hz": 48000,
+  "schema_version": "sonic-research-lab-experiment-v1",
+  "seed": 324508639,
+  "status": "ready",
+  "supported_block_frames": [
+    1,
+    16,
+    32
+  ],
+  "timeline_convention": "Unsigned sample ticks; inputs before clock at equal ticks; off before on; exclude host time",
+  "title": "Native arp tempo, rates and selector UI",
+  "tolerances": {
+    "adapter_latency": "within one measured native service interval; report separately",
+    "core_deadline": "at exact sample boundaries, within1 sample of independent rational oracle",
+    "core_order": "exact",
+    "off_path": "unchanged stock key events",
+    "state_repeat": "all bytes equal"
+  }
+}

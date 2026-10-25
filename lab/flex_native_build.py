@@ -9,47 +9,9 @@ import struct
 
 from lab import flex_native as native
 from lab import flex_native_save as named
-from lab.coldfire import audit_code
+from lab.dt2_116 import BASE, CANDIDATE_GAPS, OWNERSHIP_GAPS, R3_SHA, STOCK_SHA
 from lab.project import require
-
-BASE = 0x40000400
-STOCK_SHA = "57bb4dfa8df07d846adc72fdb4fb0d3cd3c5680c524bf498338460207e008e7d"
-R3_SHA = "6f5a9df5f1bf17c002c7755e1682051aff9e2d990238ec62722c5a459e8e9543"
-# Exact zero intervals from the pinned 1.16 deep-reference scan. Deliberately
-# exclude Plaits' entire 0x403117c4..0x40312000 allocation and reset-copy data.
-# These are candidate locations until the dynamic placement checks pass.
-CANDIDATE_GAPS = (
-    (0x402E4A24, 0x402E4DA4),
-    (0x402E5B5C, 0x402E5EDC),
-    (0x402FE45C, 0x402FE5DC),
-    (0x402FDE60, 0x402FDF66),
-    (0x402FDA60, 0x402FDB5E),
-    (0x402FD660, 0x402FD75E),
-    (0x40300AE0, 0x40300BDE),
-    (0x402FD45C, 0x402FD556),
-    (0x402FD85C, 0x402FD956),
-    (0x402FDC5C, 0x402FDD56),
-    (0x402FE05C, 0x402FE156),
-    (0x403010DC, 0x403011D6),
-    (0x403014DC, 0x403015D6),
-    (0x402FCE64, 0x402FCF5E),
-    (0x402FD05C, 0x402FD156),
-    (0x402FD264, 0x402FD35E),
-    (0x403016E4, 0x403017DE),
-    (0x403018DC, 0x403019D6),
-)
-# Additional candidates from the same exact OS 1.16 caves-small.json scan.
-# Optional ownership experiment only; boot/asset-path validation is separate.
-OWNERSHIP_GAPS = (
-    (0x402FCC5C, 0x402FCD34),
-    (0x40301CDC, 0x40301DB4),
-    (0x402FCA98, 0x402FCB5C),
-    (0x40301B18, 0x40301BDC),
-    (0x402FC718, 0x402FC75C),
-    (0x403020DC, 0x40302134),
-    (0x402FC85C, 0x402FC8A8),
-    (0x40301F98, 0x40301FDC),
-)
+from lab.resources import PaddingAllocator
 
 
 def build_payload(
@@ -60,6 +22,8 @@ def build_payload(
     memory_accounting=False,
     durable_reads=False,
     managed_sources=False,
+    shared_save=False,
+    save_screen=False,
 ):
     if managed_sources:
         compact_resources = separate_source = durable_reads = True
@@ -69,24 +33,29 @@ def build_payload(
     def at(key):
         return p.get(key, 0)
 
-    errors = {name: index for index, name in enumerate(native.USE_ERRORS)}
+    ui_errors = dict(native.USE_ERRORS)
+    if save_screen:
+        ui_errors["machine"] = "FLEX: USE SAMPLE TRACK"
+        ui_errors["pending"] = "FLEX: SAVE TAKE FIRST"
+    errors = {name: index for index, name in enumerate(ui_errors)}
     payload = {
         "state": (bytes(56), "data"),
         "path_format": (b"/recorded/FLEX-%08X-%02u\0", "data"),
         "directory": (b"/recorded\0", "data"),
         **{
             "error_" + name: (text.encode("ascii") + b"\0", "data")
-            for name, text in native.USE_ERRORS.items()
+            for name, text in ui_errors.items()
         },
         "error_table": (
             b"".join(
-                struct.pack(">I", at("error_" + name)) for name in native.USE_ERRORS
+                struct.pack(">I", at("error_" + name)) for name in ui_errors
             ),
             "data",
         ),
         "error_text": (
             native.recorder_error_text(
-                at("error_text"), at("state"), at("error_table")
+                at("error_text"), at("state"), at("error_table"),
+                error_count=len(ui_errors),
             ),
             "code",
         ),
@@ -102,7 +71,8 @@ def build_payload(
             ),
             "code",
         ),
-        "assign": (native.assign_recording(at("assign")), "code"),
+        "assign": (native.assign_recording(at("assign"), sample_machines=save_screen,
+                    pending_track=(at("screen_track_pending") or 1) if save_screen else 0), "code"),
     }
     save, after_open = native.save_recording(
         at("save_raw") if managed_sources else at("save"),
@@ -152,6 +122,8 @@ def build_payload(
             at("path_format"),
             at("directory"),
             retire=(at("retire_source") or 1) if managed_sources else 0,
+            discarded=save_screen,
+            preserve_missing=save_screen,
         ),
         "code",
     )
@@ -160,12 +132,14 @@ def build_payload(
         "code",
     )
     payload["use_entry"] = (
-        native.recorder_use_entry(at("use_entry"), at("state")),
+        native.recorder_use_entry(at("use_entry"), at("state"), follow_selected=save_screen),
         "code",
     )
     payload["use_worker"] = (
         native.recorder_use_worker(
-            at("use_worker"), at("state"), at("accept"), errors, managed=managed_sources
+            at("use_worker"), at("state"), at("accept"), errors, managed=managed_sources,
+            sample_machines=save_screen,
+            pending_track=(at("screen_track_pending") or 1) if save_screen else 0,
         ),
         "code",
     )
@@ -195,7 +169,7 @@ def build_payload(
         payload[key] = (text.encode("ascii") + b"\0", "data")
     payload["save_pool"] = (named.current_pool(at("save_pool")), "code")
     payload["save_target"] = (
-        named.target(at("save_target"), at("save_pool"), at("lookup")),
+        named.target(at("save_target"), at("save_pool"), at("lookup"), sample_machines=save_screen),
         "code",
     )
     payload["dialog_push"] = (named.push_dialog(at("dialog_push")), "code")
@@ -240,7 +214,7 @@ def build_payload(
             at("save_success"),
             at("save_failure"),
             success_callback=(at("memory_saved_message") or 1)
-            if managed_sources
+            if managed_sources and not save_screen
             else 0,
         ),
         "code",
@@ -348,10 +322,30 @@ def build_payload(
             ),
             "code",
         )
+    if save_screen:
+        from lab import flex_bank as bank
+        from lab import flex_save_screen as screen
+
+        payload.update(bank.payload(at))
+        payload.update(screen.payload(at))
+        payload["recorder_keys"] = (
+            screen.keys(at("recorder_keys"), at("screen_context"),
+                        at("save_open"), at("recorder_keys_trampoline"),
+                        state=at("screen_state"), discard_at=at("screen_discard_take"),
+                        message=at("save_message"), success=at("discard_success"),
+                        failure=at("discard_failure"),
+                        bank_keys=at("bank_keys") or 1,
+                        bank_begin=at("bank_begin") or 1), "code")
+        payload["save_success"] = (b"FLEX SAMPLE SAVED\0", "data")
+    if shared_save:
+        from lab.project_save import flex_prepare, prepare_guard, stock_trampoline
+        payload['flex_save_prepare']=(flex_prepare(at('flex_save_prepare'),at('persist')),'code')
+        payload['stock_save_trampoline']=(stock_trampoline(),'code')
+        payload['project_save']=(prepare_guard(at('project_save'),at('flex_save_prepare'),at('stock_save_trampoline')),'code')
     return payload
 
 
-def patch_cpu(
+def plan_cpu(
     image,
     *,
     compact_resources=False,
@@ -359,7 +353,12 @@ def patch_cpu(
     memory_accounting=False,
     durable_reads=False,
     managed_sources=False,
+    shared_save=False,
+    allocator=None,
+    save_screen=False,
 ):
+    from lab.cpu_plan import NativePlan
+
     if managed_sources:
         compact_resources = separate_source = durable_reads = True
         memory_accounting = True
@@ -372,16 +371,15 @@ def patch_cpu(
         baseline in (STOCK_SHA, R3_SHA),
         "Native Flex requires exact stock 1.16 or audited Plaits R3",
     )
-    data, writes = bytearray(image), []
-    gaps = [
-        list(g) for g in CANDIDATE_GAPS + (OWNERSHIP_GAPS if managed_sources else ())
-    ]
-    for lo, hi in gaps:
-        require(BASE <= lo < hi <= 0x403117C4, "Invalid native Flex placement")
-        require(
-            not any(data[lo - BASE : hi - BASE]),
-            f"Occupied native Flex padding {lo:#x}",
-        )
+    require(not save_screen or (managed_sources and allocator is not None),
+            "Save screen requires managed sources and explicit CPU extension placement")
+    if allocator is None:
+        gaps = CANDIDATE_GAPS + (OWNERSHIP_GAPS if managed_sources else ())
+        for lo, hi in gaps:
+            require(BASE <= lo < hi <= 0x403117C4, "Invalid native Flex placement")
+            require(not any(image[lo - BASE:hi - BASE]), f"Occupied native Flex padding {lo:#x}")
+        allocator = PaddingAllocator(gaps)
+    plan = NativePlan(image, allocator)
     locations = {}
     options = dict(
         compact_resources=compact_resources,
@@ -389,6 +387,8 @@ def patch_cpu(
         memory_accounting=memory_accounting,
         durable_reads=durable_reads,
         managed_sources=managed_sources,
+        shared_save=shared_save,
+        save_screen=save_screen,
     )
     template = build_payload({}, **options)
     sizes = {key: len(value[0]) for key, value in template.items()}
@@ -406,60 +406,20 @@ def patch_cpu(
         # ColdFire code needs word alignment (stock entries include 0x4011e87a).
         # Keep long data aligned; legacy placement continues to use four bytes.
         alignment = 2 if managed_sources and template[key][1] != "data" else 4
-        starts = [((lo + alignment - 1) // alignment) * alignment for lo, _ in gaps]
-        choices = [
-            (hi - starts[i], i)
-            for i, (_, hi) in enumerate(gaps)
-            if hi - starts[i] >= length
-        ]
-        # Split routines retain word branches; keep their parts in range.
+        peers = []
         if managed_sources:
             for family in ("accept", "resource_dispatch", "retire_source"):
                 if key == family or key.startswith(family + "_"):
-                    peers = [
-                        value
-                        for name, value in locations.items()
-                        if name == family or name.startswith(family + "_")
-                    ]
-                    choices = [
-                        (room, i)
-                        for room, i in choices
-                        if all(abs(starts[i] - peer) < 32000 for peer in peers)
-                    ]
-        require(choices, f"Native Flex padding exhausted: {key}")
-        _, index = min(choices)
-        locations[key] = starts[index]
-        gaps[index][0] = (
-            starts[index] + ((length + alignment - 1) // alignment) * alignment
-        )
+                    peers = [value for name, value in locations.items()
+                             if name == family or name.startswith(family + "_")]
+        locations[key] = allocator.allocate(key, length, alignment=alignment,
+                                             near=peers, reach=32000)
 
-    def put(address, before, after, label, kind):
-        off = address - BASE
-        require(
-            len(before) == len(after) and data[off : off + len(before)] == before,
-            f"Native Flex byte guard: {label} {address:#x}",
-        )
-        decoded = audit_code(after, address) if kind == "code" else []
-        if kind == "stock-trampoline":
-            require(after[-6:-4] == b"\x4e\xf9", "Invalid stock trampoline tail")
-            # Prefixes are exact, separately guarded, PC-independent stock
-            # prologues. Audit the newly emitted absolute jump independently.
-            audit_code(after[-6:], address + len(after) - 6)
-        data[off : off + len(after)] = after
-        writes.append(
-            dict(
-                address=address,
-                before=before.hex(),
-                after=after.hex(),
-                label=label,
-                kind=kind,
-                instructions=decoded,
-            )
-        )
+    put = plan.put
 
     for key, (code, kind) in build_payload(locations, **options).items():
         require(len(code) == sizes[key], "Native relocation changed payload size")
-        put(locations[key], bytes(len(code)), code, key, kind)
+        put(locations[key], bytes(len(code)), code, key, kind, payload=True)
 
     def hook(entry, before_hex, destination):
         before = bytes.fromhex(before_hex)
@@ -475,6 +435,12 @@ def patch_cpu(
     hook(0x4001FC48, "4fefffd848d73c3c", "use_worker")
     hook(0x4002196C, "4e56ffa4206e0008", "use_finish")
     hook(0x40022C6E, "4e56ff6c48d73cfc", "recorder_keys")
+    if save_screen:
+        from lab import flex_save_screen as screen
+
+        hook(screen.DRAW, screen.DRAW_PREFIX.hex(), "screen_draw")
+        hook(screen.MANUAL, "48780002206f0008", "screen_manual")
+        hook(screen.ARM, "48780001206f0008", "screen_arm")
     put(
         0x40021986,
         bytes.fromhex("487940229675"),
@@ -483,15 +449,21 @@ def patch_cpu(
         "code",
     )
     put(0x402296FB, b"Y:SAVE\0", b"Y:USE \0", "recorder action label", "data")
-    return bytes(data), dict(
+    plan.metadata = dict(
         baseline_sha256=baseline,
-        sha256=hashlib.sha256(data).hexdigest(),
         firmware="Digitakt II OS 1.16",
         locations=locations,
         ownership_options=options,
-        writes=writes,
+        writes=plan.writes,
         payload_bytes=sum(sizes.values()),
         status="experimental-native-image",
         hardware_ready=False,
         scope="Native device instructions; boot, UI scheduling, full project roundtrip and hardware require separate checks",
     )
+    return plan
+
+
+def patch_cpu(image, **options):
+    plan = plan_cpu(image, **options)
+    data = plan.apply()
+    return data, dict(plan.metadata, sha256=hashlib.sha256(data).hexdigest())

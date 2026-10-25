@@ -14,6 +14,34 @@ REFERENCE_REVISION = "d6449938154a98322a8c0d6844ad10260ab1e065"
 FLASH_START = 0x80000
 # Conservative ceiling: stock 1.16 accesses its persistent store at 0x380000.
 FLASH_LIMIT = 0x380000
+DSP_STAGE_BYTES = 0x100000
+DSP_COMMAND_BYTES = 1
+
+
+def verify_dsp_staging(stored_bytes, decoded_bytes):
+    """Stock MAIN checks output length only AFTER writing into its allocation.
+
+    The first output byte is boot command3; the depacker starts at buffer+1.
+    Reject both independent bounds before any artifact can be handed over.
+    """
+    require(
+        0 < stored_bytes <= DSP_STAGE_BYTES,
+        "DSP packed input exceeds stock 1 MiB staging buffer",
+    )
+    require(
+        0 < decoded_bytes <= DSP_STAGE_BYTES - DSP_COMMAND_BYTES,
+        "DSP decoded image plus boot command exceeds stock 1 MiB staging buffer",
+    )
+    return dict(
+        input_bytes=stored_bytes,
+        decoded_bytes=decoded_bytes,
+        command_bytes=DSP_COMMAND_BYTES,
+        allocation_bytes=DSP_STAGE_BYTES,
+        output_headroom=DSP_STAGE_BYTES - DSP_COMMAND_BYTES - decoded_bytes,
+        allocation_sites=["0x400cd174", "0x400cd19e"],
+        depacker="0x4013815c",
+        post_write_check="0x400cd20c",
+    )
 
 
 def digest(data):
@@ -31,6 +59,11 @@ def verify_stock_layout(stock):
         (main, 0xC9FA0, "2f3c00380000"),  # persistent store header read
         (main, 0xCA116, "2f3c00380000"),  # first store sector operation
         (main, 0xCA12E, "2ebc003c0000"),  # second store sector operation
+        (main, 0xCCD74, "2f3c00100000"),  # packed-input allocation
+        (main, 0xCCD9E, "2f3c00100000"),  # decoded output allocation
+        (main, 0xCCDD4, "0c8000100000"),  # packed-length guard
+        (main, 0xCCDF4, "204310fc00032f082f044eb94013815c"),  # command3, output+1
+        (main, 0xCCE08, "240052820c8200100000"),  # decoded length+1, after depack
     ):
         wanted = bytes.fromhex(expected)
         require(
@@ -110,6 +143,8 @@ def verify_candidate(raw, stock, expected):
         require(not any(parsed.container[end:cursor]), "Nonzero section padding")
         stored = parsed.stored[sid]
         content = parsed.section(sid)
+        if sid == 7:
+            dsp_staging = verify_dsp_staging(len(stored), len(content))
         if sid in expected:
             require(syx.classify(stored) == "packed", "Invalid packed section")
             require(content == expected[sid], f"Section {sid} content mismatch")
@@ -147,5 +182,6 @@ def verify_candidate(raw, stock, expected):
         "main_inplace_min_gap": gap,
         "main_stage_basis": "Guarded 1.16 bootstrap loader at 0x800005c6 and 0x800005e6",
         "sections": sections,
+        "dsp_staging": dsp_staging,
         "hardware_ready": False,
     }

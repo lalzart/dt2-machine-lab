@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "status": "ready",
+  "work_type": "source-reimplementation",
+  "approval": "User: All right, go ahead and implement all those changes. 2026-10-16",
+  "proposal_sha256": "cebd0ff826da8b2153a0be9496403b7e58e36ce44b73d1205f0db3456d9024d6",
+  "baseline_manifest": "out/runs/reuse-baseline-20261016-01/baseline.json",
+  "working_artifact": "Reusable OS1.16 build layer and separately selectable STRETCH optimization variants",
+  "evidence_level": "prepared-emulator",
+  "source_authority": "Owned current lab and preserved Capicola AGPL/MIT source lineage; dependency pins unchanged",
+  "equations": "Original synthesis, sparse interpolation, Q24 transport, 64-sample crossfade and gain unchanged",
+  "capacities": {
+    "capicola_bank_slots": 16,
+    "reader_lanes": 32,
+    "bank_reservation_bytes": 8388608,
+    "flex_identities": 32,
+    "flex_max_frames": 960000
+  },
+  "states": {
+    "init_reset": "reference state equality",
+    "retrigger": "reference state and PCM equality",
+    "stop_panic": "reference gate/voice and owner cleanup",
+    "mode_recall": "reference controls and generation checks",
+    "freeze_reconnect": "N/A no new operation or device endpoint"
+  },
+  "controls": "No physical/protocol/control-map changes; existing maps remain normative",
+  "experiments": {
+    "variants": [
+      "reference",
+      "trace-off",
+      "cached",
+      "cached-trace-off"
+    ],
+    "seed": 0,
+    "conditions": [
+      "idle",
+      "eligible selected banks",
+      "16 distinct sources",
+      "32 lanes",
+      "current and outgoing fades",
+      "LP0 reload",
+      "cache pressure",
+      "machine switch",
+      "finite completion"
+    ],
+    "timeline": "Same prepared control/PCM streams and native test vectors for both candidates",
+    "comparator": "Frozen reference; require exact state and PCM; reject deliberately changed audio or stale generation",
+    "tolerance": "bit equality except trace buffer when disabled; existing independent live PCM tolerances unchanged",
+    "outputs": [
+      "parity.json",
+      "runtime-comparison.json",
+      "resource-plan.json"
+    ],
+    "retention": "Fresh ignored runs; retain failed candidates"
+  },
+  "validation": [
+    "201 baseline source tests plus resource/hook/native negatives",
+    "Standalone CPU/BLOB reference hashes",
+    "Paired compiled SHARC and host maintenance comparisons",
+    "Native save dispatcher failure matrix",
+    "SINE replay suite"
+  ],
+  "forbidden": [
+    "dependency migration",
+    "ID recycling",
+    "unverified memory admission",
+    "physical device transfer",
+    "commit or publish"
+  ]
+}

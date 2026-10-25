@@ -44,6 +44,8 @@ class NativeFlexInput:
         *,
         enabled=True,
         managed_sources=False,
+        save_screen=False,
+        package=None,
     ):
         require(enabled, "Native check requires the native overlay")
         self.input = RecorderInput(source)
@@ -52,7 +54,20 @@ class NativeFlexInput:
         self.pages, self.events, self.hooks = [], [], []
         self.lock_depth = 0
         self.fw = None
-        image, self.metadata = patch_cpu(main, managed_sources=managed_sources)
+        self.extension = None
+        if package is not None:
+            from lab.cpu_fixture import load_package
+
+            image, self.extension, _ = load_package(package)
+            require(self.extension.get("flex_save_screen"), "Package lacks Flex save screen")
+            self.metadata = self.extension["flex"]
+        elif save_screen:
+            from lab.cpu_extension import build_cpu
+
+            image, self.extension = build_cpu(main, flex_save_screen=True)
+            self.metadata = self.extension["flex"]
+        else:
+            image, self.metadata = patch_cpu(main, managed_sources=managed_sources)
         self.image = image
         original_build = gui.build
 
@@ -66,13 +81,21 @@ class NativeFlexInput:
 
     def install(self):
         fw = self.fw
-        for patch in self.metadata["writes"]:
-            before = bytes.fromhex(patch["before"])
-            require(
-                fw.read(patch["address"], len(before)) == before,
-                "Native GUI patch byte guard: " + patch["label"],
-            )
-            fw.write(patch["address"], bytes.fromhex(patch["after"]))
+        if self.extension:
+            from lab.cpu_fixture import install, segments
+
+            for segment in segments(self.image, self.extension):
+                for address in range(segment.destination, segment.end, 4096):
+                    fw.m.ensure(address)
+            install(fw.write, self.image, self.extension, read=fw.read)
+        else:
+            for patch in self.metadata["writes"]:
+                before = bytes.fromhex(patch["before"])
+                require(
+                    fw.read(patch["address"], len(before)) == before,
+                    "Native GUI patch byte guard: " + patch["label"],
+                )
+                fw.write(patch["address"], bytes.fromhex(patch["after"]))
         fw.uc.ctl_remove_cache(BASE, BASE + len(self.image))
         sites = (
             0x40015FDA,

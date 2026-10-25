@@ -1,0 +1,178 @@
+{
+  "dependencies": [
+    {
+      "id": "host-cxx",
+      "revision": "AppleClang 16.0.0.16000026 C++17",
+      "license": "Existing platform toolchain; no library source copied",
+      "authentication": "compiler --version and binary hashes in run report",
+      "distribution_disposition": "local build only"
+    }
+  ],
+  "fidelity": {
+    "preserve": [
+      "All engine bytes and existing controls",
+      "R3 timing, cache, generation and memory bounds"
+    ],
+    "allowed_changes": [
+      "Optional CAPI UI and native transport",
+      "Separate trigger guard and informational status",
+      "Append-only CPU code/metadata; build plumbing"
+    ],
+    "excluded": [
+      "Core DSP changes",
+      "Transient detector, stereo or hardware claims"
+    ]
+  },
+  "files": [
+    {
+      "path": "machines/plaits-capicola-stretch-live/machine.c",
+      "sha256": "24f72884de05fb2d049874f886b515c1a5893f9d71353ff9a85ad812a6ff5245",
+      "role": "normative",
+      "license": "AGPL-3.0-only; preserved Capicola and adaptation notices"
+    },
+    {
+      "path": "machines/capicola/capacity.c",
+      "sha256": "2f639cf4e76adda1bb79b08fa43cdefab6e2938778ae22ec413b2835bedb3c60",
+      "role": "normative",
+      "license": "AGPL-3.0-only; preserved Capicola and adaptation notices"
+    },
+    {
+      "path": "machines/capicola/capacity.h",
+      "sha256": "384f735de77921faf9bfd4e8f500011857858617cdff0ad3a9bf12787e5f4485",
+      "role": "normative",
+      "license": "AGPL-3.0-only; preserved Capicola and adaptation notices"
+    },
+    {
+      "path": "machines/capicola/stretch.c",
+      "sha256": "505e2a82107b89e727ecd76ffca4fa803f65b160965a9bd919d6eb6fd6fba067",
+      "role": "normative",
+      "license": "AGPL-3.0-only; preserved Capicola and adaptation notices"
+    },
+    {
+      "path": "machines/capicola/stretch.h",
+      "sha256": "c07abfeb9e131d325d1ce39d60b237dd4ed1d2f90da131ee8f0ea3033238612a",
+      "role": "normative",
+      "license": "AGPL-3.0-only; preserved Capicola and adaptation notices"
+    },
+    {
+      "path": "machines/capicola/live.c",
+      "sha256": "d0a4fd6f93f49c9939e9d7e7ef19972861918eb2ba435c0e6449f6a1aa97792a",
+      "role": "normative",
+      "license": "AGPL-3.0-only; preserved Capicola and adaptation notices"
+    },
+    {
+      "path": "machines/capicola/live.h",
+      "sha256": "3044971a996291f4df8d95291633084f019663eb3c7ef321b6e18970488c9373",
+      "role": "normative",
+      "license": "AGPL-3.0-only; preserved Capicola and adaptation notices"
+    },
+    {
+      "path": "machines/capicola/cache.c",
+      "sha256": "6a7fcee224e6c01e112dfc05d0ad8871c9094342b5062b8efb86234dafa8f91d",
+      "role": "normative",
+      "license": "AGPL-3.0-only; preserved Capicola and adaptation notices"
+    },
+    {
+      "path": "machines/capicola/cache.h",
+      "sha256": "9d6e802165fc7b507cb404072f87454967b4a69068904882c3a60adcf9993ab0",
+      "role": "normative",
+      "license": "AGPL-3.0-only; preserved Capicola and adaptation notices"
+    },
+    {
+      "path": "machines/capicola/prepare.c",
+      "sha256": "b9299f5d158a866adf924b533cbdd089fb320943c59e6335858361906cb8a356",
+      "role": "normative",
+      "license": "AGPL-3.0-only; preserved Capicola and adaptation notices"
+    },
+    {
+      "path": "machines/capicola/prepare.h",
+      "sha256": "addc365947e88a4e5df2a45959b786e96a3765e2a55d27004097aaab5f91fec9",
+      "role": "normative",
+      "license": "AGPL-3.0-only; preserved Capicola and adaptation notices"
+    },
+    {
+      "path": "machines/capicola/LICENSE",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "role": "supporting",
+      "license": "AGPL-3.0-only; preserved Capicola and adaptation notices"
+    },
+    {
+      "path": "machines/plaits-integration/machine.c",
+      "sha256": "90d9802b8019f3b352d3432821631555e1df70a3d2d4ea07ca7da59ba5863dc9",
+      "role": "normative",
+      "license": "MIT Plaits lineage; preserved notices"
+    }
+  ],
+  "intentional_deviations": [
+    {
+      "description": "Optional UI and trigger-latched routing only",
+      "reason": "User requests removable engine comparison",
+      "validation": "Native CPU/DSP comparators and image parity"
+    }
+  ],
+  "not_applicable_rationale": "",
+  "oracle": {
+    "kind": "bit-exact",
+    "fixtures": [
+      "out/runs/capicola-panel-08/capicola.dtfr",
+      "out/runs/capicola-panel-05/flexbus.raw"
+    ],
+    "commands": [
+      "python3 scripts/check-capicola-toggle-cpu.py out/runs/<unique>",
+      "python3 scripts/check-capicola-toggle-native.py out/runs/<unique>"
+    ],
+    "metrics": [
+      "CPU fields/wire and renderer PCM",
+      "Baseline hashes and state latching"
+    ],
+    "tolerances": {
+      "stock_pcm": 0,
+      "capicola_max": 0.0001,
+      "capicola_rms": 1e-05,
+      "removed_image": 0
+    }
+  },
+  "reuse": {
+    "controller_map": {
+      "strategy": "new"
+    },
+    "ui_shell": {
+      "strategy": "reuse-fingerprinted",
+      "artifact": "lab/capicola_live_feedback.py",
+      "sha256": "c439fdf4eec9a1dd8476f2020f7a1aaf9946636e47b684d79fc7930805aeaa7a"
+    }
+  },
+  "schema_version": "sonic-research-lab-source-equivalence-v1",
+  "source_authority": {
+    "source_id": "machine-lab-r3-77b1c2a",
+    "repository_id": "https://github.com/lalzart/dt2-machine-lab",
+    "revision": "77b1c2a1746a355b66b1a7e1cb61939c9bc0fdb5",
+    "observed_branch": "codex/plaits-macro-controls",
+    "dirty_state": "Clean source before approved new toggle documents",
+    "source_root_id": "machine-lab"
+  },
+  "status": "ready",
+  "unresolved_items": [],
+  "work_type": "source-reimplementation",
+  "baseline_files": {
+    "core.c": "38d7e9242e5987908ffa9ed5d708d80e64712c08744ead8e0832472604273711",
+    "core.h": "08da25ff524ddb0b2fa0cd02b0aacc32e5ca28485c3e4d5fceb2f25ff2c04024",
+    "oracle.cc": "418e4b7d0c61d5037be94143d2229dafd7d47ef80fd41de430d14c2d8475d3db",
+    "split.c": "9676a143d0ca0ca171e622bcbc8438d42e4126057f554cbb6a8300126664c61a",
+    "split.h": "53b1dbdb29b0b56d2563469ded35fdf56a28f6854e72e2cef3c82e6aaf6cdbe7"
+  },
+  "integration_baseline_files": {
+    "machines/capicola/capacity.c": "2f639cf4e76adda1bb79b08fa43cdefab6e2938778ae22ec413b2835bedb3c60",
+    "machines/capicola/capacity.h": "384f735de77921faf9bfd4e8f500011857858617cdff0ad3a9bf12787e5f4485",
+    "machines/plaits-integration/machine.c": "90d9802b8019f3b352d3432821631555e1df70a3d2d4ea07ca7da59ba5863dc9",
+    "lab/flex_native.py": "1c6b946983cb8cf28bacf99630964da221ef01b26fe46b6fcce921e4fa63a1e6",
+    "lab/flex_native_build.py": "bf8902b6b0fdefb4843c48f5c25437069fd62cdadbfa741c0e2db31796450c3a",
+    "lab/plaits_menu.py": "a260352a087d0fcd06cc0304425a4922f7205437636d1a39995c506145cd5c43",
+    "machines/capicola/stretch.c": "505e2a82107b89e727ecd76ffca4fa803f65b160965a9bd919d6eb6fd6fba067",
+    "machines/capicola/stretch.h": "c07abfeb9e131d325d1ce39d60b237dd4ed1d2f90da131ee8f0ea3033238612a",
+    "machines/capicola/prepare.c": "b9299f5d158a866adf924b533cbdd089fb320943c59e6335858361906cb8a356",
+    "machines/capicola/prepare.h": "addc365947e88a4e5df2a45959b786e96a3765e2a55d27004097aaab5f91fec9",
+    "machines/capicola/cache.c": "6a7fcee224e6c01e112dfc05d0ad8871c9094342b5062b8efb86234dafa8f91d",
+    "machines/capicola/cache.h": "9d6e802165fc7b507cb404072f87454967b4a69068904882c3a60adcf9993ab0"
+  }
+}

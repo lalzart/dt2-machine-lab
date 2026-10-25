@@ -1,0 +1,69 @@
+{
+  "acceptance_tests": [
+    "Native exact mode vectors and lifecycle/ABI",
+    "G pixels and neighboring controls; OFF comparator",
+    "Recorded-note replay and independent native save/reload",
+    "Companion identity, corruption/missing and failure handling"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement original core and adapter",
+      "Use existing fixture and capture tools"
+    ],
+    "must_not": [
+      "Edit pinned dependencies or unrelated work",
+      "Commit, publish, flash, package firmware or relax failed tolerances"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Native four-mode core",
+    "Native G feedback/edit adapter",
+    "Recording and authenticated saved-project evidence"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Turn held chords into selectable and recordable arps",
+    "primary_claim": "Native four-mode decisions selected by G record and reload as ordinary stock notes"
+  },
+  "inputs": [
+    "Exact OS1.16 firmware and ready snapshot",
+    "Pinned DigiKit 277760aad51b036a4756db051409d4d3b1eeccbc",
+    "Real panel input and native sample tick"
+  ],
+  "proposal": {
+    "path": "docs/ARP-INTEGRATION.md",
+    "revision": "1",
+    "sha256": "b7ca385299c155efceed8cfc967f754f4c87a9a0ed835285c6b0003c9e5ffd57",
+    "approval": {
+      "state": "approved",
+      "reference": "User 2026-10-14: Lets go ahead and work on G menu control, recording/saving, ORDER and RANDOM"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Native OFF/UP/ORDER/RANDOM on one audio track; visible G menu",
+      "Native generated-note recording, playback and project save/reload",
+      "Authenticated companion mode persistence with fail-closed defaults"
+    ],
+    "out": [
+      "Hardware, permanent placement, packaging, external MIDI, tempo edits",
+      "Unproved pattern-copy/undo behavior and automatic release publication"
+    ]
+  },
+  "status": "ready",
+  "target": "ColdFire control and DigiKit OS1.16 emulator adapter",
+  "title": "Arp menu, modes and recording/save integration",
+  "work_type": "new-design",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/arp.json, menu PNG and storage report",
+    "evidence_level": "host-structural",
+    "success_observation": "Native modes, menu and recorded-note project save/reload pass with explicit persistence boundaries"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "application_feedback": [
+    "OFF, WAIT, READY, CAPI, STOCK, MIX, UNSUP, unknown"
+  ],
+  "endpoint_device_evidence": {
+    "notes": "No physical-device claim is made by this contract.",
+    "state": "deferred"
+  },
+  "gesture_state_machines": [
+    "Intent updates now; backend changes only on real trigger"
+  ],
+  "not_applicable_rationale": "",
+  "schema_version": "sonic-research-lab-control-map-v1",
+  "semantic_bindings": [
+    {
+      "id": "capi",
+      "description": "Raw0..256 default0; ON128..256; latch on trigger"
+    },
+    {
+      "id": "status",
+      "description": "Tagged per-track last-block enum0..6; cache age32 successful exchanges"
+    }
+  ],
+  "source_of_truth": {
+    "strategy": "exhaustive-compare",
+    "artifact": "docs/CAPICOLA-TOGGLE.md"
+  },
+  "status": "ready",
+  "surface_assignments": [
+    {
+      "selector": "SRC encoder C, param204/mirror27",
+      "binding": "capi"
+    },
+    {
+      "selector": "SRC caption",
+      "binding": "status"
+    }
+  ],
+  "title": "CAPI on original STRETCH"
+}

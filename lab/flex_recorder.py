@@ -56,8 +56,13 @@ class Take:
 
 
 class RecorderInput:
-    def __init__(self, source):
+    def __init__(self, source, *, ticks_per_frame=2):
+        if ticks_per_frame not in (1, 2):
+            raise ValueError("Choose one sample tick or two legacy ticks per frame")
         self.source = source
+        # Legacy Flex fixtures retain their original clock model. Next-bar BUF
+        # explicitly selects one tick/frame for the 48 kHz SSI sample counter.
+        self.ticks_per_frame = ticks_per_frame
         self.completed = None
         self.active = False
         self.started = 0
@@ -75,7 +80,8 @@ class RecorderInput:
     def count(self, clock):
         if self.active:
             self.captured = min(
-                self.source.frames, max(1, ((clock - self.started) & 0xFFFFFFFF) // 2)
+                self.source.frames,
+                max(1, ((clock - self.started) & 0xFFFFFFFF) // self.ticks_per_frame),
             )
         return self.captured
 

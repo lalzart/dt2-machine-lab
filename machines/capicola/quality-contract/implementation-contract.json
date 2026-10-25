@@ -1,0 +1,75 @@
+{
+  "acceptance_tests": [
+    "Actual Granule interior max1e-4 RMS1e-5; old capped negative fails",
+    "Boundary/numeric/lifecycle matrix and exact repeat",
+    "Target PCM and stock OFF/other-machine parity",
+    "Exact MAIN/default DSP and package checks; source suite/SINE"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement explicit optional source overlay",
+      "Use existing toolchain and fixed resource limits"
+    ],
+    "must_not": [
+      "Change pinned dependencies or frozen original core",
+      "Flash hardware, commit or publish",
+      "Relax failing tolerances"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Separate reproducible quality OS",
+    "Retained comparison WAVs and metric reports",
+    "Exact source and artifact manifests"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "primary_claim": "Quality profile matches original interior adaptive splices and safely bounds finite/loop/numeric behavior",
+    "why": "User reports choppy CAPI output; independent Granule audit exposes short adaptive fade ceiling"
+  },
+  "inputs": [
+    "Approved proposal",
+    "Original Capicola AGPL source revision120b0b8",
+    "Authenticated OS1.16 and existing core"
+  ],
+  "proposal": {
+    "approval": {
+      "reference": "User 2026-10-17: Okay, yeah, let's go ahead and try to fix this.",
+      "state": "approved"
+    },
+    "path": "docs/CAPICOLA-QUALITY-CORRECTION.md",
+    "revision": "1",
+    "sha256": "61e9d1e43e190f02424a4671c1033f624c782488753f7df711990a30ec80a858"
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Guarded source overlay with content-adaptive fade policy",
+      "Host original-Granule comparisons and native target checks",
+      "Separate all-feature OS candidate"
+    ],
+    "out": [
+      "Physical flashing, publishing or commits",
+      "New detector, stereo CAPI, UI or reservation sizes",
+      "Changes to frozen original sources"
+    ]
+  },
+  "status": "ready",
+  "target": "Digitakt II OS 1.16 SHARC STRETCH",
+  "technical_spec": {
+    "path": "docs/CAPICOLA-QUALITY-IMPLEMENTATION.md",
+    "sha256": "1751e64de5e054d2cad01aa1f6634e9bbee3d0fd0099bbd32366fe8be422667b"
+  },
+  "title": "Capicola adaptive-splice correction",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "EXPERIMENTAL_ALL_FEATURES_CAPI_QUALITY_OS1.16.syx",
+    "evidence_level": "target-build",
+    "success_observation": "Repeatable OS package; original interior host comparison and target PCM checks pass; physical/listening claims deferred"
+  }
+}

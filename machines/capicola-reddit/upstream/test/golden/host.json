@@ -1,0 +1,73 @@
+{
+ "_signal": "dbfda31e1f86084b13586899e22850c6a1eb0e9a1a0550a081738bc1854cc89d",
+ "grid_rep": {
+  "rms": 0.122444,
+  "sha256": "0dfd03cd88bd7837f9871b4592b64765865015b8e162e378a672091a7fd21e3f",
+  "words": 1920
+ },
+ "grid_str": {
+  "rms": 0.043381,
+  "sha256": "70423c31e13fe0e56c3ab68cd595c4be88db2b89755b73e06982542985b937c6",
+  "words": 1920
+ },
+ "repitch_stereo": {
+  "rms": 0.133243,
+  "sha256": "ff631cbf99a59ae52804c03c9e003f8dce1c018c3c92ecff241ef4cbf1b9b63c",
+  "words": 1920
+ },
+ "slice_rep": {
+  "rms": 0.157694,
+  "sha256": "63e228cf8f55590becd2ba40550d5eab225818aae2a08519b4f510293f5cf5b4",
+  "words": 1920
+ },
+ "slice_str": {
+  "rms": 0.047683,
+  "sha256": "a5aa3947554d4ff40b7b5a5c31e4fbcb33c4825a333b94f7bedfa08ebe29fbb6",
+  "words": 1920
+ },
+ "stretch_rev": {
+  "rms": 0.118517,
+  "sha256": "1d7b0cab510cf2e2df9064aa7faf471c84df82a310bd1bc65d1686fb471b1e45",
+  "words": 960
+ },
+ "stretch_stereo": {
+  "rms": 0.322087,
+  "sha256": "a03ebe5c19c05666fae62666c80bf6fa2900655622849c2cdfc3f56ddfbf26d0",
+  "words": 1920
+ },
+ "tone_down7": {
+  "rms": 0.187039,
+  "sha256": "6f578212e95acd301c8dd631dd0e549624ceea437a02c324dce7267d087b0daf",
+  "words": 38400
+ },
+ "tone_plain": {
+  "rms": 0.188849,
+  "sha256": "9f83eeae03ed87c7149a1df117571314a48abcc3c07d9fb5454480de5cbf96f8",
+  "words": 38400
+ },
+ "tone_retrig": {
+  "rms": 0.187569,
+  "sha256": "63cc74ab63449209b2412a3bafd3cca38a183baf7516480297ffb7954974f395",
+  "words": 38400
+ },
+ "tone_rev": {
+  "rms": 0.190145,
+  "sha256": "37cdfaef14e75eccc7fc1a7a1999cb8f1733c8b41fc1f26e81d7d3a2a5a81bc7",
+  "words": 38400
+ },
+ "tone_revloop": {
+  "rms": 0.190712,
+  "sha256": "9a93948814034cd34b1a914444496524c9882750706105d080c03f037249ac9a",
+  "words": 38400
+ },
+ "tone_up24": {
+  "rms": 0.189529,
+  "sha256": "817e31323e7e56e5c3e9cb624c6e75a86e82445d5697adb4157175080ffdf8d6",
+  "words": 38400
+ },
+ "tone_up7": {
+  "rms": 0.187738,
+  "sha256": "f89258d421b2d1224eca351a9775bdd3e4961b125b9440b346033f329b861806",
+  "words": 38400
+ }
+}

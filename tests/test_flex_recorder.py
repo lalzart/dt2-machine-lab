@@ -59,6 +59,18 @@ class RecorderTests(unittest.TestCase):
         self.assertEqual(r.count(0x100), 256)
         self.assertEqual(r.count(0xFFFF), 2000)
 
+    def test_explicit_ssi_sample_clock_preserves_legacy_default(self):
+        legacy = RecorderInput(self.source())
+        sample_clock = RecorderInput(self.source(), ticks_per_frame=1)
+        for recorder in (legacy, sample_clock):
+            recorder.begin(0xFFFFFF00)
+            recorder.finish(0x100)
+        self.assertEqual(legacy.captured, 256)
+        self.assertEqual(sample_clock.captured, 512)
+        self.assertEqual(sample_clock.candidate(0, 512).pcm, self.source().pcm[:2048])
+        with self.assertRaises(ValueError):
+            RecorderInput(self.source(), ticks_per_frame=0)
+
     def test_wave_input_requires_exact_supported_format(self):
         with tempfile.TemporaryDirectory() as d:
             p = Path(d) / "input.wav"

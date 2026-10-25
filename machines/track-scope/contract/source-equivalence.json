@@ -1,0 +1,260 @@
+{
+  "dependencies": [
+    {
+      "authentication": "Pinned revision and clean tree via labctl doctor",
+      "distribution_disposition": "Local build/test tool only; no publication",
+      "id": "digikit",
+      "license": "GPL-2.0",
+      "revision": "277760aad51b036a4756db051409d4d3b1eeccbc"
+    },
+    {
+      "authentication": "Pinned revision and clean tree via labctl doctor",
+      "distribution_disposition": "Local build/test tool only; no publication",
+      "id": "selache",
+      "license": "GPL-3.0",
+      "revision": "2b26d3b75c53063575bc5c820fa0d38879335187"
+    }
+  ],
+  "fidelity": {
+    "allowed_changes": [
+      "Track-indexed controls/state and keyboard selected-track ownership"
+    ],
+    "excluded": [
+      "Physical timing, external sync, simultaneous 16-track capacity guarantees"
+    ],
+    "preserve": [
+      "All engine math, seed, gain, controls, timing and stock fallback semantics",
+      "Existing AR16 data and default R2 packages"
+    ]
+  },
+  "files": [
+    {
+      "license": "Existing lab-owned tooling; no distribution or dependency relicensing",
+      "path": "deps.lock.json",
+      "role": "supporting",
+      "sha256": "08b6c531fa071e536c024558ecbe814335c00fc1220472bc7614c108852bd882"
+    },
+    {
+      "license": "Existing lab-owned tooling; no distribution or dependency relicensing",
+      "path": "lab/arp_firmware.py",
+      "role": "normative",
+      "sha256": "dd9acaf2c86b903ab7695614f16c7ab1056b678c69edb39c1ea34da6a5347466"
+    },
+    {
+      "license": "Existing lab-owned tooling; no distribution or dependency relicensing",
+      "path": "lab/arp_tempo.py",
+      "role": "normative",
+      "sha256": "e08929f8909109b6b7e092abf5626e88c06643d8cf8674eca5cf8e943256d0dc"
+    },
+    {
+      "license": "Existing lab-owned tooling; no distribution or dependency relicensing",
+      "path": "lab/plaits_controls.py",
+      "role": "normative",
+      "sha256": "1c6f01ce8c9ffc740571f9568781dcb9c624b1e4b07d2749d4506df5cb2cb0cf"
+    },
+    {
+      "license": "Existing lab-owned tooling; no distribution or dependency relicensing",
+      "path": "lab/plaits_integration.py",
+      "role": "normative",
+      "sha256": "d7c9d7ada5f11a07f074010c960e70700e2cc0f9d1f8ec682beb08a55785d884"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-bank/controls.h",
+      "role": "normative",
+      "sha256": "dab00f2905d399127541408d163be079005ba9dab2cad711b14179e0c61b321f"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-bank/controls.json",
+      "role": "normative",
+      "sha256": "62958218b11a385d86f5f48f236e92ac4851044afe4eadbf1334ca147c87e5b0"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-bank/core.c",
+      "role": "normative",
+      "sha256": "de58b92da3875506b5c5d9390bc90fddefe67079c49be5b6f197634b1125448e"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-bank/core.h",
+      "role": "normative",
+      "sha256": "416bcc9f488c4da24dfb98825673d04b004b4e4582266ff067db7fb8654cfc51"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-bank/machine.c",
+      "role": "normative",
+      "sha256": "a8a4812e5f4f5ef2de998356a1778a45508d7d8a8a9231fac46c80b3f331ec69"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-bank/source-lock.json",
+      "role": "normative",
+      "sha256": "b27733281617a0a9dc1487a7e378f47df5c6555cac91a99ef5c8e7e5cbff3015"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-bank/tables.h",
+      "role": "normative",
+      "sha256": "a05a2df0138dac244a4495d78a60cbcdc6384df5c83a3dc496fcc9ba371d2ab3"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-bank/target.c",
+      "role": "normative",
+      "sha256": "51e7883a9efcfa437acf65a3ab3d6d688f2119975c21049a0286d34bd0e989f5"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-controls/controls.h",
+      "role": "normative",
+      "sha256": "9ca11895bc7d8db13b8593e22eec26757ad4464628a5cd0313e758002a549ae0"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-integration/machine.c",
+      "role": "normative",
+      "sha256": "90d9802b8019f3b352d3432821631555e1df70a3d2d4ea07ca7da59ba5863dc9"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-trio/controls.h",
+      "role": "normative",
+      "sha256": "f66eba875ee7cc361f77a8dd3f57d62f407bc464e9a57a6af22da0002142e995"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-trio/controls.json",
+      "role": "normative",
+      "sha256": "68ca699b38bde3852c5a5243cd6e7c0b0784380524fcf64229ed058e53142b8f"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-trio/core.c",
+      "role": "normative",
+      "sha256": "42391fd0efa8da75dad31399bb100ad4f976861e342fb07c0ae0941bd69461a3"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-trio/core.h",
+      "role": "normative",
+      "sha256": "cc0dd02278d581e2657604199aa2d9d03810f0fe8b04751e9707a87f79d45e09"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-trio/machine.c",
+      "role": "normative",
+      "sha256": "9bab8342be131662f1c63dd4b6de0fb4a23da2d0b5950edfe82cb881c76d1394"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-trio/source-lock.json",
+      "role": "normative",
+      "sha256": "bb5cbf76864e75f1d21a79e3755d687d6f510d87a26ee7e1609541834d4cc886"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-trio/tables.h",
+      "role": "normative",
+      "sha256": "29ab94745f993395fba9829d5275040195546217179641e54781008fbddbe5e0"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-trio/target.c",
+      "role": "normative",
+      "sha256": "5f5ff8fdfd493321d1377c507262d5e794b300f4dea3db3f6f43cfa2346137dd"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-va/core.c",
+      "role": "normative",
+      "sha256": "d12ecf7ee73a9961049975df980329c92f7a3df2c70b59e48ded4d3aaf71974d"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-va/core.h",
+      "role": "normative",
+      "sha256": "16c05deade2e17190d678787aaa8ce2396d1a5e4e0321a938917fa0278c6162b"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-va/machine.c",
+      "role": "normative",
+      "sha256": "02c83edb6a445372410e89626c9de26793f57d06fea795bad3cd3cb3bd50cfd4"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-va/machine.json",
+      "role": "normative",
+      "sha256": "b1cfbb98e402a487b5c24b4a15554e6b04c03a71bf589ac243330b10e9a31636"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-va/pitch_tables.h",
+      "role": "normative",
+      "sha256": "ac58dbe7b995fd47a037a80122d24d387be213f886271254a45a44c9764fd2fd"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-va/source-lock.json",
+      "role": "normative",
+      "sha256": "fca5afb5138d7db04b015cd8887a2e1f701ba5e5b4a30f287fe6c48ecf50d592"
+    },
+    {
+      "license": "Plaits MIT with original notices; lab-owned routing maintenance authorized by user",
+      "path": "machines/plaits-va/target.c",
+      "role": "normative",
+      "sha256": "fa400b76ebe2698dc9f3df0b2933356bb36f0c8d86e78b32be0705f926fcea33"
+    }
+  ],
+  "intentional_deviations": [
+    "Remove track-1 restriction; one keyboard arp follows selected track, settings shared per pattern"
+  ],
+  "not_applicable_rationale": "",
+  "oracle": {
+    "commands": [
+      "Configured python -B -m unittest discover -s tests -q",
+      "python3 scripts/check-any-track.py out/runs/<unique> --package out/runs/<package>"
+    ],
+    "fixtures": [
+      "Preserved R2 package and CPU/DSP traces",
+      "Equivalent track-local controls in the frozen proposal"
+    ],
+    "kind": "bit-exact",
+    "metrics": [
+      "PCM bytes and lane state isolation",
+      "CPU controls, registers, stock path and musical event equality"
+    ],
+    "tolerances": {
+      "cpu_control_error": 0,
+      "pcm_max_error": 0,
+      "state_bytes": 0
+    }
+  },
+  "reuse": {
+    "controller_map": {
+      "artifact": "lab/arp_tempo.py",
+      "sha256": "e08929f8909109b6b7e092abf5626e88c06643d8cf8674eca5cf8e943256d0dc",
+      "strategy": "reuse-fingerprinted"
+    },
+    "ui_shell": {
+      "artifact": "lab/plaits_integration.py",
+      "sha256": "d7c9d7ada5f11a07f074010c960e70700e2cc0f9d1f8ec682beb08a55785d884",
+      "strategy": "reuse-fingerprinted"
+    }
+  },
+  "schema_version": "sonic-research-lab-source-equivalence-v1",
+  "source_authority": {
+    "dirty_state": "Inherited staged and unstaged files copied unchanged before this task",
+    "observed_branch": "codex/plaits-macro-controls",
+    "repository_id": "local dt2-machine-lab",
+    "revision": "source-hash snapshot track-unlock-baseline-20261019-01",
+    "source_id": "user-confirmed stopped-arp R2 wrappers and licensed Plaits cores",
+    "source_root_id": "frozen-stopped-arp-R2-source"
+  },
+  "status": "ready",
+  "unresolved_items": [],
+  "work_type": "source-reimplementation"
+}

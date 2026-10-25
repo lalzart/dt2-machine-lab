@@ -5,7 +5,7 @@ project pool. Dialog copies own only those two pointers. NO destroys the dialog
 without calling the writer. All emitted instructions execute on the device.
 """
 
-from lab.flex_native import Code
+from lab.emit import Code
 
 
 def current_pool(address):
@@ -26,7 +26,8 @@ def current_pool(address):
     return c.finish(address)
 
 
-def target(address, pool, lookup):
+def target(address, pool, lookup, *, sample_machines=False, settings_offset=0xA0,
+           direct_track=False):
     """Return node in D0 and current project pool in D1, or D0=0."""
     c = Code()
     c.emit("4feffff4 48d70c04 246f0010")
@@ -34,17 +35,27 @@ def target(address, pool, lookup):
     c.emit("2640")
     c.imm("b7fc", 0)
     c.branch(7, "missing")
-    c.emit("2f2a00a0")
-    c.imm("4eb9", 0x4004ABE8)
-    c.emit("588f")
+    if direct_track:
+        c.emit("200a")
+    else:
+        c.emit(f"2f2a{settings_offset:04x}")
+        c.imm("4eb9", 0x4004ABE8)
+        c.emit("588f")
     c.imm("0c80", 15)
     c.branch(2, "missing")
     c.imm("223c", 0x450)
     c.emit("4c010800")
     c.imm("2079", 0x80004704)
     c.emit("d1c0 7200 122800d6")
-    c.imm("0c81", 0)
-    c.branch(6, "missing")
+    if sample_machines:
+        c.imm("0c81", 4)
+        c.branch(3, "sample_machine")
+        c.imm("0c81", 6)
+        c.branch(6, "missing")
+        c.label("sample_machine")
+    else:
+        c.imm("0c81", 0)
+        c.branch(6, "missing")
     c.emit("7000 30280080")
     c.imm("0c80", 1024)
     c.branch(4, "missing")
@@ -198,8 +209,12 @@ def promote(address, *, retire=0):
     return c.finish(address)
 
 
-def write_named(address, pool, saver, promote_at, directory):
-    """Write a new /recorded/name, then promote this node's references only."""
+def write_named(address, pool, saver, promote_at, directory, *, prepare_only=False):
+    """Write /recorded/name; optionally return its ref through a fourth argument.
+
+    The bank transaction prepares a file without publishing/retiring the take.
+    Legacy callers retain the original three-argument promotion behavior.
+    """
     c = Code()
     # Saved D2/A2-A4, new ref (16), 72-byte path, padding.
     c.emit("4fefff98 48d71c04 246f006c 266f0070 286f0074")
@@ -242,9 +257,12 @@ def write_named(address, pool, saver, promote_at, directory):
     c.emit("4fef000c")
     c.imm("0c80", 0)
     c.branch(6, "failed")
-    c.emit("41ef0010 2f08 2f0b 2f0a")
-    c.imm("4eb9", promote_at)
-    c.emit("4fef000c")
+    if prepare_only:
+        c.emit("226f0078 41ef0010 22d8 22d8 22d8 22d8 7000")
+    else:
+        c.emit("41ef0010 2f08 2f0b 2f0a")
+        c.imm("4eb9", promote_at)
+        c.emit("4fef000c")
     c.branch(0, "done")
     c.label("failed")
     c.emit("70ff")

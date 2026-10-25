@@ -1,0 +1,30 @@
+{
+  "application_feedback": [
+    "Existing Keyboard Setup mode/rate reflected on every valid selected track",
+    "Existing machine menu allows Plaits on all valid tracks"
+  ],
+  "endpoint_device_evidence": {
+    "notes": "No physical-device claim is made by this contract.",
+    "state": "deferred"
+  },
+  "gesture_state_machines": [
+    "STOP or track change closes old arp gate before replacing destination",
+    "Physical owned releases are consumed after a track change"
+  ],
+  "not_applicable_rationale": "",
+  "schema_version": "sonic-research-lab-control-map-v1",
+  "semantic_bindings": [
+    "Original mode/rate and native BPM for keyboard arp",
+    "Original HARM/TIMB/MORP/MODEL/LEN raw transforms indexed per track"
+  ],
+  "source_of_truth": {
+    "artifact": "docs/ANY-TRACK-FEATURES.md",
+    "strategy": "exhaustive-compare"
+  },
+  "status": "ready",
+  "surface_assignments": [
+    "Current track keys 1..16 select keyboard arp destination",
+    "Existing G mode/rate and Plaits SRC controls retained"
+  ],
+  "title": "Remove fixed track-1 routing"
+}

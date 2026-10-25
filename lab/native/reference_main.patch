@@ -1,0 +1,99 @@
+--- a/src/runtime.rs
++++ b/src/runtime.rs
+@@ -371,11 +371,43 @@
+         Self::build(syx, card, ExecutionPolicy::Reference, Some(base_sha256))
+     }
+ 
++    /// Execute a patched image using anchors resolved from authenticated stock
++    /// firmware. The reference supplies only service addresses and the profile;
++    /// RAM and emulated flash always contain the candidate's own bytes.
++    /// The caller must preserve those service addresses and ABIs in its patch.
++    pub fn new_patched_with_reference(
++        syx: &[u8],
++        card: Option<Card>,
++        stock_syx: &[u8],
++    ) -> Result<Self, String> {
++        let reference = parse(stock_syx).map_err(|e| format!("parse reference: {e}"))?;
++        let mains: Vec<_> = reference.sections.iter().filter(|s| s.id == 3).collect();
++        if mains.len() != 1 || mains[0].destination != MAIN_LOAD {
++            return Err("reference requires one MAIN at its stock destination".into());
++        }
++        let base = digest(stock_syx);
++        let registry = device_profile::Registry::load().map_err(|e| e.to_string())?;
++        registry.boot_for_main(&base, &mains[0].bytes)
++            .map_err(|e| format!("untrusted reference firmware: {e}"))?;
++        Self::build_resolved(syx, card, ExecutionPolicy::Reference,
++            Some(&base), Some(&mains[0].bytes))
++    }
++
+     fn build(
+         syx: &[u8],
+         card: Option<Card>,
+         policy: ExecutionPolicy,
+         base_sha256: Option<&str>,
++    ) -> Result<Self, String> {
++        Self::build_resolved(syx, card, policy, base_sha256, None)
++    }
++
++    fn build_resolved(
++        syx: &[u8],
++        card: Option<Card>,
++        policy: ExecutionPolicy,
++        base_sha256: Option<&str>,
++        reference_main: Option<&[u8]>,
+     ) -> Result<Self, String> {
+         let firmware = parse(syx).map_err(|e| format!("parse SYX/ELE3: {e}"))?;
+         let decoded = decode_syx(syx).map_err(|e| format!("decode SYX transport: {e}"))?;
+@@ -431,24 +463,25 @@
+             .panel
+             .clone()
+             .ok_or("known firmware has no panel profile")?;
+-        let task_create = verified_task_create(&main)?;
+-        let mainloop = unique_signature_data(&main, MAINLOOP_SIG, Some(15))
++        let symbols = reference_main.unwrap_or(&main);
++        let task_create = verified_task_create(symbols)?;
++        let mainloop = unique_signature_data(symbols, MAINLOOP_SIG, Some(15))
+             .ok_or("mainloop signature ambiguous")?;
+-        let panel_diff = unique(&main, PANEL_DIFF_SIG, &data_mask(PANEL_DIFF_SIG, None))?;
+-        let (fb_front, _) = operand_pair(&main, panel_diff)?;
++        let panel_diff = unique(symbols, PANEL_DIFF_SIG, &data_mask(PANEL_DIFF_SIG, None))?;
++        let (fb_front, _) = operand_pair(symbols, panel_diff)?;
+         let job_pump =
+-            unique_signature(&main, JOB_PUMP_SIG, None).ok_or("job_pump signature ambiguous")?;
+-        let flash_read = unique(&main, FLASH_READ_SIG, &vec![false; FLASH_READ_SIG.len()])?;
++            unique_signature(symbols, JOB_PUMP_SIG, None).ok_or("job_pump signature ambiguous")?;
++        let flash_read = unique(symbols, FLASH_READ_SIG, &vec![false; FLASH_READ_SIG.len()])?;
+         let fs_worker = match contract {
+             device_profile::ReadinessContract::MainPanelFsCheckV1 => {
+-                Some(resolve_fs_worker(&main)?)
++                Some(resolve_fs_worker(symbols)?)
+             }
+             device_profile::ReadinessContract::MainPanelV1 => None,
+         };
+-        let (_, semaphores) = resolve_sd_semaphores(&main)?;
+-        let (intro_done, _) = resolve_intro_marks(&main)?;
++        let (_, semaphores) = resolve_sd_semaphores(symbols)?;
++        let (intro_done, _) = resolve_intro_marks(symbols)?;
+         let display_start = unique(
+-            &main,
++            symbols,
+             &hex("701041f9fc08c000245f13c1fc050050722313c0fc05001d"),
+             &data_mask(
+                 &hex("701041f9fc08c000245f13c1fc050050722313c0fc05001d"),
+@@ -456,13 +489,13 @@
+             ),
+         )?;
+         let (uart_wait, uart_handler, uart_ring_ptr, uart_consume, uart_callback, uart_rx_isr) =
+-            resolve_uart(&main)?;
++            resolve_uart(symbols)?;
+         let set_pixel = unique(
+-            &main,
++            symbols,
+             &hex(SET_PIXEL_SIG),
+             &vec![false; SET_PIXEL_SIG.len() / 2],
+         )?;
+-        let (current_tcb_addr, _) = resolve_context_switch(&main)?;
++        let (current_tcb_addr, _) = resolve_context_switch(symbols)?;
+ 
+         let card = match card {
+             Some(card) => card,

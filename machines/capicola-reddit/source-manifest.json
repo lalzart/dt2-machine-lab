@@ -1,0 +1,402 @@
+{
+  "archive": "dt2-capicola-main (1).zip",
+  "sha256": "87bb2b073dae7253d7694198eced9a63ea4313373eb5ac1573902560cf19ad23",
+  "files": [
+    {
+      "path": ".gitignore",
+      "sha256": "c8042a38adeee0478fb7be15e5b584a159fa6d5cf793e0b22ef145cfd9dc0584",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "README.md",
+      "sha256": "d1b3f3d58b31e4ee9f0d32639fb3303dd26ef90bc46889bd24752016748973d7",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "build.sh",
+      "sha256": "40e973b22fb80b9f1566b43eb46dd6b1b651ac14e2a16b2d21916f66d22aef18",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/capicola.c",
+      "sha256": "cad2e8d347f2641425efb4aec9abb7ea3c3b9b9fd4bd8d671b844d177766a1b0",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/capicola.h",
+      "sha256": "8c93db807e858e6bc4658a3c0ee2a34e5b3a88f9cfa2ec25ccb1fd5fa9a24e24",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/bench.c",
+      "sha256": "f06864611bfa63d84369c6a8afab36ddac2a5dff855248c2b8ceee143a30bd8b",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/bench.ldf",
+      "sha256": "a61cfba757ee349cab556f0d2aaff3f1b3c8057eb683e3d94d1684811f455e3d",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/dt2entry.asm",
+      "sha256": "84e742995ed4d35d144f885cfe1f98d82915146b47d06a894f04ea0d212947e9",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/dt2gen.c",
+      "sha256": "f352792959ea99efd51c648712f24b1b6f04b0bf239a4e3cc5837ec78ffb59da",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/feed.asm",
+      "sha256": "76aebcd455ba63c485e804510d4fb00cb340d9bd769912ecfb41587b3aa7ef8e",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/gen.ldf",
+      "sha256": "aeea6c88c1072e48a440d63b1d2af859cc0ec8a31fa34d6a07200ab55e5e3cea",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/gen_host.c",
+      "sha256": "3b1fa56bebd318854e4453a0ae41d60dac2ab1d0a6c0e109ab13222bb25d46b2",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/l1_diag.ldf",
+      "sha256": "986a0b957857cb43a5b533c24d7ddba9750f3a04ad9caab549a2e01c4b61d464",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/l1l2.ldf",
+      "sha256": "2db9f0ff88a8efb30bab0464b441c5b653c91f0ab9e934a162a188b2d3578f25",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/memfn.asm",
+      "sha256": "adf0d9d2d195b74cefc194a1f6afcd85da9b193a43c8cb2b7dc5ad38ff057b4b",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/memtest.c",
+      "sha256": "57e447da99ac12ecb848ab8d7c9e7845c1491af1b2de47d3b6877b6dee530141",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/memtest_l2.ldf",
+      "sha256": "f46b476d6a22c055ee937543b716218949c6b30bd36b5ece1533eeb193003ea9",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/render.asm",
+      "sha256": "0677f95bbaaa5d946671923ad5de4115a26af033f185f70aa089768d33165d75",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/rt.c",
+      "sha256": "910a26c280921081c90bf0314aeb3bc2eb580c8bf6a0529e2d3066b562879be6",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/ubench.asm",
+      "sha256": "65579c09b8af8c74f0ab415fec1d077e22270720303cb5b192e1ee436898dcae",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/ubench.c",
+      "sha256": "91d2ee8d7b877e2deea14e0fdd6eb27e51776f079b5c6310d8ceebd9da9add9b",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/sharc/unit.c",
+      "sha256": "87c4a26f2bc166f9361a9309904429059693ad91d80e623eaa0de98eb076d6af",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/test/compare.cpp",
+      "sha256": "95033300b2a29c7c3beeeb3fb7eec1634770fdb1f3cab0c8daeeda1aa3a60e2a",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/test/f32cmp.py",
+      "sha256": "4c20d8db820e4f8b7dc93059890cac7dd08c8c0fed7d726ece79bbe9eb3ecc08",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/test/leash_check.c",
+      "sha256": "19d900400d83464d6420518145bf5f2e15728ac446076fa2abb3dadbe87fad8e",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/test/leash_check.py",
+      "sha256": "87a765922ceae2e3074eafa0aa185367f391332bbed03aef8275a4bf7fc282a8",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/test/pluck_check.c",
+      "sha256": "c2daf844fbd28d47bbcd9bc175f57a8fc8c83fc2d19e411a6b3cdcd3395a4080",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/test/pluck_check.py",
+      "sha256": "57afbfda61856a09942601fa0dad1b325949e804e166b3e0e701cdb1b4322e78",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/test/quality_check.c",
+      "sha256": "8e4f95387b48e10f8937e2184c67a2c38e61786aa72f14f697b4452e44f4829f",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/test/quality_check.py",
+      "sha256": "2ac8eb989c2dfb6f623518ac94c1a0a351f5ea3becb056ee697d26417b59c2b2",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/test/render.c",
+      "sha256": "00ade9752c67daff3fce6fb7dc5ce03823cf85ce7ee0cf544af55a859d653a6f",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/test/source.c",
+      "sha256": "b4d0e79091f7ad8023b7fd0321f4c840c42995f22b1811ad7203d37a59919a3a",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/test/source_check.py",
+      "sha256": "a929191c78be9f207ac714b8dd55c2166757d535e4ecaa9f174b5a62e3ceb311",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/test/stereo_check.c",
+      "sha256": "b44a58a4f420810820bc3bb2b5680be5184ad0d44b610a46e50f5b42f632336e",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "capicola_c99/test/stereo_check.py",
+      "sha256": "81a075a7007211a30772f05157272887f06503044408ae1c67bfc7f2d522378b",
+      "role": "normative",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "firmware/addr_1.17.json",
+      "sha256": "a02578c57be518a4f4e14259aa5743f2989e36939f679b29fb7f148044279f19",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "firmware/addrmap.py",
+      "sha256": "6d9fa9827e146c4b4828f9088feb0c80b570cd8b767908291b04340140e6734f",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "firmware/build.py",
+      "sha256": "772abb9ebaf663dea03ab7e18a8dd5b90c6e163c181bdc0f09c30a785d993735",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "firmware/build_cap.py",
+      "sha256": "093c882bf69ee875a468c4940cf5522fbc0b96610748a91880c969aeee3b4f53",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "firmware/dt2_116.inc",
+      "sha256": "baee569921619d2cbc83e7c4df2ad9f64a32bc352e949882b42a20df2b14a837",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "firmware/dt2probe.py",
+      "sha256": "1694df24c819808291ee8cf081553fccc26a360dac286cad755db571d45ee4e9",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "firmware/fwver.py",
+      "sha256": "6c30dbdcfd2bb2e06df44ffc0dd20fb5a4a95330192accbbace0f5cb9aabacb8",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "firmware/probe.S",
+      "sha256": "e3e27b2a718dee442e5ff98b851b1940d0bc4ec9d9c5fd619f02b3d46a1f34d0",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "firmware/sec7.py",
+      "sha256": "e6dfe98a667af9ce02bae5d7301dd0794f1bb022ccd67872024a070b6c548797",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "test/agg.py",
+      "sha256": "4c260462ea7479f638184aad246029a2134f3b7dda0a9f3c6577ae314e207afe",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "test/dt2trace_gen.py",
+      "sha256": "beb6304a0ad2aacad5fae643ac8da6a155ecbc82b291d68c9fc45e92f90c04aa",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "test/golden/grid_rep.rec",
+      "sha256": "a421ddf39a17ff2c2ff37a43f468dc05fdc69524974fd6549634b000d21d61b4",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "test/golden/grid_str.rec",
+      "sha256": "22b6236bf89c7e4b2180ac937f21bdffea2911fd9bcca8637ee8c6919b1f41c9",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "test/golden/host.json",
+      "sha256": "68eecaa991940027eea6209bc7edb9e56d1533f8e077ea52eca16d8b004c7515",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "test/golden/repitch_stereo.rec",
+      "sha256": "9e4e20eb70d5531fda819407af7ca0c3b2887ae904d814e41ac11a6ad6b6f901",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "test/golden/slice_rep.rec",
+      "sha256": "ca2beebb393a8c8abb9698be5f15a2ae9e1c6b01a2b267d390bbe82621d9eb47",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "test/golden/slice_str.rec",
+      "sha256": "f35b2cd31703db87f8fcf0f561526b51c676f16689b0c937fd8a17b80506841c",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "test/golden/stretch_rev.rec",
+      "sha256": "0bda7c65eb83128d73c921b36eed4760843352b683588c972ce0a03d8e862ad4",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "test/golden/stretch_stereo.rec",
+      "sha256": "6f34e630effc314bf857a056abd78b6458aba0d5b41f47edccdc36365160d271",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "test/hostq.py",
+      "sha256": "0f3a2129ff5785d494605c414d8108a89b8ad5fd0be75cad5cb3347f4533338f",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "test/rec_st.txt",
+      "sha256": "6899520399dfe873fa3f4c7acd3c2ceb8ec65166b9e0c28959c809f1b0923536",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "test/run_tests.py",
+      "sha256": "31abc5175b231fb5078f5334249142c8b9f10044405fb615446709e82f804e06",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "test/slice_select.py",
+      "sha256": "a82bdb956184c5b3c8953ca1f0f3cb53fc389c8ee423337d2206e5b80ddf89fe",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "test/tone.i16",
+      "sha256": "0c4ac489898f3884601dad7178472942ed575892ff7b1043958a16aeb4d192ea",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "tools/build_gen.sh",
+      "sha256": "0272548d719785c44605b4cb06ce5c96ce68287fbc44db76347a0ec470269d83",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "tools/cold_split.py",
+      "sha256": "41cef60cc56d0770430396d9f417036565cbfedd22853c5c60fe56a0fd61098a",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "tools/doscan.py",
+      "sha256": "7631c8c52c745df0249eef09f4c7221a6ea7a5446938a2c6c262907f88fdd337",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "tools/gen_bd.py",
+      "sha256": "422cdf1af2ecfb767a99309c189f12ba9d43a090b3ef8158185252959069cd0b",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "tools/labelcheck.py",
+      "sha256": "0f182cce4a80aea8ae4c01e463741fd12ba2f4df58aaad1d5a741254414748d3",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    },
+    {
+      "path": "tools/mksig.py",
+      "sha256": "732889cc082f2b8a23cb796edbd9437ae438925d43db9893fd44b3e791603c00",
+      "role": "supporting",
+      "license": "AGPL-3.0-or-later; preserve hy3na-k1ng and Heavylight attribution"
+    }
+  ]
+}

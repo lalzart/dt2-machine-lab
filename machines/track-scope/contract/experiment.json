@@ -1,0 +1,56 @@
+{
+  "artifact_retention": {
+    "location": "out/runs/any-track-*; all failures retained with hashes",
+    "policy": "external"
+  },
+  "comparator_condition_id": "R2-T1",
+  "conditions": [
+    {
+      "events": [
+        "Six models, identical pitches/macros and per-track triggers",
+        "32 lane interleaving and stock/mute negatives"
+      ],
+      "id": "R2-T1",
+      "purpose": "Preserved musical oracle"
+    },
+    {
+      "events": [
+        "Six models, identical pitches/macros and per-track triggers",
+        "32 lane interleaving and stock/mute negatives"
+      ],
+      "id": "any-track",
+      "purpose": "Index inputs and state by track"
+    },
+    {
+      "events": [
+        "Six models, identical pitches/macros and per-track triggers",
+        "32 lane interleaving and stock/mute negatives"
+      ],
+      "id": "old-non-T1",
+      "purpose": "Falsifying old fixed-track comparator"
+    }
+  ],
+  "outputs": [
+    {
+      "kind": "native metrics and hashes",
+      "name": "report.json"
+    },
+    {
+      "kind": "retained PCM or hash-indexed case outputs",
+      "name": "pcm.f32"
+    }
+  ],
+  "sample_rate_hz": 48000,
+  "schema_version": "sonic-research-lab-experiment-v1",
+  "seed": 324508639,
+  "status": "ready",
+  "supported_block_frames": [
+    32
+  ],
+  "timeline_convention": "Native 64-sample DSP source calls; frame-indexed triggers at 0 and 8, model edit at 12, silence through 24 blocks; arp uses native audio-sample timestamps",
+  "title": "Remove fixed track-1 routing",
+  "tolerances": {
+    "pcm_max_error": 0,
+    "state_cross_writes": 0
+  }
+}

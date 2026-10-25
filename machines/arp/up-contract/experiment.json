@@ -1,0 +1,169 @@
+{
+  "artifact_retention": {
+    "policy": "reproducible-only",
+    "location": "out/runs/<unique>; retain failures and manifests"
+  },
+  "comparator_condition_id": "off",
+  "conditions": [
+    {
+      "id": "off",
+      "purpose": "Stock negative comparator",
+      "events": [
+        {
+          "tick": 0,
+          "op": "initialize",
+          "mode": 0
+        },
+        {
+          "tick": 100,
+          "op": "press",
+          "notes": [
+            67,
+            64,
+            60
+          ]
+        },
+        {
+          "tick": 200,
+          "op": "play"
+        },
+        {
+          "tick": 60000,
+          "op": "release-all"
+        },
+        {
+          "tick": 80000,
+          "op": "stop"
+        }
+      ]
+    },
+    {
+      "id": "up",
+      "purpose": "Native ascending held notes",
+      "events": [
+        {
+          "tick": 0,
+          "op": "initialize",
+          "mode": 1
+        },
+        {
+          "tick": 100,
+          "op": "press",
+          "notes": [
+            67,
+            64,
+            60
+          ]
+        },
+        {
+          "tick": 200,
+          "op": "play"
+        },
+        {
+          "tick": 60000,
+          "op": "release-all"
+        },
+        {
+          "tick": 80000,
+          "op": "stop"
+        }
+      ]
+    },
+    {
+      "id": "lifecycle",
+      "purpose": "Duplicates, release, Stop, disable, endpoints, wrap and overdue clock",
+      "events": [
+        {
+          "tick": 0,
+          "op": "initialize",
+          "mode": 1
+        },
+        {
+          "tick": 100,
+          "op": "press",
+          "notes": [
+            67,
+            64,
+            60
+          ]
+        },
+        {
+          "tick": 200,
+          "op": "play"
+        },
+        {
+          "tick": 60000,
+          "op": "release-all"
+        },
+        {
+          "tick": 80000,
+          "op": "stop"
+        }
+      ]
+    },
+    {
+      "id": "panel-up",
+      "purpose": "Real mapped keyboard integration",
+      "events": [
+        {
+          "tick": 0,
+          "op": "initialize",
+          "mode": 1
+        },
+        {
+          "tick": 100,
+          "op": "press",
+          "notes": [
+            67,
+            64,
+            60
+          ]
+        },
+        {
+          "tick": 200,
+          "op": "play"
+        },
+        {
+          "tick": 60000,
+          "op": "release-all"
+        },
+        {
+          "tick": 80000,
+          "op": "stop"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "name": "arp.json",
+      "kind": "events and provenance"
+    },
+    {
+      "name": "control.dtfr",
+      "kind": "native CPU-to-DSP frames"
+    },
+    {
+      "name": "core.json",
+      "kind": "core state and ABI checks"
+    }
+  ],
+  "sample_rate_hz": 48000,
+  "schema_version": "sonic-research-lab-experiment-v1",
+  "seed": 0,
+  "status": "ready",
+  "supported_block_frames": [
+    1,
+    16,
+    32
+  ],
+  "timeline_convention": "Unsigned sample ticks; inputs before clock at equal ticks; off before on; exclude host time",
+  "title": "UP keyboard arp first experiment",
+  "tolerances": {
+    "core_order": "exact",
+    "state_repeat": "all bytes equal",
+    "core_deadline": "0 through block_frames-1 output samples",
+    "adapter_latency": "measured separately",
+    "off_path": "unchanged stock key events"
+  }
+}

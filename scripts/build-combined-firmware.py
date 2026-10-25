@@ -30,6 +30,11 @@ if Path(sys.executable).resolve() != config["python"].resolve():
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("output", type=Path)
 parser.add_argument("--elekloader-reference", required=True, type=Path)
+parser.add_argument(
+    "--capi-toggle",
+    action="store_true",
+    help="Optional per-track stock/Capicola comparison control",
+)
 args = parser.parse_args()
 provenance = doctor()
 out = args.output.resolve()
@@ -104,6 +109,22 @@ try:
         for w in reservation["writes"]
     ]
     (out / "MANAGED_FLEX_MENU_MAIN_OS.bin").write_bytes(baseline)
+    toggle_report = None
+    if args.capi_toggle:
+        from lab.capicola_toggle import patch_cpu as toggle
+
+        image, toggle_report = toggle(image)
+        require(
+            toggle(reserve(baseline, managed_flex=True)[0])[0] == image,
+            "CAPI CPU repeat mismatch",
+        )
+        report["included"].append("CAPI OFF/ON comparison toggle")
+    else:
+        require(
+            digest(image)
+            == "0bd3c2989665ec5151d5b14d9fbe3d55ee1810b3698fc2d34e7a1f9daaea5531",
+            "Disabled CAPI MAIN drift",
+        )
     main_name = "PLAITS_R3_FLEX_CAPICOLA_MAIN_OS.bin"
     (out / main_name).write_bytes(image)
     report["cpu"] = dict(
@@ -117,26 +138,29 @@ try:
         previous_writes_preserved=len(previous_writes),
         only_six_pool_immediates_changed=True,
         reset_copy_data_preserved=True,
+        capi_toggle=toggle_report,
     )
     print(
         "Combined MAIN preserves all Flex/menu patches and six guarded pool bounds",
         flush=True,
     )
 
+    family = "capicola-stretch-toggle" if args.capi_toggle else "capicola-stretch-live"
     blob = build_blob(
         True,
-        family="capicola-stretch-live",
+        family=family,
         layout="reserved-state",
         output=out / "firmware",
     )
     require(
-        digest(blob)
+        args.capi_toggle
+        or digest(blob)
         == "0cfb6c8315bd2db0e7346527c2834907fa7d131b0b55faf04f047d2ebb801faf",
         "Validated live STRETCH DSP changed",
     )
     repeat = build_blob(
         True,
-        family="capicola-stretch-live",
+        family=family,
         layout="reserved-state",
         output=out / "repeat",
     )
@@ -145,7 +169,7 @@ try:
         path="firmware/PLAITS_BLOB.bin",
         sha256=digest(blob),
         bytes=len(blob),
-        exact_validated_r3_image=True,
+        exact_validated_r3_image=not args.capi_toggle,
         build=json.loads((out / "firmware/build.json").read_text()),
         layout=json.loads((out / "firmware/memory-layout.json").read_text()),
     )
@@ -173,6 +197,12 @@ try:
     images = {3: image, 7: blob}
     packed = {sid: pack_section(value) for sid, value in images.items()}
     raw = assemble_container(stock_container, packed)
+    if not args.capi_toggle:
+        require(
+            digest(raw)
+            == "cb57ee53d106b3bf05e3562d74e8d8f45889112da55043a1fb46976552a60229",
+            "Disabled CAPI package drift",
+        )
     facts = verify_candidate(raw, stock_container, images)
     require(
         raw == assemble_container(stock_container, packed), "Container repeat mismatch"
@@ -180,7 +210,11 @@ try:
     require(
         source_hashes() == provenance["source_hashes"], "Sources changed during build"
     )
-    candidate = "EXPERIMENTAL_PLAITS_R3_FLEX_CAPICOLA_OS1.16.syx"
+    candidate = (
+        "EXPERIMENTAL_PLAITS_R3_FLEX_CAPI_TOGGLE_OS1.16.syx"
+        if args.capi_toggle
+        else "EXPERIMENTAL_PLAITS_R3_FLEX_CAPICOLA_OS1.16.syx"
+    )
     (out / candidate).write_bytes(raw)
     report.update(
         status="target-build-complete",
@@ -189,6 +223,7 @@ try:
         codec_revision=REFERENCE_REVISION,
         repeat_exact=True,
         source_fresh=True,
+        capi_toggle=args.capi_toggle,
     )
     print(out / candidate, flush=True)
 except Exception as exc:

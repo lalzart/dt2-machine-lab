@@ -1,0 +1,66 @@
+{
+  "acceptance_tests": [
+    "Native relocation, ABI, memory and failure checks",
+    "Real G/panel mode vectors, recorded playback, OFF and other-track controls",
+    "Native successful save/load and missing/corrupt companion OFF",
+    "Exact build, packed-container identity, startup and final regressions"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement native wrappers, allocate bounded owned state, use original OS APIs",
+      "Build and validate private stock-only SYX"
+    ],
+    "must_not": [
+      "Flash, commit, publish, edit pinned dependencies or unrelated work",
+      "Mark failed or omitted feature evidence as passing"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Native MAIN patch sources and reproducible stock SYX builder",
+    "Bounded native feature verification and remaining gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Turn held chords into selectable and recordable arps",
+    "primary_claim": "Native four-mode decisions selected by G record and reload as ordinary stock notes"
+  },
+  "inputs": [
+    "Exact OS1.16 firmware and ready snapshot",
+    "Pinned DigiKit 277760aad51b036a4756db051409d4d3b1eeccbc",
+    "Real panel input and native sample tick"
+  ],
+  "proposal": {
+    "path": "docs/ARP-STOCK-FIRMWARE.md",
+    "revision": "1",
+    "sha256": "e2264933a0198e3d443bc55e6f122d188fdfbdd735dbf3115446246272e0ec2f",
+    "approval": {
+      "state": "approved",
+      "reference": "User 2026-10-15: do what you need; from a stock os first"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Native state ownership, task scheduling, G input/draw, native recording and mode companion I/O",
+      "Stock-only MAIN firmware container and bounded emulator checks"
+    ],
+    "out": [
+      "Device upload, commits, publication, dependency edits, variable tempo, other tracks/MIDI, production release"
+    ]
+  },
+  "status": "ready",
+  "target": "Native ColdFire MAIN overlay on exact stock Digitakt II OS1.16",
+  "title": "Native arp on stock OS 1.16",
+  "work_type": "new-design",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/EXPERIMENTAL_ARP_STOCK_OS1.16.syx",
+    "evidence_level": "target-build",
+    "success_observation": "Guarded stock-only native arp package with panel, recording and authenticated mode recall without Python feature services"
+  }
+}

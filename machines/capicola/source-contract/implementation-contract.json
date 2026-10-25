@@ -1,0 +1,76 @@
+{
+  "acceptance_tests": [
+    "Full-start actual Granule PCM max1e-4 RMS1e-5 incl wraps/reverse/finite",
+    "Dual-grain event/rate continuity, boundaries and exact repeat",
+    "Packaged target PCM/routing/stock parity",
+    "Repeat all-feature package, depacker/startup/source suite/SINE"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement explicit optional source overlay",
+      "Use existing toolchain and fixed resource limits"
+    ],
+    "must_not": [
+      "Change pinned dependencies or frozen original core",
+      "Flash hardware, commit or publish",
+      "Relax failing tolerances"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Separate reproducible quality OS",
+    "Retained comparison WAVs and metric reports",
+    "Exact source and artifact manifests"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "primary_claim": "Original adaptive sample reader with complete-start virtual-periodic transport and source dual-grain handoffs, before performance optimization",
+    "why": "User requests complete faithful implementation; audible gap complaint requires full playback checks"
+  },
+  "inputs": [
+    "Approved proposal",
+    "Original Capicola AGPL source revision120b0b8",
+    "Authenticated OS1.16 and existing core"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-SOURCE-PLAYBACK.md",
+    "revision": "1",
+    "sha256": "c71b81afba01169e0d5a34a557330f38ff468994261f9eb9eb367df4e569ccb9",
+    "approval": {
+      "state": "approved",
+      "reference": "User2026-10-17 explicitly requests proper implementation with performance addressed later; uninterrupted implementation authorized"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Complete sample reader and source grain handoffs",
+      "Virtual periodic finite-file medium with no per-head edge attenuation",
+      "Full-playback source oracle and all-feature target package",
+      "Native planar stereo;32 channel banks; both-ready track admission"
+    ],
+    "out": [
+      "Physical flash, commit or publication",
+      "Unrequested Alchemy CV/feedback/live-input effect UI",
+      "Performance-based changes to grain fidelity"
+    ]
+  },
+  "status": "ready",
+  "target": "Digitakt II OS 1.16 SHARC STRETCH",
+  "technical_spec": {
+    "path": "docs/CAPICOLA-SOURCE-PLAYBACK.md",
+    "sha256": "c71b81afba01169e0d5a34a557330f38ff468994261f9eb9eb367df4e569ccb9"
+  },
+  "title": "Capicola source playback port",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "EXPERIMENTAL_ALL_FEATURES_CAPI_SOURCE_OS1.16.syx",
+    "evidence_level": "target-build",
+    "success_observation": "Complete-start source/target PCM, native integration, repeat package and regressions pass; timing/listening separate"
+  }
+}

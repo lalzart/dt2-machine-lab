@@ -11,10 +11,6 @@ REPO = CONFIG["digikit"]
 SELACHE = CONFIG["selache"]
 FIXTURE = CONFIG["fixture"]
 PROFILE = read_json(ROOT / "profiles/dt2-1.16/profile.json")
-run_dir = os.environ.get("DT2_LAB_RUN_DIR")
-require(run_dir, "Use ./labctl to allocate a fresh run directory")
-OUT = inside(ROOT / "out/runs", run_dir)
-require(OUT.is_dir(), "Run directory was not prepared by labctl")
 STOCK_BLOB = FIXTURE / "sections/section_7_BLOB.bin"
 STOCK_MAIN = FIXTURE / "sections/section_3_MAIN_OS.bin"
 PACK = FIXTURE / "native/state.pack"
@@ -42,3 +38,13 @@ def sharc_profile():
         return sharc_symbols.resolve(image, device="dt2")
     finally:
         image.db.close()
+
+
+def __getattr__(name):
+    if name != "OUT":
+        raise AttributeError(name)
+    run_dir = os.environ.get("DT2_LAB_RUN_DIR")
+    require(run_dir, "Use ./labctl to allocate a fresh run directory")
+    output = inside(ROOT / "out/runs", run_dir)
+    require(output.is_dir(), "Run directory was not prepared by labctl")
+    return output

@@ -1,104 +1,144 @@
 # Digitakt II machine lab
 
-Local source, builds and repeatable offline tests for custom Digitakt II
-machines. The first machine is **SINE**, a fixed 440 Hz, 250 ms oscillator
-on track 1 under OS 1.16. The source runs as new SHARC instructions.
+This lab develops Digitakt II OS 1.16 emulator experiments. Start with the
+[feature guide](docs/FEATURES.md) and [testing guide](docs/TESTING.md).
 
-A separate [SINE controls experiment](docs/SINE-CONTROLS.md) connects TUNE,
-LEN and LEV and checks stored parameter locks through real step previews.
+## BUF performance buffers
 
-The [Plaits VA experiment](docs/PLAITS-VA.md) ports one original Plaits engine
-to C99, compares it with upstream C++, executes it as compiled SHARC code,
-and renders through the prepared DTII voice hook. Its separate repeat commands
-and remaining control/timing gaps are documented there.
+The [BUF workflow contract](BUF-WORKFLOW-CONTRACT.md) is the canonical product
+direction: four reusable global buffers, publication without track assignment,
+immutable generations and selectable FREEZE snapshots. See the
+[alignment audit and results](docs/BUF-WORKFLOW-ALIGNMENT.md).
 
-The optional [Plaits resource experiment](docs/PLAITS-OPTIMIZATION.md) compares
-the reference with MAIN-only rendering and safe sharing between matching lanes.
-It retains exact audio comparisons and reports emulator instruction savings.
+The [continuous recording milestone](docs/BUF-CONTINUOUS.md) captures 13
+consecutive publications during playback, 11 native releases and 10 extent
+reuses, with stable DSP and CPU memory. The capped run remains failed after a
+test-only encoder assertion stopped its fourteenth capture; saved-publication
+ONESHOT/REPITCH playback comparisons pass. The all-ONESHOT retirement guard
+remains unchanged.
 
-The [resource monitor](docs/RESOURCE-MONITOR.md) imports saved DSP and memory
-records into a local diagnostic screen. The [stock OS 1.16 baseline](docs/STOCK-RESOURCE-BASELINE.md)
-compares six stock pad/settings workloads, installed-hook overhead and separate
-active SINE/Plaits clips. These report emulator work and paused heap snapshots;
-physical CPU/DSP utilization remains unmeasured.
+The current native CPU workflow supports an empty BUF, selection on multiple
+tracks, next-bar recording into global recorder DEST and automatic publication
+while performance edits continue. Publication preserves every track assignment.
+**SAMPLING+YES** and **SAMPLING + push encoder C** remain provisional record and
+FREEZE frontends. Saving and project persistence remain separate work.
 
-The [three-model Plaits prototype](docs/PLAITS-TRIO.md) adds two-operator FM
-and analog bass drum beside VA. A dedicated MODEL control recalls engines
-through real stored-lock CPU captures and prepared SHARC replay. Its repeat
-commands, compiler adaptations and measured instruction costs are documented.
+The [native duration extension](docs/BUF-MULTIBAR.md) admits R.LEN 16/32/64 steps
+(one/two/four bars) with the normal 16-step clock and existing ten-second cap.
+Other lengths/MAX explicitly refuse. Recording has no all-track ONESHOT requirement.
+ONESHOT is the initially proven playback path, and mixed-machine DSP runtime
+support, conservative retirement guards, target placement and hardware remain
+open. [Earlier next-bar results](docs/BUF-NEXT-BAR-RESULTS.md) retain the seed-take
+and assigning prototype's evidence; they are not the product specification.
 
-The [six-voice Plaits bank](docs/PLAITS-BANK.md) adds waveshaping/wavefolding,
-harmonic additive synthesis and granular formants as MODEL 3–5, preserving the
-original VA/FM/BD models. It uses the same prepared emulator integration.
+## Sketch UI prototype
 
-The [Plaits macro controls experiment](docs/PLAITS-CONTROLS.md) gives that bank
-dedicated HARM/TIMB/MORP controls, continuous macro updates and a repeatable
-panel-lock capture and buffered audio audition.
+The user reports the clock-correction firmware now works on their device.
+The [selector and startup investigation](docs/BUF-SELECTOR-AND-STARTUP.md) traces
+the remaining loader wait and the native encoder-D list. Empty BUFs already
+select through their backing slots; four aliases before A00 are the requested
+next UI. Changing slot addresses alone does not isolate the shared allocator.
+This investigation leaves the working firmware unchanged.
 
-The [R3 integration](docs/PLAITS-INTEGRATION-R3-RESULTS.md) adds millisecond
-duration, named models, macro LFO destinations and a track-1 selection guard.
-It is a separate local build with focused CPU, panel and compiled DSP checks.
+The [clock correction candidate](docs/SKETCH-CLOCK-CORRECTION.md) follows the
+user's report that startup loading clears and ARM then reaches `REF CLOCK 0`.
+It uses stock transport semantics and normal16 pattern fields, adds specific
+clock refusals and passive `WAIT SAMPLES`, and passes a focused native next-bar
+capture/publication. Its physical clock cause and behavior remain unconfirmed.
 
-The [pattern lab](docs/PATTERN-LAB.md) connects the firmware's normal sequencer
-clock and checks a 16-step edit/PLAY/stop/edit/restart workflow for the stock
-sampler and Plaits. It captures the actual performance for buffered WAV replay.
+The [startup sample-operation diagnostic](docs/SKETCH-STARTUP-SAMPLE-DIAGNOSTIC.md)
+prioritizes the first post-boot `BUSY FREEZE 1` refusal. It identifies a guarded
+stock load/unload/clear operation where possible, preserving the busy guard and
+excluding the pending clock correction. The physical cause remains unconfirmed.
 
-[Upload preparation](docs/UPLOAD-PREFLIGHT.md) records the stock 1.16 upgrade
-and recovery route, the checked custom container, and remaining hardware gates.
+The opt-in [ARM diagnostic package](docs/SKETCH-ARM-DIAGNOSTIC.md) identifies the
+first blocking check behind the user's hardware BUSY/REFUSED report. It retains
+all recording guards and leaves the original experimental package intact.
 
-The [Flex sampling prototype](docs/FLEX-LITE-UI-RESULTS.md) adds a remembered
-destination to the original recorder: record, stop, trim, then USE a temporary
-RAM sample. It supports modeled WAV input and buffered ONESHOT audition through
-`python3 scripts/try-flex-lite.py` (legacy command name). This is a host-side
-emulator adapter, not an on-device machine or an uploadable firmware patch.
-Its recorder service and temporary sample source still depend on Python.
+A local [Sketch/BUF experimental OS1.16 package](docs/SKETCH-EXPERIMENTAL-PACKAGE.md)
+now passes exact-package integrity, native CPU upload/backpressure and complete
+container application-startup checks. It reuses the identical native recorder
+workflow bytes, runs no new captures and remains hardware-unqualified.
 
-The [native Flex implementation](docs/FLEX-NATIVE.md) now builds the recorder
-workflow as ColdFire device instructions, with automatic sample persistence on
-project save. Native UI and original project save/stock reload checks are separate
-from the earlier Python prototype. A local experimental Plaits R3 + Flex package
-is available. After USE, open the recorder and press **FUNC + RECORD** while
-idle to name and save the selected track's Flex sample to +Drive; NO cancels.
-The latest package also includes the mono-flag correction for the photographed
-hardware USE error. Native naming, storage and project reload checks pass;
-hardware confirmation remains pending. See the native notes for results and
-current limitations.
+[Sketch](docs/SKETCH-UI.md) is a separate opt-in native menu over BUF with
+SONG tap navigation, dry FUNC+SONG ARM and dry held-SONG FREEZE. It remembers
+one BUF selection independently of recorder DEST=NORMAL. No jobs, preview or
+persistence are attached to those shortcuts.
 
-The active [Capicola direction](docs/CAPICOLA-STRETCH-REPLACEMENT.md) replaces
-the DSP behind the existing **STRETCH** machine, retaining its selector,
-controls and locks. The [R3 playback implementation](docs/CAPICOLA-STRETCH-R3-RESULTS.md)
-adds live PLAY and STRT/LEN edits with short crossfades, native completion,
-and modeled master/DAC-ring checks. Sixteen distinct mono banks and thirty-two
-reader lanes retain the existing 8 MiB budget and stock fallback under pressure.
-Host comparisons, native playback, 138 source tests and SINE pass. Simultaneous
-edits add significant emulator work; physical timing, full playhead/progress
-bookkeeping, runtime ownership and hardware validation remain open.
-The [combined firmware build](docs/COMBINED-FIRMWARE-RESULTS.md) packages this
-STRETCH replacement with Plaits R3 and the latest managed streaming Flex.
-It is a local experimental OS 1.16 SYX, with build/container, separate emulator
-startup and regression checks; it has not been sent to hardware.
-The [R2 multiple-bank work](docs/CAPICOLA-STRETCH-R2-RESULTS.md) and
-[R1 replacement](docs/CAPICOLA-STRETCH-R1-RESULTS.md) are preserved.
-Separate CAPICOLA selector/RATE work is superseded.
+The optional [real ARM profile](docs/SKETCH-ARM.md) connects FUNC+SONG to the
+existing next-bar recorder and publication service using Sketch's selected BUF,
+while preserving normal recorder DEST. Held SONG remains dry in this profile.
+Its live feedback follows the admitted BUF through waiting, recording, loading,
+publication or cancellation, independently of later BUF selection.
 
-The preserved [Capicola integration prototype](docs/CAPICOLA-CONTROLS-RESULTS.md) has a
-track-1 selector, pitch/rate/level controls and automatic mono sample preparation
-in the OS1.16 emulator. Captured CPU sample transfers and triggers produce
-native DSP voice output matching the host reference. Input remains capped at
-12 seconds; one bank uses an 8 MiB reservation from the sample pool. Preparation
-currently takes about twice the sample duration and needs a later trigger to
-start playback. Automatic readiness refresh, project persistence, full memory ownership and
-physical timing remain open; there is no hardware-ready Capicola package.
-The optional [reserved-state build](docs/CAPICOLA-RESIDENT-STATE-RESULTS.md) now
-places working data and stacks inside that existing reservation, with native
-startup, reload and compatibility checks. Instruction-code ownership in L2
-and physical memory latency still need validation.
-The new [selection-preparation candidate](docs/CAPICOLA-SELECTION-PREP-RESULTS.md)
-starts work when an eligible sample is selected, before the first trigger, and
-exposes native progress and rejection status. The optional
-[feedback build](docs/CAPICOLA-FEEDBACK-RESULTS.md) now shows preparation ranges
-and READY when SRC opens, using the existing DSP reply. Native SPI return and
-buffered CPU display checks pass; automatic caption refresh remains pending.
+The additional [FREEZE profile](docs/SKETCH-FREEZE.md) connects held SONG to a
+generation-specific snapshot of Sketch's selected BUF. Enable ARM and FREEZE
+together for the complete opt-in Sketch control mapping. Default controls stay dry.
+
+[Combined DSP validation](docs/SKETCH-VALIDATION.md) passes two native captures,
+held-SONG FREEZE and exact stock-file voice PCM comparisons. Publication still
+takes about 196–197 ms after capture in the model; physical timing and final
+output remain unverified. The separate [device placement experiment](docs/SKETCH-DEVICE-PLACEMENT.md)
+adds a bounded DDR layout and local startup checks while preserving the existing
+Flex build profiles. It is not a hardware-ready package.
+
+[Device-address validation](docs/SKETCH-RELOCATED-VALIDATION.md) now passes the
+prepared coupled two-take/FREEZE workflow using those exact binaries, with intact
+code/canaries, no old-arena accesses and exact parity with the earlier layout.
+Paired cold startup and physical device memory behavior remain unverified.
+
+The [DSP boot-memory correction](docs/SKETCH-DSP-BOOT-MEMORY.md) removes a
+boot-kernel workspace overlap that prepared fixtures bypassed. The current
+device recipe relocates only the retirement-gate state, rejects boot-area
+writes and preserves the ordinary emulator DSP byte-for-byte. Bounded DSP
+startup and saved-page native seal/refusal controls pass with no new recordings.
+The `-07` and `-09` images are retained as emulator/application evidence.
+The subsequent [boot-stream/upload audit](docs/SKETCH-BOOT-UPLOAD.md) found and
+corrected additional FINAL ordering, alignment and FIRST-span defects. Use a
+fresh build from the current device recipe for ongoing local preparation.
+That audit's sealed build is `sketch-device-build-20261023-13`; its
+[upload evidence](out/runs/sketch-rom-upload-20261023-07/verification.json)
+records the remaining ROM, SPI FIFO and container-startup limits.
+
+[Coupled application startup](docs/SKETCH-COLD-STARTUP.md) now passes stock and
+the corrected `-09` build from CPU reset and DSP loader application entry,
+with live native control and card sample loading. Sketch renders after startup;
+reset clearing/code/canaries, a measured disconnected-DSP control, 145 BUF tests
+and final-source SINE pass without new recordings. The later boot-stream audit
+adds native CPU upload/backpressure checks under a modeled ready line. Actual
+ROM execution, SPI FIFO/tail acceptance and physical startup remain unverified.
+
+The [first native migration slice](docs/NATIVE-BUF-MIGRATION.md) now loads the
+complete candidate container through an authenticated-reference constructor,
+runs paired application startup and renders Sketch. Saved A/B/FREEZE voice PCM
+matches the old runtime exactly over 96 blocks. The reply/final-output differences
+are now explained by corrected upstream SIMD semantics. The
+[native recorder connection](docs/NATIVE-BUF-RECORDING.md) passes a two-take/FREEZE
+workflow, active cancellation and independent stock-file final-output checks.
+It remains opt-in, with modeled stereo recorder input and unchanged lab pins.
+
+## Flex recording and saving
+
+Flex is the existing RAM-take recording/save workflow. Its current R5 save flow
+uses the stock filename editor, a visible A-H RAM-bank chooser and a slot preview;
+Save/Discard and project persistence have their own code and checks. See
+[Flex R5 results](docs/FLEX-BANK-SAVE-RESULTS.md).
+
+BUF and Flex have separate adapters and test suites. Existing all-feature builds
+contain Flex; BUF has separate adapters and an isolated device profile. Their shared recorder
+helpers do not combine the two features.
+
+For a future combined OS, BUF/Sketch replaces this previous Flex implementation;
+the user does not want both included. Existing Flex profiles remain preserved
+as reference. Current experimental packaging uses the isolated Sketch/BUF profile.
+
+## Other experiments and history
+
+[Arp](docs/ANY-TRACK-FEATURES-RESULTS.md), Plaits and
+[Capicola](docs/CAPICOLA-REDDIT-BOOT-FIX-RESULTS.md) remain available independently.
+Their detailed suites run when selected. The [recorded milestone summaries](docs/EXPERIMENT-HISTORY.md)
+retain the earlier work and its evidence without making every old experiment
+part of routine BUF verification.
 
 Start with [STATUS](docs/STATUS.md), [integration findings](docs/INTEGRATION.md),
 and the [development roadmap](docs/DEVELOPMENT.md). [AGENTS.md](AGENTS.md)
@@ -114,11 +154,14 @@ From this directory:
 ./labctl render sine
 ./labctl test sine --replay
 ./labctl profile sine
-python3 -B -m unittest discover -s tests -v
+./labctl unit buf
 ```
 
 | Command | Result |
 | --- | --- |
+| `unit` / `unit buf` | Runs the native BUF and shared recorder unit tests. Does not run Capicola, Arp or older BUF models. |
+| `unit flex` | Runs existing Flex and shared recorder tests. |
+| `unit all` | Explicit full repository regression; see [suite selection](docs/TESTING.md). |
 | `doctor` | Checks dependency commits, clean dependency trees, Python package versions, patched Unicorn binary, tool binaries and every private fixture hash. |
 | `build sine` | Builds CPU MAIN and SHARC BLOB overrides using expected-byte guards; no firmware container or boot. |
 | `render sine` | Rebuilds and renders the saved SINE control stream; checks frequency, envelope and silence. About 40–50 seconds for one second of audio on the initial interpreter build. |
@@ -149,7 +192,8 @@ results are linked above.
 - `machines/plaits-controls/`: dedicated macro control map and continuous adapter.
 - `profiles/dt2-1.16/`: stock image hashes and version-specific integration data.
 - `lab/`: lab-owned CPU build, DSP replay, validation, and reporting adapters.
-- `tests/`: source-only harness tests and a hash-only private-fixture manifest.
+- `tests/`: feature-scoped unit suites in `suites.json`, shared native BUF fixtures,
+  and a hash-only private-fixture manifest. See [testing guide](docs/TESTING.md).
 - `deps.lock.json`: exact DigiKit, Selache, Unicorn and Python dependency pins.
 - `.deps/`: ignored, clean dependency checkouts; no machine source lives here.
 - `.local/`: ignored local configuration and the private replay fixture.
@@ -188,8 +232,9 @@ in one run. There is deliberately no `--clean` command claiming that today.
 
 ## Working on a machine
 
-Keep a known passing run, change source, then build/render and run the replay
-suite. The suite intentionally detects changed baseline images/PCM; intentional
+Keep a known passing run and run the relevant [unit suite](docs/TESTING.md)
+after source changes. Build/render and replay when DSP or adapter behavior changes.
+The replay suite intentionally detects changed baseline images/PCM; intentional
 algorithm changes need reviewed expectations and signal checks. Do not make a
 failing comparison pass by regenerating its expected hash automatically.
 
@@ -205,3 +250,19 @@ Firmware and derived files stay private and ignored. This repository builds
 emulator overrides, local experimental containers and bounded audio captures.
 Modeled final-output checks, physical timing and hardware operation remain
 separate observations.
+
+The [arp emulator prototype](docs/ARP-PROJECT-LOAD-RESULTS.md) provides G OFF/UP/ORDER/RANDOM, ordinary note recording and authenticated project-menu recall. Its local native CPU, persistence, exact musical parity and regression checks pass; physical integration remains separate.
+
+The [native stock arp build](docs/ARP-STOCK-FIRMWARE-RESULTS.md) now packages
+G OFF/UP/ORDER/RANDOM, clocking and native recorded-project mode recall on
+stock OS 1.16. It is an experimental track-1, fixed-102-BPM build; emulator
+record/save/menu-load/replay and container checks passed, but the first user
+hardware trial produced no arp. The keyboard-state follow-up is documented
+in the results; its physical result remains unconfirmed.
+
+The optional [any-track all-feature build](docs/ANY-TRACK-FEATURES-RESULTS.md)
+removes the fixed T1 restrictions: the keyboard arp follows the selected track
+and Plaits has independent state on all tracks. It retains stopped arp and the
+repaired author Capicola backend. Capicola and compatible Flex destinations
+already support other tracks. See that report for exact artifacts, validation
+and device-test boundaries.

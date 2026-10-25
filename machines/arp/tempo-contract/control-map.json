@@ -1,0 +1,78 @@
+{
+  "application_feedback": [
+    {
+      "surface": "G cell",
+      "value": "ARP or RATE label, focused value large, other value small; no placeholder or diagnostics"
+    }
+  ],
+  "endpoint_device_evidence": {
+    "notes": "No physical-device claim is made by this contract.",
+    "state": "deferred"
+  },
+  "gesture_state_machines": [
+    {
+      "rule": "proposal and state matrix",
+      "states": "OFF, armed, playing, panic"
+    }
+  ],
+  "not_applicable_rationale": "",
+  "schema_version": "sonic-research-lab-control-map-v1",
+  "semantic_bindings": [
+    {
+      "binding": "OFF",
+      "rule": "stock keyboard path"
+    },
+    {
+      "binding": "UP",
+      "rule": "ascending unique pitches"
+    },
+    {
+      "binding": "ORDER",
+      "rule": "first-press stamp order"
+    },
+    {
+      "binding": "RANDOM",
+      "rule": "fixed LCG and held pitch rank"
+    },
+    {
+      "binding": "Rate change",
+      "rule": "close output, reset phase, retain held notes"
+    },
+    {
+      "binding": "Tempo change",
+      "rule": "preserve beat phase and remaining beat gate"
+    }
+  ],
+  "source_of_truth": {
+    "artifact": "docs/ARP-TEMPO-RATES.md and experiment.json",
+    "strategy": "exhaustive-compare"
+  },
+  "status": "ready",
+  "surface_assignments": [
+    {
+      "input": "Physical keyboard T1",
+      "target": "existing native held/release collector"
+    },
+    {
+      "input": "G rotate in MODE focus",
+      "target": "OFF/UP/ORDER/RANDOM enum 0..3"
+    },
+    {
+      "input": "G push without modifier in Keyboard Settings T1",
+      "target": "toggle MODE/RATE focus on press only"
+    },
+    {
+      "input": "G rotate in RATE focus",
+      "target": "rate index0..3:1/4,1/8,1/16,1/32"
+    },
+    {
+      "input": "Original tempo getter0x4002D744",
+      "target": "native beat-phase advance in BPM*120 units"
+    },
+    {
+      "input": "PLAY/STOP and existing lifecycle",
+      "target": "native clock/panic"
+    }
+  ],
+  "title": "Native arp tempo, rates and selector UI"
+}

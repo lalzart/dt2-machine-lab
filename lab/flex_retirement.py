@@ -1,6 +1,7 @@
 """Native pinned-source ownership and exact-match durable handover."""
 
-from lab.flex_native import RESOURCE_SITES, Code
+from lab.emit import Code
+from lab.flex_native import RESOURCE_SITES
 
 
 def mask(c):

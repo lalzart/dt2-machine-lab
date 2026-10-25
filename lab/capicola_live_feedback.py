@@ -5,7 +5,7 @@ import struct
 
 from lab.capicola_feedback import BASE, BASE_SHA, GAPS, HINT, TEXT, WIDTH, caption_width
 from lab.coldfire import audit_code
-from lab.flex_native import Code
+from lab.emit import Code
 from lab.project import require
 
 REPLY_WORD = 0x800048A6

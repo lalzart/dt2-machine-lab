@@ -1,0 +1,127 @@
+{
+  "approval": "User explicitly requests isolated conditional MODIFY runtime and replacement/FREEZE matrix",
+  "control_map": "No controls changed; existing loop matrix C/YES/TRIG and explicit FREEZE request serial",
+  "decisions": {
+    "allowed": [
+      "new opt-in copied runtime and tests"
+    ],
+    "forbidden": [
+      "pinned or fixture edits",
+      "firmware edits",
+      "reuse",
+      "baseline regeneration",
+      "hardware",
+      "commit/publish"
+    ]
+  },
+  "dependencies": {
+    "digikit": {
+      "patches": [],
+      "revision": "277760aad51b036a4756db051409d4d3b1eeccbc",
+      "url": "https://github.com/m-dwyer/digikit.git"
+    },
+    "native": {
+      "optimized_blocks": false,
+      "profile": "release",
+      "runtime_decode": true,
+      "source_revision": "277760aad51b036a4756db051409d4d3b1eeccbc"
+    },
+    "python": {
+      "major_minor": "3.12",
+      "packages": {
+        "capstone": "5.0.7",
+        "networkx": "3.4.2",
+        "pypcode": "4.0.0",
+        "unicorn": "2.1.4"
+      },
+      "requirements": "DigiKit uv.lock",
+      "uv_lock_sha256": "b693fa89efb8cc826f4a414a555f5e243cdcc0c616cdc48127b7f67226f80450"
+    },
+    "references": {
+      "elekloader": {
+        "reviewed_revision": "793b2e473dc0f0fa1a6d6f14e69a8cc166ce9300",
+        "role": "optional future packaging and UI/control integration; not a build dependency",
+        "url": "https://github.com/irpina/elekloader"
+      }
+    },
+    "schema": 1,
+    "selache": {
+      "build": [
+        "cargo",
+        "build",
+        "--release",
+        "--locked"
+      ],
+      "revision": "2b26d3b75c53063575bc5c820fa0d38879335187",
+      "url": "https://github.com/js216/selache.git"
+    },
+    "unicorn": {
+      "installer": "tools/install-patched-unicorn.sh",
+      "installer_sha256": "124ad9c12264be1eda9853d473856b3782dec69649744884008bb1aa61e5c872",
+      "patches": {
+        "unicorn-2.1.4-count-hook-fast-path.patch": "5f7523267ed0a6324496c7ea665d6ea22d84f30d82199218f66594291adc3e17",
+        "unicorn-2.1.4-m68k-emac-fractional.patch": "8f497c939b7b772a0a00a7d16ad85e8a1a6865b772191ca5ca131fb477824603",
+        "unicorn-2.1.4-m68k-emac-mac-load.patch": "ac128dd6836997de55e0d2ad70d7a2978639168090f552c5634da50fddc70bfe",
+        "unicorn-2.1.4-m68k-flush-flags-sync.patch": "9f76167940573e1e33582f6e4fbef10d95528dfa26090406a9b40a4b45712807",
+        "unicorn-2.1.4-m68k-hook-ccr-sync.patch": "56de71acf2adbd5ca2f448095478e65e49fd79d378aeb5b5e4217d2c90f52f4e"
+      },
+      "revision": "8028ec436f2d9376525352dd38ed9ed6b9f6be10",
+      "url": "https://github.com/unicorn-engine/unicorn.git",
+      "version": "2.1.4"
+    }
+  },
+  "evidence_level": "native instructions under modeled peripherals",
+  "experiment": {
+    "conditions": [
+      "eq-true-false",
+      "ne-other-predicates",
+      "dag-banks-aliases",
+      "signed-scaling",
+      "circular-wrap",
+      "compute-flags",
+      "unknown-unsupported-negative",
+      "old-path-equivalence",
+      "actual-stock-opcode",
+      "strict-generation",
+      "baseline-isolated-sine",
+      "replacement-freeze-exact-repeat"
+    ],
+    "falsifier": "baseline rejects stock EQ opcode; variant executes real bytes with expected state",
+    "retention": "fresh ignored outputs including failures",
+    "seed": 0,
+    "tolerance": "exact"
+  },
+  "gaps": [
+    "new SIMD and ILAD not added",
+    "modeled capture and LP0",
+    "partial startup",
+    "queued-root reuse barrier",
+    "SAVE/readback",
+    "hardware and real time"
+  ],
+  "proposal": "docs/SHARC-CONDITIONAL-MODIFY-PLAN.md",
+  "proposal_sha256": "95398414b1dc5bb971656d1d42063d84d4e42abf21ba93e2895bd73552b265d4",
+  "results": "docs/SHARC-CONDITIONAL-MODIFY-RESULTS.md",
+  "schema": 1,
+  "source_equivalence": {
+    "authority": "user-authorized local modification of licensed source; no firmware distribution",
+    "deviation": "concrete SISD Type7a predicates; old 0x1f/0x17 preserved",
+    "license": "GPL-2.0",
+    "oracle": "ADI rev1.5 specification, independent expected states, baseline runtime, exact stock voice comparisons",
+    "sha256": "9b9137eb512b1716a73cf49cb7ab3003b04d6c16338729cbabd5c2b0f2d4088a",
+    "source": "tools/sharc_core/forms_dag.py"
+  },
+  "state_matrix": "Plan: exact instruction/voice state; prepared initialization and restart; project guard/pins unchanged",
+  "status": "ready",
+  "target": "Pinned DigiKit 277760a; Digitakt II OS 1.16",
+  "validation": [
+    "Python instruction units",
+    "native instruction comparison",
+    "upstream tests",
+    "full lab unit suite",
+    "baseline and isolated SINE",
+    "unchanged matrix exact repeat"
+  ],
+  "work_type": "source-reimplementation",
+  "working_artifact": "isolated native library, instruction report and unchanged coupled matrix"
+}

@@ -1,5 +1,419 @@
 # Current status
 
+2026-10-23 device follow-up: the user reports the clock-correction firmware now
+works. A source/native-panel investigation confirms empty BUF selection through
+the stock encoder-D quick list (C44/slot 300 in the prepared project), A00's
+lower clamp and unchanged A/B OFF navigation. Four BUF aliases before A00 are
+the next requested UI; they are not implemented here. Existing slots share the
+stock allocator, so special slot numbers alone do not remove startup exclusion.
+Deferred ARM and recorder capture before publication are separate candidates
+requiring pending-load interleaving and source-lifetime proof. Doctor, authenticated
+static survey, selector-byte parity and the bounded native navigation checks
+pass; no new captures, firmware or dependency changes. Earlier device-unconfirmed
+entries below describe their evidence at the time.
+[Findings, screenshots and next implementation](BUF-SELECTOR-AND-STARTUP.md).
+
+2026-10-23 Sketch clock candidate: user confirms advancing BUSY LOAD clears
+after waiting, then running playback reaches REF CLOCK 0. The opt-in clock
+profile now uses the stock OR transport predicate and semantic normal16/mode0/
+scale2 checks in both IRQ and CHECK. Passive WAIT SAMPLES preserves the shared
+loader guard. 251 scoped units, specific clock labels, full-container startup,
+upload/backpressure, stream/package integrity and three proof-refusal controls
+pass. A focused native run observes two real bar receipts, rejects a test scale
+change, cancels before start, then captures/publishes 112,928 modeled stereo
+frames with assignments/NORMAL DEST and post-capture code/canaries intact.
+Its first capture also published, but a final harness address-reading bug left
+that report failed; the corrected fresh run passes. Two total model captures.
+Firmware bytes stayed exact across that fix; same-firmware SINE is reused.
+Original/ARM/sample profiles, DSP, pins and upstream stay exact. No hardware
+transfer; exact device clock cause, physical recording and timing remain open.
+[Candidate, use notes, screenshots and evidence](SKETCH-CLOCK-CORRECTION.md).
+
+2026-10-23 startup sample-operation diagnostic: user identifies `BUSY FREEZE 1`
+as the first refusal after power-on and PLAY, before later `REF CLOCK 0`.
+Read-only cold startup of the exact first diagnostic container observes 1,915
+balanced stock load/unload/clear operations, peak nesting three, zero at UI
+readiness and after PLAY; the device failure is not reproduced. A separate
+opt-in diagnostic now latches the outer operation and slot with the busy count,
+using a generic SAMPLE fallback for unknown/returned outer context. 249 scoped
+units, native cold-start counter/observer agreement, seven injected UI controls,
+upload/backpressure, package integrity, two missing-proof refusals, Ruff and SINE
+pass. Zero new recordings; no guard clearing or automatic retry. Default and
+first diagnostic MAIN/DSP/packages stay exact. Pending clock work is held and
+excluded. No hardware transfer; physical cause and timing remain unconfirmed.
+[Diagnostic, screenshots and evidence](SKETCH-STARTUP-SAMPLE-DIAGNOSTIC.md).
+
+2026-10-23 Sketch ARM diagnostic package: user reports the original experimental
+firmware reaches the device UI but ARM returns BUSY/REFUSED with REC READY and
+BUF IDLE after a power cycle. Root cause is unconfirmed. An opt-in profile now
+reports the first failed admission predicate and its observed value, preserving
+every guard, result ABI and admitted transaction. The ordinary MAIN and all DSP
+bytes remain exact. 212 BUF/core plus 30 integration tests pass; native complete
+container application startup, two injected guard/UI cases, upload/backpressure,
+package integrity, two packager refusal controls, Ruff and SINE pass. Zero new
+recordings. Original package, feature profiles, pins and upstream are preserved;
+the assistant has not transferred the diagnostic image. [Package, labels and evidence](SKETCH-ARM-DIAGNOSTIC.md).
+
+2026-10-23 local Sketch-only OS1.16 experimental package: fresh MAIN/DSP and
+the complete SYX match the successful native recorder workflow byte-for-byte.
+Package/seal/checksums, protected sections, MAIN depack and DSP staging bounds,
+independent boot-stream checks and native CPU upload/backpressure pass on the
+final source inventory. Full-container CPU application startup with independently
+initialized DSP application startup renders Sketch: code/canaries intact,
+1,620 LP0 units, 6,878 DSP frames and zero missing blocks. The packager refuses
+mismatched-container and stale-source evidence. 238 scoped units and focused
+Ruff/format checks pass; saved same-firmware recorder/audio/SINE proofs are reused
+with zero new recordings. Firmware emitters, dependencies and upstream stay
+unchanged. No hardware transfer or trial. Physical ROM/SPI, placement, recorder,
+normalization and timing remain unverified. User direction: BUF/Sketch replaces
+the previous Flex implementation in a future combined OS; old profiles remain
+preserved as reference. [Package, evidence and reproduction](SKETCH-EXPERIMENTAL-PACKAGE.md).
+
+2026-10-23 native BUF recorder connection: opt-in DigiKit `38dfbe4` now runs the
+original ARM/STOP/worker/loader/FREEZE jobs against the existing nonzero recorder
+service model. One two-take flow passes over 53,232 native DSP frames: two
+112,960-frame stereo captures, four retained old-reader lanes across B, frozen A
+and shared selectors intact, and cancellation of an active third candidate.
+Stock CPU file-load PCM is exact; 96 saved blocks repeated twice match stock
+voice PCM, whole replies, master mix and DAC-ring data, with a differing wrong
+source control. 208 BUF/core units and same-flow-source SINE pass. The callback
+comparison needed its authenticated prepared fixture rather than the live cold
+state; that comparator-only correction passes in a separate zero-recording run.
+Firmware emitters, BUF/FREEZE/Flex backend, upstream source and pins stay exact.
+Native input/normalization remain modeled; mono, other native capture lengths,
+physical timing and hardware are unqualified. [Results and reproduction](NATIVE-BUF-RECORDING.md).
+
+2026-10-23 BUF multi-bar recording: native next-bar ARM now latches LEN 16/32/64
+as one/two/four normal bars. Consecutive native receipts drive STOP; missed/late
+receipts and setting changes cancel. The existing ten-second sample limit is
+enforced during capture, with TOO LONG feedback and the previous take preserved.
+156 scoped BUF tests, Ruff and same-source SINE pass. One bounded coupled run
+passes 26 checks over 57,888 DSP blocks: two-bar A, FREEZE A, four-bar B, then
+cancellation of a third candidate after one bar. Four old-reader pointers,
+frozen A, accepted B and all assignments remain intact; zero CPU faults.
+Saved-page stock-file voice PCM matches over 96 blocks repeated twice, with a
+wrong-source control and zero extra recordings. Modeled completion/publication
+delays are 384 ms (two bars) and 772 ms (four bars); timing optimization remains
+separate from this extension. Clock, queue/load/publication and cancellation
+emitters, FREEZE backend, Flex, DSP and dependencies are unchanged.
+No device package or hardware trial. [Results and screenshots](BUF-MULTIBAR.md).
+
+2026-10-23 Sketch ARM feedback: the opt-in real ARM profile now follows its
+admitted BUF through waiting, recording, processing/loading and cancellation,
+then reports READY, CANCELLED, FAILED or STALE. Native transaction count and
+context guards reject stale success; selection/navigation cannot relabel the
+target, and newer actions keep their own messages. 151 scoped BUF units pass.
+One native modeled-input capture plus two pre-start cancellations passes 21
+panel checks, with exact assignments/accepted take, zero faults and correct
+feedback when reopened. The dry profile passes 20 checks without jobs, and
+same-source SINE compatibility replay passes.
+Backend/FREEZE/memory policy, normal Flex and dependency pins are unchanged.
+This UI source follow-up is not part of the earlier sealed device image;
+physical behavior and the separate native-emulator migration gate remain open.
+[Behavior and evidence](SKETCH-ARM.md#live-feedback).
+
+2026-10-23 first opt-in native migration slice: a copied current-upstream boot
+crate adds an authenticated-reference constructor. It fixes the zero-match
+startup-anchor case caused by Sketch hooking `0x40033d00`; the earlier
+duplicate-signature explanation was incorrect. The complete candidate container
+now reaches application-ready with native DSP coupling and renders Sketch,
+without a host MAIN overlay. Reset segments/BSS, code and canaries pass;
+1,620 LP0 units drain with no missing SPORT blocks. A small native saved-page
+BUF adapter matches old-runtime voice PCM for all 96 A/retained-A/B/frozen-A
+blocks, repeats exactly, preserves reader/frozen roots and detects a wrong source.
+New-runtime stock and candidate replies match, but old/new replies differ.
+The default migration gate stays closed. 229 scoped units, Ruff and same-source
+SINE pass; no new recording or firmware change is made. The lab pin and upstream
+checkout remain untouched. [Results, screenshot and remaining reply gate](NATIVE-BUF-MIGRATION.md).
+
+2026-10-23 Sketch boot-stream/upload correction: the device recipe now puts all
+added blocks before stock FINAL, pads the gate payload to four-byte alignment,
+and updates FIRST's next-application span/checksum. The stock init application,
+all existing loaded bytes and CPU MAIN remain exact; the ordinary emulator
+DSP/metadata are unchanged. Independent Python/Rust stream rules pass, and the
+old `-09` stream is rejected. Native CPU reset, section lookup, allocation,
+MAIN depack and sender transmit 339,073 exact bytes including command 3, then
+one terminal frame. Two bounded busy holds prevent pointer advance/writes and
+resume without byte loss. Fifteen saved-page DSP controls and 229 scoped unit
+tests pass, with zero recordings. Full candidate container integrity passes;
+direct native construction cannot match the intentionally hooked main-loop
+entry. The sender check therefore installs candidate MAIN before CPU
+instruction zero over a stock-MAIN/candidate-DSP input container. Actual ROM,
+SPI FIFO/tail acceptance, physical memory and hardware remain unverified.
+The older `-07`/`-09` builds retain only their recorded emulator/application
+scope. Current sealed build is `-13`, with final upload evidence at
+`sketch-rom-upload-20261023-07`. SINE compatibility and focused Ruff also pass;
+all firmware/runtime sources remain exact after SINE, with only final
+standalone upload validators subsequently adjusted for the constructor limit.
+[Correction, exact inputs and limitations](SKETCH-BOOT-UPLOAD.md).
+
+2026-10-23 Sketch coupled application startup: stock and corrected `-09` BUF
+both reach ready from CPU reset and DSP loader application entry, with the
+native peer attached before the CPU's first instruction. Native control/SPORT
+and all 1,620 card sample-transfer units run without a prepared ready snapshot.
+BUF opens/renders Sketch through panel input; all 45 reset segments, BSS/source
+clearing, 30 CPU canaries, CPU code/hooks and added DSP code pass. The measured
+disconnected-DSP negative refuses; positive results repeat exactly apart from
+wall time. 145 BUF units, Ruff and final-source SINE pass with zero recordings.
+Only validation files are added; firmware, images, pins and card/SYX remain exact.
+DSP ROM/boot upload, whole-container startup and physical memory/cache/DMA/stack
+behavior remain outside this result. [Scope, results and screenshot](SKETCH-COLD-STARTUP.md).
+
+2026-10-23 Sketch DSP boot-memory correction: the earlier prepared-emulator
+layout zero-filled all 8 KiB of ADI's reserved boot workspace. Device build `-09`
+moves the 16 KiB retirement-gate state to lower L2, including its wrapper
+scratch/stacks and seal consumer, and refuses any boot-workspace write.
+MAIN and the ordinary emulator DSP/metadata remain byte-exact. Stock and
+candidate execute 250 million DSP startup instructions to the same state;
+all six added arenas remain exact. Fifteen native seal/refusal controls and
+227 BUF/core/integration checks pass with zero new recordings.
+Twenty-four saved-page native blocks have exact voice PCM/reply parity; actual
+DSP depacking/staging, focused Ruff and final-source SINE also pass.
+The old `-07` image remains emulator evidence, unsuitable for hardware packaging.
+Paired CPU/SHARC cold boot and physical memory/cache/DMA/stack ownership remain
+open. [Correction, evidence and next gates](SKETCH-DSP-BOOT-MEMORY.md).
+
+2026-10-23 Sketch at device addresses: the exact sealed MAIN/DSP now pass the
+prepared coupled workflow at the new DDR addresses. Two captures, one native
+held-SONG FREEZE, 23 checks and 34,249 native DSP blocks preserve shared/current
+B, frozen A and four old-reader pointers. All code and 30 canaries remain exact;
+there are zero old-arena accesses and zero CPU fault pages. PCM takes, LP0 histories,
+wire and live voice hash match the earlier layout exactly. 144 BUF tests, Ruff
+and final-source SINE pass. Fresh stock-file voice PCM matches exactly over
+96 blocks repeated twice, with a differing wrong-source control and no extra
+recordings. Firmware/DSP/build sources remain unchanged.
+Paired cold startup, physical memory/cache/DMA/stack behavior, timing and hardware
+remain open; obsolete-generation retirement at the new addresses was not exercised.
+[Workflow, evidence and remaining gates](SKETCH-RELOCATED-VALIDATION.md).
+
+2026-10-23 Sketch device placement: separate stock-only build relocates the
+current native Sketch/BUF install graph into a guarded 352 KiB experimental DDR
+range. MAIN fits the existing staging ceiling; the accepted BUF DSP is unchanged.
+Native CPU reset copies/initializes every segment, reaches ready and renders
+Sketch through panel input. Modal ownership, BUF selection/reopen, code and all
+canaries pass; disabling the loader fails as expected. The source graph matches
+all 282 prepared-installer payloads and 28 hooks with zero recordings; 224 scoped
+BUF/core/integration tests, actual compressed-stream depackers and final-source
+SINE pass. The original default Arp/Flex CPU build remains byte-exact.
+This is local CPU placement/startup evidence,
+with modeled peripherals. Paired coupled cold startup, relocated recording,
+physical cache/DMA/stack ownership, composition and hardware remain open.
+No SYX or device transfer. [Layout, evidence and remaining gates](SKETCH-DEVICE-PLACEMENT.md).
+
+2026-10-23 Sketch combined DSP validation: two native captures and one held-SONG
+FREEZE pass through 34,249 native SPI/SEC DSP blocks. T1/T5 share BUF 1, T6 selects
+frozen A, and B replaces the shared BUF with a fresh identity. Four active old
+voice lanes retain their pointers across publication; later triggers sound B
+on the shared tracks and A on T6. Fresh stock-file comparisons match voice PCM
+exactly over a 96-block scenario repeated twice; a wrong frozen-B reference
+differs. 138 BUF units, final-source SINE and source preservation pass. All
+firmware emitters/DSP sources stay unchanged. Publication takes 196–197.333 ms
+after capture in the model, after the following bar's first trigger. Input,
+cadence, LP0 delivery and SEC reset remain modeled; final mix, physical timing,
+listening, target placement/startup/packaging and hardware remain open.
+[Results and reproducible checks](SKETCH-VALIDATION.md).
+
+2026-10-23 Sketch real FREEZE: an additional opt-in profile connects held SONG
+to generation-specific global-BUF admission and the existing native FREEZE
+worker. Two native captures publish A then B into BUF 2 with DEST=NORMAL;
+frozen A remains exact across replacement, and every track assignment survives.
+One 1.6-second modeled hold submits one job; empty/recording BUSY controls submit
+none. 138 scoped BUF tests, 13 native checks, default dry panel, stock Song
+opt-out and real ARM/FREEZE filename-modal ownership pass. Sources and default
+FREEZE queue payload stay exact outside the intended edits; final-source SINE
+replay passes. Recorder input/LP0
+are modeled; coupled DSP workflow, device placement/packaging and hardware remain
+open. [Controls, ownership, results and screenshots](SKETCH-FREEZE.md).
+
+2026-10-23 Sketch real ARM: an additional opt-in profile connects FUNC+SONG in
+either key order to shared arm-only BUF admission. One native empty-BUF-2 capture
+starts at the next first-step receipt and automatically publishes 112,928 stereo
+frames while recorder DEST stays NORMAL and all assignments remain exact.
+Repeated ARM refuses without canceling. Recorder DEST=BUF 3 then coexists with
+Sketch BUF 2; NO cancels that request before capture and preserves the take.
+130 scoped BUF tests, 16 native checks, default dry panel, stock Song opt-out,
+real-profile filename-modal ownership and stable-source SINE replay pass.
+Recorder input/LP0 are modeled in the CPU/UI run. Held SONG stays dry; coupled
+DSP workflow and device placement/packaging remain open. [Results](SKETCH-ARM.md).
+
+2026-10-23 Sketch follow-up: native periodic View updates keep recorder status
+current without input. Existing manual capture runs with Sketch open; five real
+FREEZE snapshots span both read-only list pages. The existing next-bar capture
+also runs with Sketch open and STOP cancels it while preserving the accepted
+BUF, snapshots and all track assignments. 125 scoped BUF tests, 24 capture/list
+checks, the 20-check no-recording panel run, stock Song opt-out and independent
+SINE replay pass. A final native layout probe checks the raised footer labels
+without another capture. These are CPU/UI observations with modeled input, not
+DSP audio or hardware qualification. SONG ARM/FREEZE remain dry; backend,
+preview, persistence and memory policy are unchanged. [Results](SKETCH-UI.md).
+
+2026-10-23 Sketch stages 1–2: separate opt-in native View/scaler over the
+unchanged BUF backend; SONG release toggles, FUNC+SONG logs dry ARM, held SONG
+logs dry FREEZE/refusal. One volatile BUF preference is independent of recorder
+DEST=NORMAL; SRC/CHAN/LEN/MON use stock accessors. Native panel, filename-modal
+ownership, stock Song opt-out, 175 BUF/core tests and final stable-source SINE
+replay pass. No capture/job/assignment/save from the dry controls. Native bitmap
+captures are available; populated frozen lists, capture while Sketch is open,
+backend action integration, preview, persistence and hardware remain outside
+this result. [Controls, ownership, results and screenshots](SKETCH-UI.md).
+
+2026-10-22 BUF continuous reuse: 13 consecutive native one-bar publications
+while a pattern plays, shared BUF 1 on T1/T5 and frozen A on T6. Eleven native
+releases and ten extent reuses leave 904 KiB DSP storage and identical settled
+CPU heap free space at checkpoints 2–13. IDs remain unique beyond eight; no
+allocator/ID-limit change. All 15 capture attempts were consumed: an initial
+heap-ledger assertion, then 13 successful publications and a final capture
+stopped by an AMP no-op assertion. Raw runs stay failed; final harness fixes
+are prepared-boundary checked, without another recording. Saved-page ONESHOT
+and REPITCH PCM comparisons pass; REPITCH retirement and hardware remain
+unqualified. The all-ONESHOT guard is unchanged. [Results](BUF-CONTINUOUS.md).
+
+2026-10-22 BUF architecture alignment: the [canonical contract](../BUF-WORKFLOW-CONTRACT.md)
+supersedes the older assigning/seed-take prototype below. Native next-bar recording
+uses global recorder DEST, initializes empty BUFs, preserves track assignments,
+permits ordinary performance edits and refuses unsupported R.LEN values.
+The empty/shared-BUF CPU flow passes with actual parameter changes and full-rate
+modeled input; independent saved-publication DSP comparisons preserve old/frozen
+readers. A short native retirement run frees/reuses one physical extent with a
+fresh identity. BUF/Flex scoped units pass (192 combined, 115 default BUF).
+The continuous coupled run remains failed in its SEC-state clone comparator;
+that comparator was removed from the final driver. Full-bar publication takes
+189–195 ms in the model and misses the following bar's first trigger. Empty-row
+labels, broader playback/retirement compatibility, persistence and hardware
+remain open. [Results and next steps](BUF-WORKFLOW-ALIGNMENT.md).
+
+The following entries retain earlier milestone evidence and test counts.
+
+2026-10-22 test organization: BUF and existing Flex have separate source guides
+and scoped unit commands. `./labctl unit` defaults to 110 native BUF/recorder
+tests; `./labctl unit flex` selects 92 Flex/recorder tests. Older BUF models,
+Capicola, Arp, integration and core tooling are separate groups. All 428 original
+test IDs remain available; six test-selection checks bring explicit `unit all`
+to 434. Current BUF tests share a fixture helper rather than importing each
+other's test classes. No firmware/DSP code or feature builders changed.
+The 110 BUF and 52 core tests pass; full-suite collection preserves all original
+IDs without running unrelated feature suites. Audit:
+`out/runs/buf-test-housekeeping-20261022-01/verification.json`.
+[Feature guide](FEATURES.md), [testing policy](TESTING.md).
+
+2026-10-22 BUF native next-bar capture: SAMPLING+YES on an initialized BUF records one native bar, waits for original normalization/loading, and automatically USEs the take while the pattern continues. Final coupled flow passes first-step alignment, 56,480-frame capture/page equality, frozen A preservation, 12,858 exact stock-voice blocks and two independent stock-file renders. Same-source missing-clock/STOP-cancel controls, 13 focused tests, all 428 unit tests and SINE pass. Earlier clock-value and one-step phase candidates are retained; the first coupled candidate was interrupted before qualification. DSP, normal builders and Flex R5 are preserved. Fixed one-bar normal 16-step/all-ONESHOT emulator slice; configurable lengths, broader clock/project lifecycle, native feedback/save, shipping placement and hardware remain open. [Results](BUF-NEXT-BAR-RESULTS.md).
+
+2026-10-22 BUF performance: separate ONESHOT emulator adapter adds native SAMPLING+C FREEZE of the selected track's BUF while a pattern plays. A four-take record/trim/USE flow passes 14 native note triggers, stop/restart, two automatic releases, retained frozen A/current D, 9,393 exact stock-voice blocks and two independent stock-file oracles. 415 unit tests and SINE pass; native payload/adapter bytes match that SINE run, with panel setup/evidence corrections only in the later driver. The failed zero-note fixture is preserved. DSP and existing Flex R5 are unchanged. Next-bar capture, automatic USE, native BUF saving, device feedback/timing and hardware remain open. [Results](BUF-PERFORMANCE-RESULTS.md).
+
+2026-10-22 BUF automatic cleanup: separate opt-in emulator adapter, preserving existing Flex R5 and normal builders. Native GUI policy selects obsolete versions, skips current/frozen roots, throttles retries and yields to recording/FREEZE. One four-record panel scenario passes retained-reader timeout and automatic recovery, two native releases, 7,493 exact stock-voice blocks and two independent stock-file renders. 406 tests and SINE pass; DSP is byte-identical. Native BUF readback/SAVE, shipping placement, running-sequencer policy and hardware remain open. [Results](BUF-AUTO-RETIREMENT-RESULTS.md).
+
+2026-10-20 Flex RAM-bank save R5: stock filename editor → visible bank A–H → save with exact slot preview. Current bank/slot is the default; cancellation, full banks and failed/unready loads/writes preserve the take. Selected-track relocation retains machine controls and old-slot aliases. Exact-package panel, original project save/independent stock reload, Discard, native reset, 281 tests and SINE regression pass at their documented evidence layers. DSP remains byte-exact to R4; physical R5 operation is unverified. [Results, OS and screenshots](FLEX-BANK-SAVE-RESULTS.md).
+
+2026-10-19 Flex project-save R4: a stale temporary reference reproduced ERROR before the stock project writer. R4 preserves missing references and saves other project contents, while retaining live-take persistence failure guards and exact tombstone matching. 266 tests, native save/stock reload/fresh-runtime save, reset and repeat packaging pass. The GUI reaches DONE with an explicitly modeled SHA-256 boundary. The user reports successful installation and Save Project As into a new project on hardware; hardware reload, power-cycle persistence and broader Flex testing remain unreported. [Results and OS](FLEX-PROJECT-SAVE-FIX.md).
+
+2026-10-19 Flex discard R3 cleanup: user-requested immediate discard on the first YES release, with the confirmation screen and UP/DN hint removed. Existing discard memory/persistence handling is unchanged. [Results and screenshots](FLEX-DISCARD-CLEANUP-RESULTS.md).
+
+2026-10-19 Flex discard R2: professional native save/discard menu with waveform icon, explicit confirmation and busy-reader protection. Discard tombstones the take, clears current aliases through stock unload and frees its CPU source without writing a file. Issued IDs are not recycled. Exact-package native T9 UI, original project writer and independent stock reload, 262 tests, reset/depacker and default/DSP parity pass. [Results and screenshots](FLEX-DISCARD-RESULTS.md). Hardware discard remains unverified.
+
+2026-10-19 Flex save screen: optional native SAMPLING save page for the selected
+track's unsaved take, independent of the six stock sample playback machines.
+Manual/armed recording and USE overwrite guards, selected-track USE, native
+cancel/failure/naming/save flow and independent exact PCM reload pass. Packaged
+screenshots, 255 source tests, reset/canaries, actual MAIN depacker and SINE pass.
+Default any-track MAIN and accepted DSP remain byte-exact. No hardware transfer.
+[Results and actual screenshots](FLEX-SAVE-SCREEN-RESULTS.md).
+
+2026-10-19 stopped arp: a separate `--arp-stopped` all-feature candidate plays
+held track-1 keyboard notes with PLAY off at the native tempo/rate. Original
+STOP cleanup remains. The packaged stopped/recording panel checks, native reset,
+CAPI controls, actual bootstrap depacker, 240 source tests and SINE pass. Default
+R2 and candidate DSP remain byte-exact; 28 code bytes added with no new state.
+[Results and candidate](ARP-STOPPED-PLAYBACK-RESULTS.md). New hardware/timing and
+full coupled startup remain unverified; resource monitor is not included.
+
+2026-10-17 CAPI R2: actual MAIN depacker reproduced a265,885-byte overflow in the withdrawn build. Equivalent ADI zero-fill encoding reduces the DSP stream to626,332bytes with422,243bytes headroom. Entire loaded memory and MAIN remain exact. Actual MAIN canary tests, host/native audio, stereo/Plaits/final-ring, repeated reset/bootstrap,235tests and SINE pass. [Replacement and results](CAPICOLA-REDDIT-BOOT-FIX-RESULTS.md). Physical confirmation pending.
+
+2026-10-17 hardware failure: initial author CAPI candidate a70f91d7 is withdrawn. Stock CPU DSP-stage overflow identified; [local repair](CAPICOLA-REDDIT-BOOT-FIX.md) in progress. Earlier passing emulator checks did not cover the actual MAIN depacker allocation.
+
+2026-10-17 author-release CAPI replacement: the shared dt2-capicola release-default engine now replaces the old backend in `--all-features`. The pinned source, SHARC stereo/search paths, memory relocation, binary switch, unchanged CPU image and exact validation results are documented in [results](CAPICOLA-REDDIT-RESULTS.md). Earlier entries below describe preserved historical candidates.
+
+2026-10-17 CAPI UI: [stock binary switch](CAPICOLA-SWITCH-RESULTS.md) replaces the encoder dial in the new all-feature source-playback package. Native OFF→ON→OFF UI/storage/transport checks and 230 source tests pass. Two MAIN bytes change; DSP is identical. No hardware transfer.
+
+2026-10-17 Capicola source playback: new source-first reader/dual-grain handoffs and native stereo,32channel banks within existing8MiB.504full-start upstream comparisons, actual KeyframeRecorder pair,36packaged reader cases, native stereo/trigger/routing/final-ring checks, repeated DSP reset/depacker,230source tests and SINE pass. MAIN/default exact. Fidelity prioritized over emulator instruction allowance; physical listening/deadlines remain open. [Results](CAPICOLA-SOURCE-RESULTS.md), [verification](CAPICOLA-SOURCE-VERIFICATION.json).
+
+2026-10-17 CAPI quality candidate: a guarded optional source overlay replaces
+the prototype's 20 ms adaptive-fade cap with content-dependent spans, selected-
+region guards and bounded float32 phase progress. Nine actual original-Granule
+host/packaged SHARC comparisons pass (target maximum error below 2.4e-7);
+the old capped reader fails the six splice cases. Host boundary/control cases,
+120 target boundary cases, phase termination, sixteen-bank routing, final-ring
+causal mute, repeated DSP reset, actual bootstrap depacking, 228 source tests
+and stable-source SINE pass. MAIN and the default all-feature package stay
+byte-identical. No lane/bank storage grows; longer two-head fades cost more
+DSP work in the measured fixtures. Physical A/B, timing and headroom remain
+open. No hardware transfer, commit or publication occurred. [Results and
+reproduction](CAPICOLA-QUALITY-RESULTS.md),
+[verification](CAPICOLA-QUALITY-VERIFICATION.json).
+
+2026-10-17 all-feature OS: an actual local OS 1.16 `.syx` now combines
+Plaits R3, CAPI time stretch OFF/ON, native Arp tempo/rates and managed Flex.
+Plaits keeps its reviewed CPU placement; a separate 54-byte loader initializes
+the same Arp/Flex DDR payload. CPU reset/ready, native controls, repeated DSP
+reset, sixteen-track DSP playback, Arp-to-Plaits voice replay, twenty-second
+stereo Flex lifecycle and a single Arp/Flex GUI save/recall session pass.
+The latter preserves 121,740 pattern bytes, settings, exact recorded-note
+replay and native sample/transfer equality. A cache-hit observer error was
+corrected and the complete GUI scenario rerun; all guest image bytes stayed
+identical. All 226 source tests and stable-source SINE pass. CAPI starts OFF;
+encoder C on STRETCH enables it. Existing feature limits remain. Coupled
+CPU/SHARC cold boot, physical timing/cache ownership and hardware behavior
+remain unverified. [Build and reproduction](ALL-FEATURES-EXPERIMENT.md),
+[verification](ALL-FEATURES-VERIFICATION.json). No commit, publication or
+hardware transfer occurred.
+
+2026-10-17 CPU extension: an opt-in stock OS 1.16 image now places Arp and
+managed Flex in one 64 KiB DDR reservation, with a 54-byte reset loader and
+one phased project-save hook. Native reset reaches ready and executes 39
+stock heartbeat calls into DDR; segment/BSS/canary checks and the disabled
+loader negative pass. Prepared-fixture Arp record/save/recall/exact replay,
+20-second stereo Flex lifecycle, 223 source tests and stable-source SINE pass.
+Standalone image hashes and stock DSP are preserved. Dense placement exposed
+and corrected an incomplete bitmap descriptor in the experimental layout.
+Both-active combined persistence, coupled startup and physical ownership/timing
+remain open. [Notes and reproduction](CPU-EXTENSION-EXPERIMENT.md),
+[verification](CPU-EXTENSION-VERIFICATION.json). No commit, publication or
+hardware transfer occurred.
+
+2026-10-16 reuse: shared CPU emission/placement, build context, family-driven
+DSP compilation, typed hook contracts, replay I/O and native phased project
+save helpers are implemented. Default active CPU/DSP builds reproduce frozen
+bytes; 217 source tests, SINE replay, optional Arp/Flex save lifecycles and paired
+STRETCH state/master/ring checks pass. Optional cache/trace specialization saves
+1.33% of mean emulated block instructions in the paired steady fixture and
+0.95% during rapid edits. This is not physical utilization. Arp/Flex composition
+is explicitly refused because current code placement overlaps and does not fit;
+the shared save entry does not resolve that limit. See
+[reuse results](REUSE-RESULTS.md) and its verification record. No firmware was
+sent to a device and nothing was committed or published.
+
+2026-10-16 G sensitivity: the user reports the arp is almost perfect on the
+device and requests a slower G response. R2 reuses the stock Keyboard Settings
+encoder scaler and existing view state, filters tiny movements and avoids
+unchanged-value redraws. It adds no state allocation, timer or hook; the fixed
+8 KiB state remains. Focused native checks, the source regression suite, actual
+panel selection/120 BPM UP recording and bounded startup pass. Package loader
+checks and artifact details are recorded in [G sensitivity](ARP-G-SENSITIVITY.md).
+The new knob feel still needs a device trial; nothing was uploaded or committed.
+
+2026-10-16 arp: the user now reports the previously installed arp works as expected; its exact hash and delayed-start cause remain unconfirmed. A separate native tempo/rates continuation follows the stock tempo getter, adds quarter/eighth/sixteenth/32nd rates and G push focus. Native timing, real Tempo-menu input, 127.5 BPM eighths, 300 BPM 32nds and packaging/startup checks pass; recording, native menu save and checkpoint-resumed menu recall/replay now pass, including exact pattern preservation and mode/rate restoration after clearing RAM. See [tempo/rates results](ARP-TEMPO-RATES-RESULTS.md). New-candidate hardware remains unverified.
+
+2026-10-15 arp diagnosis: re-entering keyboard mode did not resolve the user
+report; installed candidate is not yet confirmed. The optional D1 build exposes
+held/PLAY/stock-keyboard/sample-clock/API/output counters for the next device
+observation. It does not claim another fix. Default MAIN bytes stay identical
+to the keyboard-fix build. See [D1 diagnostics](ARP-STOCK-FIRMWARE-RESULTS.md#d1-device-diagnostics).
+
+2026-10-15 arp hardware follow-up: the user reports no arp on T1 with UP and held keys, stopped or playing. The first native package therefore failed its device trial. A stale private keyboard-mode flag reproduces the symptom in an explicit emulator mismatch fixture; the follow-up reads the live stock setting. The physical cause and replacement hardware result remain unconfirmed. See [arp follow-up](ARP-STOCK-FIRMWARE-RESULTS.md#hardware-failure-follow-up).
+
+2026-10-15 native arp: [Stock-only OS 1.16 firmware](ARP-STOCK-FIRMWARE-RESULTS.md) now replaces the Python arp services with native G control, keyboard ownership, task clock and AR16 journal I/O. UP records, saves, recalls through the normal project menu and replays its exact notes; all 121,740 pattern bytes survive. Native mode/failure checks, current-source SINE, container/original depacker and bounded startup pass. The private SYX has unchanged stock DSP/protected sections. Track 1 and fixed 102 BPM remain; card-backed power-on recall, broader lifecycle and hardware are unverified. Nothing was flashed or committed.
+
+2026-10-15 arp: [Project load and optimization](ARP-PROJECT-LOAD-RESULTS.md) verifies native G OFF/UP/ORDER/RANDOM, ordinary recorded notes, normal project-menu mode recall and missing/corrupt companion fallbacks in the OS1.16 emulator. Seven imports, exact full patterns, 180 source tests, native audit, unchanged musical/control/overlay bytes and SINE pass. Storage synchronization is incremental and helper stacks are isolated/guarded. Track 1 and 102 BPM remain the bounded scope; hardware and firmware packaging are separate.
+
 2026-10-08 combined build: [Plaits R3 + managed streaming Flex + Capicola live STRETCH R3](COMBINED-FIRMWARE-RESULTS.md) is now packaged as one private experimental OS 1.16 SYX. Exact builds, protected-section/decoder/container checks, actual bootstrap depacking, native pool boundaries, separate CPU/DSP startup, 141 source tests and SINE replay pass. The CPU checkpoint retains all 102 patch writes; two fresh DSP runs preserve code/constants/selector. Capacity remains 12-second eligible mono Capicola sources in a shared 8 MiB reservation and 20-second Flex recording. Coupled startup, physical timing, permanent L2 ownership, full STRETCH progress bookkeeping and the broader Flex lifecycle remain open. Nothing was uploaded or flashed.
 
 2026-10-08 playback R3: [Capicola live STRETCH controls](CAPICOLA-STRETCH-R3-RESULTS.md) now follow PLAY and STRT/LEN edits without retrigger, with bounded 64-sample crossfades, native active completion and modeled master/DAC-ring verification. Sixteen simultaneous tracks on thirty-two lanes, 576 host cases, forty-eight native mode/region cases, pressure/reload/parity checks, 138 source tests and SINE pass. State adds 4.5 KiB within the unchanged 8 MiB reservation. The rapid-edit stress peaks at 4.46 million emulated instructions per block; physical timing, full phase/progress bookkeeping, ownership and packaging remain open. Earlier entries below are historical milestones.
@@ -194,3 +608,22 @@ negative controls, 20-second mono/stereo, failure cleanup, UI/project reload,
 remain byte-identical. More than 32 published identities, independent safe byte
 admission and unsaved/project-epoch reclamation remain unimplemented.
 [Results, exact artifacts and remaining invariants](FLEX-MEMORY-IMPLEMENTATION-RESULTS.md).
+
+## Optional CAPI comparison — 2026-10-13
+
+The existing STRETCH machine now has an optional per-track CAPI OFF/ON on
+encoder C. Native trigger latching, stock/R3 rendering, mixed sixteen-track
+routing, native locks and buffered second-SRC-page feedback pass. The builder
+requires `--capi-toggle`; omission reproduces the original combined image.
+[Results and reproduction](CAPICOLA-TOGGLE-RESULTS.md). Device timing, coupled
+operation, full project persistence and existing lifecycle gaps remain separate.
+
+## Optional any-track routing — 2026-10-19
+
+The optional `--all-features --any-track` build keeps one keyboard arp following
+the selected track 1–16, with existing per-pattern settings and stopped playback.
+Plaits permissions, controls and independent lane state now cover all tracks.
+Capicola already has sixteen-track routing; Flex already accepts compatible
+destinations on any track and retains its shared recorder. The previous default
+and stopped-arp SYX bytes reproduce exactly. The new candidate remains subject
+to the separate physical device trial. [Artifact, checks and remaining limits](ANY-TRACK-FEATURES-RESULTS.md).

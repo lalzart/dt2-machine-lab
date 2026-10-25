@@ -1,0 +1,70 @@
+{
+  "application_feedback": [
+    {
+      "surface": "capture report",
+      "value": "native decisions, calls and ownership"
+    },
+    {
+      "surface": "native keyboard setup G slot",
+      "value": "ARP and OFF/UP/ORDER/RANDOM"
+    }
+  ],
+  "endpoint_device_evidence": {
+    "notes": "No physical-device claim is made by this contract.",
+    "state": "deferred"
+  },
+  "gesture_state_machines": [
+    {
+      "states": "OFF, armed, playing, panic",
+      "rule": "proposal and state matrix"
+    }
+  ],
+  "not_applicable_rationale": "",
+  "schema_version": "sonic-research-lab-control-map-v1",
+  "semantic_bindings": [
+    {
+      "binding": "OFF",
+      "rule": "stock keyboard path"
+    },
+    {
+      "binding": "UP",
+      "rule": "ascending unique pitches"
+    },
+    {
+      "binding": "ORDER",
+      "rule": "first-press stamp order"
+    },
+    {
+      "binding": "RANDOM",
+      "rule": "fixed LCG and held pitch rank"
+    }
+  ],
+  "source_of_truth": {
+    "strategy": "exhaustive-compare",
+    "artifact": "docs/ARP-INTEGRATION.md and experiment.json"
+  },
+  "status": "ready",
+  "surface_assignments": [
+    {
+      "input": "mapped key edges",
+      "target": "native held/owner state"
+    },
+    {
+      "input": "experiment OFF/UP",
+      "target": "native mode"
+    },
+    {
+      "input": "PLAY/STOP/destination change",
+      "target": "native clock/panic"
+    },
+    {
+      "input": "TrackNoteMenuView G detent",
+      "target": "clamped native mode 0..3"
+    },
+    {
+      "input": "G push",
+      "target": "unchanged stock behavior"
+    }
+  ],
+  "title": "Native arp on stock OS 1.16"
+}

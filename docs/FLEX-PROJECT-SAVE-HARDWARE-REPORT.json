@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-19",
+  "timezone": "Asia/Tokyo",
+  "evidence_source": "Direct user report in the R4 repair chat",
+  "package_identity_basis": "User replied to the supplied R4 download; device hash was not independently read",
+  "expected_package_sha256": "e8a0bb48d171b66f9118aa68dca5c95b9dd50f0ba497457473f6d4d605e0263a",
+  "user_reported": {
+    "os_installation_successful": true,
+    "save_project_as_new_project_successful": true
+  },
+  "agent_accessed_hardware": false,
+  "agent_transferred_firmware": false,
+  "original_project_reference_dump_inspected": false,
+  "not_reported": [
+    "Quick Save after installation",
+    "Reload and audio verification of the newly saved project",
+    "Power-cycle persistence of that saved project",
+    "Broader Flex recording, saving and discard session"
+  ]
+}

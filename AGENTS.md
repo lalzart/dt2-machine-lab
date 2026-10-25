@@ -4,6 +4,9 @@ Read README.md and docs/STATUS.md first. Use ordinary source changes, tests,
 and short engineering notes. The former SYS-001/investigation workflow is
 retired; do not introduce investigation IDs, claim ledgers, or coordinator roles.
 
+For BUF, read BUF-WORKFLOW-CONTRACT.md. It is the canonical product direction;
+historical one-bar/autoassignment experiments do not override its invariants.
+
 - This repository owns machine source and test adapters. DigiKit and Selache
   are pinned dependencies under .deps/. Do not silently update or edit them.
 - Run ./labctl doctor before firmware work. Use bounded, uniquely named runs.
@@ -18,6 +21,12 @@ retired; do not introduce investigation IDs, claim ledgers, or coordinator roles
 - Elekloader is an optional integration reference; see docs/ECOSYSTEM.md.
 - Do not flash hardware, publish, push, or commit unless the user asks. Creating
   this local repository does not authorize a remote publication or device test.
-- Preserve unrelated changes. Run python3 -m unittest discover -s tests -v
-  for harness changes and ./labctl test sine --replay for DSP/adapter changes.
-  The latter needs the private fixture and configured runtime.
+- Preserve unrelated changes. Use the scoped unit commands in docs/TESTING.md:
+  ./labctl unit buf for BUF, ./labctl unit flex for existing Flex, and core
+  plus affected suites for shared tooling changes. Add integration for shared
+  builders/save/resource changes; use ./labctl unit all for broad cross-feature
+  changes or an explicit full audit. Do not run Capicola/Arp suites for unrelated
+  BUF work. Keep older BUF models in the separate buf-models group.
+- Run ./labctl test sine --replay for DSP/adapter behavior changes, alongside
+  the relevant bounded compatibility/negative controls. This needs the private
+  fixture and configured runtime; unit/docs organization alone needs no replay.

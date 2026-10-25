@@ -1,0 +1,111 @@
+{
+  "changes": [
+    "First YES release on selected Discard executes immediately",
+    "Pre-discard confirmation removed",
+    "UP/DN hint removed; YES/NO footer retained"
+  ],
+  "dsp_exact_r2": true,
+  "gallery": "out/runs/flex-discard-cleanup-flow-20261019-01/flow.html",
+  "hardware_tested": false,
+  "hardware_uploaded": false,
+  "limits": [
+    "Existing take-wide discard and 32 issued identities per boot unchanged",
+    "Recorder/storage/DSP peers modeled; hardware revision untested"
+  ],
+  "package": {
+    "dsp_sha256": "fdd5619fbdc6c4f1cc35ce781896400791c1d1a38c91c603fe75548e7ea7f2a2",
+    "main_sha256": "20b7f144d801504a2eabe0bd05846802e742a95f2119faca4c38f72382325088",
+    "path": "out/runs/flex-discard-cleanup-package-20261019-01/EXPERIMENTAL_ALL_FEATURES_CAPI_REDDIT_R2_ANY_TRACK_R1_FLEX_SAVE_SCREEN_R3_DISCARD_OS1.16.syx",
+    "repeat_exact": true,
+    "sha256": "53d6ca6ee1a84cc5eed587f7baa44470e79a852a8ea8d811d58f7f31c136d0c9"
+  },
+  "reports": {
+    "boot": {
+      "path": "out/runs/flex-discard-cleanup-boot-20261019-01/report.json",
+      "sha256": "e9fc4270d7c5a7e03c43b9a2c1a60e9666182dc04aef3fc88ce4854b5cb51360",
+      "status": "passed"
+    },
+    "project": {
+      "path": "out/runs/flex-discard-cleanup-project-20261019-01/report.json",
+      "sha256": "472ec182691da0a34d042f4b9a565efae08e9f672c5f71b96f4c37c4aee1ba83",
+      "status": "passed"
+    },
+    "ui": {
+      "path": "out/runs/flex-discard-cleanup-flow-20261019-01/report.json",
+      "sha256": "9abf296a30d9d2f825f5e717d401a6030ec6e6228e9b48fd51c9a648e36572b8",
+      "status": "passed"
+    }
+  },
+  "screenshots": [
+    {
+      "framebuffer_sha256": "97207533497e3ebb9c9bbd088783265faecb5f3384ff11afad9ea7a65b94f807",
+      "lit_pixels": 1018,
+      "path": "01-track9-save-menu.png",
+      "sha256": "9650de8f3eff497e694449c5f85466aa5af7217d10b3224f4b55910336f8a615"
+    },
+    {
+      "framebuffer_sha256": "cd95d077681971a3bd7f209abe713927708c3628af325b1e7cc35b0e646f3b11",
+      "lit_pixels": 1018,
+      "path": "02-discard-selected.png",
+      "sha256": "98005a587bb5b0d342d561550f89a7b1d0899ffa1db534ad565bbca27bd8c25d"
+    },
+    {
+      "framebuffer_sha256": "97207533497e3ebb9c9bbd088783265faecb5f3384ff11afad9ea7a65b94f807",
+      "lit_pixels": 1018,
+      "path": "03-back-keeps-take.png",
+      "sha256": "9650de8f3eff497e694449c5f85466aa5af7217d10b3224f4b55910336f8a615"
+    },
+    {
+      "framebuffer_sha256": "7bb565be2f8012332c73dc3bea4447d60eaa689be835b313364336c4263e73ba",
+      "lit_pixels": 1129,
+      "path": "04-active-reader-busy.png",
+      "sha256": "64c4651394ce133d090f40b2c06c177ac8eb75fc571ca79dcd2e5d5f8afdecb4"
+    },
+    {
+      "framebuffer_sha256": "97207533497e3ebb9c9bbd088783265faecb5f3384ff11afad9ea7a65b94f807",
+      "lit_pixels": 1018,
+      "path": "05-retry-save-menu.png",
+      "sha256": "9650de8f3eff497e694449c5f85466aa5af7217d10b3224f4b55910336f8a615"
+    },
+    {
+      "framebuffer_sha256": "cb32b71ac4753ff41eab0c5ccd2ed17261755a859f5ce7e25c03e6ac5f629335",
+      "lit_pixels": 1950,
+      "path": "06-discarded-on-first-yes.png",
+      "sha256": "f83433201bf05d5f27f3784a8a5e0270a30ef5228215605d1342a91bb04fe548"
+    },
+    {
+      "framebuffer_sha256": "c59b798cb3980f88d0c961e5f130b644b0730a282572494762bd59c68f8d31b2",
+      "lit_pixels": 1929,
+      "path": "07-recorder-restored.png",
+      "sha256": "0802837ea30a70fb43ae9b7d0039fda27ceae4e72e9a70077b04d7f587f2438b"
+    },
+    {
+      "framebuffer_sha256": "97207533497e3ebb9c9bbd088783265faecb5f3384ff11afad9ea7a65b94f807",
+      "lit_pixels": 1018,
+      "path": "08-new-take-defaults-to-save.png",
+      "sha256": "9650de8f3eff497e694449c5f85466aa5af7217d10b3224f4b55910336f8a615"
+    },
+    {
+      "framebuffer_sha256": "8a74b89729f42cf850bb9ae22a2d60c4d3cdc8be68627355e9de2c697a5f13cd",
+      "lit_pixels": 1701,
+      "path": "09-name-editor.png",
+      "sha256": "bd8c1e1d134d548a2975c6668eb272bc7ce391a5a87fb17cc81798b6dc93cc63"
+    },
+    {
+      "framebuffer_sha256": "a91d019db703c758ee99e9e3cb9c686d87e6c037b089b70c2f148f38eb2db9c1",
+      "lit_pixels": 1937,
+      "path": "10-new-take-saved.png",
+      "sha256": "bad8d4d79768816e17683f6100485a80b09e3393b67a59433cacaa2768416cf9"
+    }
+  ],
+  "source_manifest": {
+    "path": "out/runs/flex-discard-cleanup-verification-20261019-01/source-hashes.json",
+    "sha256": "8e5d46e215c10d2ea63a9bc2360c15d5e3de0b38efaf9235dfe9cae9e2a9b673"
+  },
+  "source_tests": {
+    "passed": 262,
+    "path": "out/runs/flex-discard-cleanup-verification-20261019-01/source-tests.log",
+    "sha256": "2c19b4843086a01a9d2c1c362e1979ecf49cb3e67ba41efda712bc51f95e9d70"
+  },
+  "status": "passed-emulator"
+}

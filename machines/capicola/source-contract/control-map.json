@@ -1,0 +1,56 @@
+{
+  "application_feedback": [
+    "OFF, WAIT, READY, CAPI, STOCK, MIX, UNSUP, unknown"
+  ],
+  "endpoint_device_evidence": {
+    "notes": "No physical-device claim is made by this contract.",
+    "state": "deferred"
+  },
+  "gesture_state_machines": [
+    "Intent updates now; backend changes only on real trigger"
+  ],
+  "not_applicable_rationale": "",
+  "schema_version": "sonic-research-lab-control-map-v1",
+  "semantic_bindings": [
+    {
+      "id": "capi",
+      "description": "Raw0..256 default0; ON128..256; latch on trigger"
+    },
+    {
+      "id": "status",
+      "description": "Tagged per-track last-block enum0..6; cache age32 successful exchanges"
+    },
+    {
+      "id": "pitch",
+      "description": "Native computed voice+0x1cc:1/32..32"
+    },
+    {
+      "id": "advance",
+      "description": "Native computed voice+0x1c8:2^-16..64"
+    },
+    {
+      "id": "region",
+      "description": "Native Q31 voice+0x198/+0x1a0; preserve source-time on edits"
+    },
+    {
+      "id": "PLAY",
+      "description": "Native voice+0x1bb/+0x1bc reverse/loop flags; two-grain handoff"
+    }
+  ],
+  "source_of_truth": {
+    "strategy": "exhaustive-compare",
+    "artifact": "docs/CAPICOLA-TOGGLE.md"
+  },
+  "status": "ready",
+  "surface_assignments": [
+    {
+      "selector": "SRC encoder C, param204/mirror27",
+      "binding": "capi"
+    },
+    {
+      "selector": "SRC caption",
+      "binding": "status"
+    }
+  ],
+  "title": "Existing STRETCH controls drive source-faithful sample reader; no new panel control"
+}

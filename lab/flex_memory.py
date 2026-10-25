@@ -8,7 +8,8 @@ recorder storage, sample playback memory, or free device memory.
 
 import hashlib
 
-from lab.flex_native import MAX_FRAMES, Code
+from lab.emit import Code
+from lab.flex_native import MAX_FRAMES
 from lab.project import require
 
 ENTRY = 0x402FDE6C

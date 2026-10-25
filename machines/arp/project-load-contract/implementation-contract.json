@@ -1,0 +1,69 @@
+{
+  "acceptance_tests": [
+    "Native menu saved-mode and exact-pattern recall",
+    "Unknown identity, corrupted companion, failed load and held-owner negatives",
+    "Storage alternating-write parity and measured no-op sync",
+    "Full source tests, SINE and retained musical parity"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement original core and adapter",
+      "Use existing fixture and capture tools"
+    ],
+    "must_not": [
+      "Edit pinned dependencies or unrelated work",
+      "Commit, publish, flash, package firmware or relax failed tolerances"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Native four-mode core",
+    "Native G feedback/edit adapter",
+    "Recording and authenticated saved-project evidence"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Restore saved arp selection through the normal project menu and reduce emulator storage overhead",
+    "primary_claim": "Authenticated menu loads restore mode after native success with exact recorded notes; incremental overlay sync preserves bytes"
+  },
+  "inputs": [
+    "Exact OS1.16 firmware and ready snapshot",
+    "Pinned DigiKit 277760aad51b036a4756db051409d4d3b1eeccbc",
+    "Real panel input and native sample tick"
+  ],
+  "proposal": {
+    "path": "docs/ARP-PROJECT-LOAD.md",
+    "revision": "1",
+    "sha256": "3899d67e268f91dae78ee62d8d6a64e2c84427a0b2503571d5bfb4e4978975cf",
+    "approval": {
+      "state": "approved",
+      "reference": "User 2026-10-15: project load testing and final optimization and testing"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Normal native project menu identity and successful-load recall",
+      "Incremental private card overlay sync",
+      "Final source, native menu, parity and regression checks"
+    ],
+    "out": [
+      "Hardware, permanent placement, packaging, external MIDI, tempo edits",
+      "Unproved pattern-copy/undo behavior and automatic release publication"
+    ]
+  },
+  "status": "ready",
+  "target": "ColdFire control and DigiKit OS1.16 emulator adapter",
+  "title": "Arp project recall and emulator optimization",
+  "work_type": "new-design",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/arp.json, menu PNG and storage report",
+    "evidence_level": "host-structural",
+    "success_observation": "Native modes, menu and recorded-note project save/reload pass with explicit persistence boundaries"
+  }
+}

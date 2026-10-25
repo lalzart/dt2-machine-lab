@@ -27,25 +27,7 @@ from lab.runtime import (
     STOCK_BLOB,
     sharc_profile,
 )
-
-
-def assemble(source):
-    from sharc_selache import SelacheOracle
-
-    run = SelacheOracle.open(SELACHE).assemble_text(source)
-    if not run.comparison.all_extents_agree:
-        raise ValueError("Assembler and DigiKit instruction widths disagree")
-    return run
-
-
-def header(target, count):
-    # Same core/signature and data-block flags as the stock loader stream.
-    result = bytearray(struct.pack("<IIII", 0xAD000001, target, count, 0))
-    checksum = 0
-    for byte in result:
-        checksum ^= byte
-    result[2] ^= checksum
-    return bytes(result)
+from lab.sharc_tools import assemble, header
 
 
 def build_route_blob(sine=False, controls=False):
@@ -195,7 +177,7 @@ class Dsp:
         if "return without followed call" not in why:
             raise RuntimeError(f"DSP call {pc:#x}: {why}")
 
-    def frame(self, wire):
+    def frame(self, wire, *, instruction_limit=4_000_000):
         import sharc_trace as st
 
         core, p, h = self.core, self.profile, self.h
@@ -208,7 +190,7 @@ class Dsp:
         self.call(h.DMA_SHIFT_CALLBACK, 64)
         before = core.stats()["instructions"]
         started = time.perf_counter_ns()
-        self.call(p.block_handler, 4_000_000)
+        self.call(p.block_handler, instruction_limit)
         self.block_host_us.append((time.perf_counter_ns() - started) / 1000)
         self.block_instructions.append(core.stats()["instructions"] - before)
         channels = []

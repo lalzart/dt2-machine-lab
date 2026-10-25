@@ -1,0 +1,64 @@
+{
+  "acceptance_tests": [
+    "All-track permissions, raw transport, repack and selected-track arp ownership",
+    "Per-track six-model PCM, interleaving and T1/stock/CAPI exact comparators",
+    "Frozen default hashes, staging, reset, source suite and SINE"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement routing adapters, bounded state and private test candidates"
+    ],
+    "must_not": [
+      "Flash, stage, commit, publish, modify original engines or dependencies"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Optional CPU/DSP adapters and distinct SYX",
+    "Hash-bound native reports and reproduction notes"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "primary_claim": "Existing licensed engines and native arp retain musical behavior when routed to other tracks",
+    "why": "Free track 1 for ordinary arrangement"
+  },
+  "inputs": [
+    "Exact OS1.16 private fixtures",
+    "Frozen stopped-arp R2 source copy",
+    "Pinned deps.lock.json"
+  ],
+  "proposal": {
+    "approval": {
+      "reference": "User 2026-10-19 requests removing fixed track-1 routing, permits single-active selected-track arp",
+      "state": "approved"
+    },
+    "path": "docs/ANY-TRACK-FEATURES.md",
+    "revision": "1",
+    "sha256": "54434ca1c2318f71e03e92364b3f32da00fe638689277842690bc9758b7d99ed"
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "Optional selected-track arp and independent 32-lane Plaits routing",
+      "Private all-feature build and native CPU/DSP validation"
+    ],
+    "out": [
+      "Hardware flash, Git index changes, commits and publication",
+      "Resource monitor, multiple arp engines, larger reservations or dependency changes"
+    ]
+  },
+  "status": "ready",
+  "target": "Native OS1.16 ColdFire and SHARC wrappers",
+  "title": "Remove fixed track-1 routing",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "EXPERIMENTAL_ALL_FEATURES_CAPI_REDDIT_R2_ANY_TRACK_R1_OS1.16.syx",
+    "evidence_level": "target-build",
+    "success_observation": "T2/T8/T16 keyboard arp and Plaits PCM with stock isolation; old packages exact by default"
+  }
+}

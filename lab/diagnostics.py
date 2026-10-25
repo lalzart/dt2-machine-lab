@@ -431,6 +431,7 @@ def make_snapshot(
     reservations=(),
     stock_reports=(),
     paired_stock=False,
+    integration_reports=(),
 ):
     inputs = Inputs()
     profiles = []
@@ -490,6 +491,7 @@ def make_snapshot(
         "layouts": [load_layout(path, inputs) for path in layouts],
         "reservations": [load_reservation(path, inputs) for path in reservations],
         "stock": [load_stock(path, inputs) for path in stock_reports],
+        "integration": [load_integration(path, inputs) for path in integration_reports],
         "hardware": {
             "cpu_load_percent": None,
             "dsp_load_percent": None,
@@ -501,6 +503,19 @@ def make_snapshot(
     }
     inputs.verify()
     return result
+
+
+def load_integration(path, inputs):
+    data = inputs.read(path)
+    require(data.get("schema") == "dt2-integration-resources-v1", "Unknown integration resource schema")
+    require(data.get("firmware") == "Digitakt II OS1.16", "Unknown integration firmware")
+    require(data.get("hardware_utilization") is None, "Declared resources cannot claim hardware utilization")
+    records = data.get("records")
+    require(isinstance(records, list) and records, "Missing per-owner resources")
+    for record in records:
+        require(all(isinstance(record.get(k), str) and record[k] for k in ("owner", "space", "measure")), "Unnamed integration resource")
+        integer(record.get("bytes"), "resource bytes")
+    return data
 
 
 def number(value):
@@ -533,6 +548,12 @@ def details(value):
 
 
 def render_html(snapshot):
+    integration = "".join(
+        "<h3>Declared integration bounds</h3><p>Nested capacities are separate; these rows are not additive or live device usage.</p>"
+        + table(["Owner", "Address space", "Measurement", "Bytes"],
+                [[r["owner"], r["space"], r["measure"], number(r["bytes"])] for r in record["records"]])
+        for record in snapshot.get("integration", [])
+    )
     matched_stretch = []
     for profile in snapshot["profiles"]:
         comparison = profile.get("comparison", {})
@@ -857,6 +878,7 @@ def render_html(snapshot):
         + dsp
         + "<h2 id='memory'>Memory</h2>"
         + mem
+        + integration
         + "<h2 id='sources'>Snapshot provenance</h2>"
         + details({k: snapshot[k] for k in ("schema", "created_utc", "inputs")})
         + "</main></html>"
@@ -864,6 +886,8 @@ def render_html(snapshot):
 
 
 def add_arguments(parser):
+    parser.add_argument("--integration-report", type=Path, action="append", default=[],
+                        help="per-owner integration-resources.json from labctl resources/build (repeatable)")
     parser.add_argument(
         "--run",
         type=Path,
@@ -919,9 +943,9 @@ def main(args=None):
         add_arguments(parser)
         args = parser.parse_args()
     try:
-        runs = args.run or [
+        runs = args.run or ([] if getattr(args, "integration_report", []) else [
             ROOT / "out/runs" / read_json(ROOT / "out/latest.json")["run"]
-        ]
+        ])
         snapshot = make_snapshot(
             runs,
             args.flex_report,
@@ -930,6 +954,7 @@ def main(args=None):
             args.reservation,
             getattr(args, "stock_report", []),
             getattr(args, "paired_stock", False),
+            getattr(args, "integration_report", []),
         )
         output = args.output or ROOT / "out/diagnostics" / (
             datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8]

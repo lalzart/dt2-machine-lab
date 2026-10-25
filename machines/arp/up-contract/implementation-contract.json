@@ -1,0 +1,68 @@
+{
+  "acceptance_tests": [
+    "Ascending order, bounds, ownership, rational timing and wrap",
+    "Mapped keys drive native UP and stock note calls",
+    "Release, Stop and OFF comparator",
+    "Exact normalized musical event repeat"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement original core and adapter",
+      "Use existing fixture and capture tools"
+    ],
+    "must_not": [
+      "Edit pinned dependencies or unrelated work",
+      "Commit, publish, flash, package firmware or relax failed tolerances"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Native UP control core",
+    "Emulator adapter and bounded capture",
+    "State/ABI checks and stock comparator"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Play held keys as a rising arp",
+    "primary_claim": "Native bounded UP decisions drive the existing stock note path"
+  },
+  "inputs": [
+    "Exact OS1.16 firmware and ready snapshot",
+    "Pinned DigiKit 277760aad51b036a4756db051409d4d3b1eeccbc",
+    "Real panel input and native sample tick"
+  ],
+  "proposal": {
+    "approval": {
+      "state": "approved",
+      "reference": "User 2026-10-14: Up order and random what I want, but yeah lets just start with up"
+    },
+    "path": "docs/ARP-UP.md",
+    "revision": "1",
+    "sha256": "89292636d55e96a2b4f1cec74ac5e600754932da2354354074176943245549e3"
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "One-track OFF/UP, native control core and diagnostic emulator adapter",
+      "Fixed 102 BPM sixteenths, 50 percent gate, no latch"
+    ],
+    "out": [
+      "Permanent placement, G patch, ORDER/RANDOM, persistence and MIDI",
+      "Hardware, packaging, tempo edits and competing pattern notes"
+    ]
+  },
+  "status": "ready",
+  "target": "ColdFire UP core and DigiKit OS1.16 emulator adapter",
+  "title": "UP keyboard arp first experiment",
+  "work_type": "new-design",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/arp.json and control.dtfr",
+    "evidence_level": "host-structural",
+    "success_observation": "Native core checks and real-panel emulator capture pass with release and Stop"
+  }
+}

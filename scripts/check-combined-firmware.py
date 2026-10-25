@@ -83,32 +83,44 @@ try:
     blob = out / "PACKAGE_BLOB.bin"
     blob.write_bytes(images[7])
 
-    saved = checkpoint.make(
-        [400_000_000], prefix=str(out / "boot"), syx=str(candidate), img_path=str(main)
-    )
-    require(len(saved) == 1, "CPU did not reach the bounded checkpoint")
-    machine, extra, _ = snapshot.restore(str(out / "boot400M.snap"))
-    writes = (
-        manifest["cpu"]["flex"]["writes"]
-        + manifest["cpu"]["menu"]["writes"]
-        + manifest["cpu"]["reservation"]["writes"]
-    )
-    for write in writes:
-        expected = bytes.fromhex(write["after"])
-        require(
-            bytes(machine.uc.mem_read(write["address"], len(expected))) == expected,
-            "CPU startup changed " + write["label"],
+    if manifest['cpu'].get('native'):
+        report['cpu_startup'] = dict(executed=False, scope='Native extension reset/ready is checked separately by check-cpu-extension-boot.py')
+    else:
+        saved = checkpoint.make(
+            [400_000_000], prefix=str(out / "boot"), syx=str(candidate), img_path=str(main)
         )
-    require(len(extra["tasks"]) == 9, "Unexpected CPU task count")
-    report["cpu_startup"] = dict(
-        nominal_instructions=400_000_000,
-        tasks=len(extra["tasks"]),
-        patch_writes_retained=len(writes),
-        scope="ColdFire reset through bounded checkpoint, modeled DSP boot peer",
-    )
-    del machine
-    print("CPU checkpoint reached; all combined patch bytes retained", flush=True)
-    write_json(out / "report.json", report)
+        require(len(saved) == 1, "CPU did not reach the bounded checkpoint")
+        machine, extra, _ = snapshot.restore(str(out / "boot400M.snap"))
+        writes = (
+            manifest["cpu"]["flex"]["writes"]
+            + manifest["cpu"]["menu"]["writes"]
+            + manifest["cpu"]["reservation"]["writes"]
+        )
+        if manifest["cpu"].get("capi_toggle"):
+            writes += [
+                w for w in manifest["cpu"]["capi_toggle"]["writes"] if not w.get("mutable")
+            ]
+        for write in writes:
+            expected = bytes.fromhex(write["after"])
+            require(
+                bytes(
+                    machine.uc.mem_read(
+                        write.get("runtime_address", write["address"]), len(expected)
+                    )
+                )
+                == expected,
+                "CPU startup changed " + write["label"],
+            )
+        require(len(extra["tasks"]) == 9, "Unexpected CPU task count")
+        report["cpu_startup"] = dict(
+            nominal_instructions=400_000_000,
+            tasks=len(extra["tasks"]),
+            patch_writes_retained=len(writes),
+            scope="ColdFire reset through bounded checkpoint, modeled DSP boot peer",
+        )
+        del machine
+        print("CPU checkpoint reached; all combined patch bytes retained", flush=True)
+        write_json(out / "report.json", report)
 
     # Same explicit reset-value model as the preserved reserved-state startup
     # check. No inherited DSP snapshot, instruction skipping or catch-all MMRs.
@@ -172,6 +184,18 @@ try:
                 read(address, count) == memory.read(address, count),
                 "DSP startup overwrote linked code/constants/selector",
             )
+        if manifest.get("capicola_reddit"):
+            from lab.capicola_reddit import COLD_BASE, HOT_BASE, VOICE_BASE, VOICE_BYTES
+
+            for address, load_address, count in (
+                (HOT_BASE, 0x28000000 + HOT_BASE, manifest["dsp"]["build"]["author_hot_bytes"]),
+                (COLD_BASE, COLD_BASE, manifest["dsp"]["build"]["author_cold_bytes"]),
+                (VOICE_BASE, VOICE_BASE, VOICE_BYTES),
+            ):
+                require(
+                    read(address, count) == memory.read(load_address, count),
+                    f"DSP startup overwrote author code/state at {address:#x}",
+                )
         fingerprint = dict(
             pc=core.pc(),
             code_sha256=digest(read(layout.CODE_BASE, code_bytes)),

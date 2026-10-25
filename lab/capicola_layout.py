@@ -129,12 +129,15 @@ def address(value):
 
 
 def validate_layout(layout, integrated, family):
+    if family == "capicola-stretch-toggle":
+        family = "capicola-stretch-live"
     require(layout in ("legacy", "reserved-state"), "Unknown DSP memory layout")
     if layout == "reserved-state":
         require(
             integrated
             and family
             in (
+                "integration",
                 "capicola-controls",
                 "capicola-selection",
                 "capicola-feedback",
@@ -147,9 +150,17 @@ def validate_layout(layout, integrated, family):
         )
 
 
-def relocate_assembly(source, kind, *, family="capicola-controls"):
+def relocate_assembly(
+    source, kind, *, family="capicola-controls", trace=True, cached=False
+):
     require(kind in ("kernel", "wrapper"), "Unknown relocation input")
     allowed = KERNEL_ADDRESSES if kind == "kernel" else WRAPPER_ADDRESSES
+    if family == "integration":
+        allowed = (
+            {0x200E1000}
+            if kind == "kernel"
+            else set(range(0x200E0800, 0x200E0900, 4)) | {0x200E0900, 0x200DFF00}
+        )
     if kind == "kernel" and family == "capicola-stretch":
         allowed = STRETCH_KERNEL_ADDRESSES
     if kind == "kernel" and family in (
@@ -166,6 +177,22 @@ def relocate_assembly(source, kind, *, family="capicola-controls"):
         allowed = MULTI_KERNEL_ADDRESSES
     if kind == "kernel" and family == "capicola-stretch-live":
         allowed = LIVE_KERNEL_ADDRESSES
+    if kind == "kernel" and family == "capicola-stretch-toggle":
+        # Existing AUTO.slices, read by optional track feedback.
+        allowed = LIVE_KERNEL_ADDRESSES | {0x200E451C}
+    if (
+        not trace
+        and kind == "kernel"
+        and family in ("capicola-stretch-live", "capicola-stretch-toggle")
+    ):
+        allowed = allowed - {0x200EB000}
+    if (
+        cached
+        and kind == "kernel"
+        and family in ("capicola-stretch-live", "capicola-stretch-toggle")
+    ):
+        # Exclusive end of the 28-byte header + sixteen 88-byte descriptors.
+        allowed = allowed | {0x200E7000 + 28 + 16 * 88}
     seen = set()
 
     def substitute(match):
@@ -181,7 +208,9 @@ def relocate_assembly(source, kind, *, family="capicola-controls"):
     return result
 
 
-def manifest(code_bytes, data_bytes, *, family="capicola-controls"):
+def manifest(code_bytes, data_bytes, *, family="capicola-controls", source=False):
+    if family == "capicola-stretch-toggle":
+        family = "capicola-stretch-live"
     require(
         0 < code_bytes <= CODE_BYTES and 0 < data_bytes <= 0x10000,
         "Code or constants exceed reserved layout",
@@ -204,7 +233,7 @@ def manifest(code_bytes, data_bytes, *, family="capicola-controls"):
         regions = (
             REGIONS[:-1]
             + (
-                ("stretch_cache", 0x27000, 0x27800),
+                ("stretch_cache", 0x27000, 0x28000 if source else 0x27800),
                 ("live_lanes", 0x28000, 0x2B000),
                 ("live_destination_trace", 0x2B000, 0x2C000),
             )
@@ -233,11 +262,11 @@ def manifest(code_bytes, data_bytes, *, family="capicola-controls"):
         **(
             {
                 "sample_banks": {
-                    "maximum_sources": 16,
+                    "maximum_sources": 32 if source else 16,
                     "arena_start": BANK_BASE,
                     "arena_end": STATE_BASE,
                     "arena_bytes": STATE_BASE - BANK_BASE,
-                    "cache_state_bytes": 1436,
+                    "cache_state_bytes": 2844 if source else 1436,
                     "allocation": "measured key count, first fit; no compaction",
                 }
             }

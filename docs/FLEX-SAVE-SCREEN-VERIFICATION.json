@@ -1,0 +1,165 @@
+{
+  "changed_sources": {
+    "docs/FLEX-SAVE-SCREEN.md": "4e8bee52d7c2fbfafbcb377dbccda55157a539b71b7b54d4acae0dfa35e9c19f",
+    "lab/cpu_extension.py": "6e5e7289c66d647e25bb1ab6fb446ed373b2ec2b69148bbc2fdf6397ff7e200d",
+    "lab/flex_native.py": "4880deec1a1dcfece3248bb473173408c2b2eaac6ca2c7ef7b738cf14910fe77",
+    "lab/flex_native_build.py": "7e90c39f1cbf50ea045f90e0d75e9364c5d8d11aae64d595165f286b7327b311",
+    "lab/flex_native_input.py": "64349a5e06a93c9b50dff033ea1942613da17e2a32f1503c959d9bc5e0021fbf",
+    "lab/flex_native_save.py": "4075b1af7758c02bb481d2f53a3f875a2b6535b7af7329b48268b3283f596a22",
+    "lab/flex_save_screen.py": "5e6270a55210f3ad35385a510dd43728771cd4e00adf2692cfbbfe3e4ebcaf92",
+    "scripts/build-cpu-extension.py": "86a55e10b94424f00c7fe8a49fbeebbbfb36dddb3ccb4f360a8f1c69acfe8592",
+    "scripts/check-flex-save-screen.py": "a4cd0c8881ccf020ad53603f53074d204f9eb3b15108b8bdd48b2f89e2d33805",
+    "tests/test_flex_save_screen.py": "7514fc95d060026fbb6b41c201bf649bf0215eb6399b37feeceef4db6ad14482"
+  },
+  "default_any_track_main_exact": true,
+  "default_main_sha256": "95e1b3b5bcf2b40f31942349a2e34ba99f79547926db9ba5e0e47d59d45b5831",
+  "dsp_exact_previous_any_track": true,
+  "firmware": "Digitakt II OS1.16",
+  "gallery": "out/runs/flex-save-screen-packaged-flow-20261019-01/flow.html",
+  "hardware_tested": false,
+  "hardware_uploaded": false,
+  "legacy_managed_main_sha256": "562061c4c17d86d7eec0c9e12fbb3455b865131d39502128c42b39c1d573a19a",
+  "limits": [
+    "Prepared CPU snapshot and modeled recorder/sector peers",
+    "No physical recording, real-time storage, audio continuity or hardware test"
+  ],
+  "package": {
+    "dsp_sha256": "fdd5619fbdc6c4f1cc35ce781896400791c1d1a38c91c603fe75548e7ea7f2a2",
+    "main_sha256": "2c1a30a11a78450435808ce67c2cb44f5b59d904b1a2e43c7f5831b0e2e0a505",
+    "path": "out/runs/flex-save-screen-package-20261019-01/EXPERIMENTAL_ALL_FEATURES_CAPI_REDDIT_R2_ANY_TRACK_R1_FLEX_SAVE_SCREEN_R1_OS1.16.syx",
+    "repeat_exact": true,
+    "sha256": "7809f0d24859bcc0938b46fffd8bd36b3eb23552d151c1e13a6b54f4f4f20c12"
+  },
+  "reports": {
+    "boot": {
+      "path": "out/runs/flex-save-screen-boot-20261019-01/report.json",
+      "sha256": "aae3618ae4c497ce198dfc7e3ebedec0fee2dbd1574eca340f829f6bdca0c62d",
+      "status": "passed"
+    },
+    "sine": {
+      "path": "out/runs/20261019T090338Z-test-344d0c5b/manifest.json",
+      "sha256": "cf69304b891d6cc71a80a9b5b69b4430789329ad184d5139700b773214272012",
+      "status": "passed"
+    },
+    "source_tests": {
+      "passed": 255,
+      "path": "out/runs/flex-save-screen-verification-20261019-01/source-tests.log",
+      "sha256": "00b01ed561c1755dff66418ef509710765d72cde0f6c2baae5f0212e1e0bebde"
+    },
+    "staging": {
+      "path": "out/runs/flex-save-screen-staging-20261019-02/report.json",
+      "sha256": "fa56086e6dc5bf2f5ed127a097a4e987df46eee1f8930ab932a6eb25152e40e6",
+      "status": "passed"
+    },
+    "ui": {
+      "path": "out/runs/flex-save-screen-packaged-flow-20261019-01/report.json",
+      "sha256": "f56c32be8a2e61b8a9b8a4a612039e4407461fb358704c88f483ca7572d348eb",
+      "status": "passed"
+    }
+  },
+  "same_save_screen_after_block_cancel_and_failure": true,
+  "screen_capture_count": 16,
+  "screenshots": [
+    {
+      "framebuffer_sha256": "f26f4d2ef112bf3dd5f78e71e140b3e288a841d86aea0150f363cbaf68340d47",
+      "lit_pixels": 2596,
+      "path": "01-recorded-trim.png",
+      "sha256": "37a7a9d01a95ade27e8751a36a7a8c7f10174347790a77ee43d1ed75d5b2bec0"
+    },
+    {
+      "framebuffer_sha256": "e02ab02122d2f361cb723ece383361b8ac19b99ef07ec7da2f876f504c7504f7",
+      "lit_pixels": 1947,
+      "path": "machine-choice-2.png",
+      "sha256": "12654a6cc050354e5863660c8623e53cac266401b71bfdf75014bf831b7d4499"
+    },
+    {
+      "framebuffer_sha256": "8ba3d66ba2aa9f70823e3fc62fa7ba52d6283baaf4b8fc7860fa889737af356f",
+      "lit_pixels": 1907,
+      "path": "02-track1-stretch.png",
+      "sha256": "499e12bc2a2b3438c9b53a1b030bcda79c1bd424affa0d3a750493726d7235a6"
+    },
+    {
+      "framebuffer_sha256": "c59b798cb3980f88d0c961e5f130b644b0730a282572494762bd59c68f8d31b2",
+      "lit_pixels": 1929,
+      "path": "03-other-track-recorder.png",
+      "sha256": "0802837ea30a70fb43ae9b7d0039fda27ceae4e72e9a70077b04d7f587f2438b"
+    },
+    {
+      "framebuffer_sha256": "ef6349b49525a634c42668276b3f772e50abfc2ffc745eb48a4f7c8113411ca8",
+      "lit_pixels": 1984,
+      "path": "machine-choice-4.png",
+      "sha256": "d10f8b07f7bef847a07765df36f2e7f2f502d4eb5ebc02dd178b59a52070d46d"
+    },
+    {
+      "framebuffer_sha256": "824073fd99e5432b11e09bb095266fa6fc1b25a5c46c9b410c9e794fb0606140",
+      "lit_pixels": 1944,
+      "path": "04-track2-slice.png",
+      "sha256": "603c2a5297f874433ff1ba3e6a3cf6ab0e562e060f1f611083db18d29598f60f"
+    },
+    {
+      "framebuffer_sha256": "2d9aefd75af3dab8769dbbb0bb06fab8a665f198cdb9ec425e7e1582ec4d8124",
+      "lit_pixels": 739,
+      "path": "05-return-to-track1-save.png",
+      "sha256": "943b7494f3fd7809abac2248d2186f4e5698e927170fd7e13c9890dc90695c0c"
+    },
+    {
+      "framebuffer_sha256": "2d9aefd75af3dab8769dbbb0bb06fab8a665f198cdb9ec425e7e1582ec4d8124",
+      "lit_pixels": 739,
+      "path": "06-recording-still-blocked.png",
+      "sha256": "943b7494f3fd7809abac2248d2186f4e5698e927170fd7e13c9890dc90695c0c"
+    },
+    {
+      "framebuffer_sha256": "8a74b89729f42cf850bb9ae22a2d60c4d3cdc8be68627355e9de2c697a5f13cd",
+      "lit_pixels": 1701,
+      "path": "07-name-dialog.png",
+      "sha256": "bd8c1e1d134d548a2975c6668eb272bc7ce391a5a87fb17cc81798b6dc93cc63"
+    },
+    {
+      "framebuffer_sha256": "2d9aefd75af3dab8769dbbb0bb06fab8a665f198cdb9ec425e7e1582ec4d8124",
+      "lit_pixels": 739,
+      "path": "08-cancel-keeps-save-screen.png",
+      "sha256": "943b7494f3fd7809abac2248d2186f4e5698e927170fd7e13c9890dc90695c0c"
+    },
+    {
+      "framebuffer_sha256": "e288a98ef8918bc462e2932c1e8f5cc1a0ccfb74407fb1c32db4b8694abdb92f",
+      "lit_pixels": 777,
+      "path": "09-save-failure.png",
+      "sha256": "791191df4efc4d9c9b6b5b9db6a0ace6fd3f34ab2a4a3755ad487cd8847040c5"
+    },
+    {
+      "framebuffer_sha256": "2d9aefd75af3dab8769dbbb0bb06fab8a665f198cdb9ec425e7e1582ec4d8124",
+      "lit_pixels": 739,
+      "path": "10-failure-keeps-save-screen.png",
+      "sha256": "943b7494f3fd7809abac2248d2186f4e5698e927170fd7e13c9890dc90695c0c"
+    },
+    {
+      "framebuffer_sha256": "616acddb4fdef65367128ce2afd4a7a53df3d539ca31a594ad8f3dc812d107fb",
+      "lit_pixels": 1698,
+      "path": "11-named-take.png",
+      "sha256": "10b0b1ffd5a80140d3ad5ebd476b43eb368b8205a5ecedbb175e3f816836eff9"
+    },
+    {
+      "framebuffer_sha256": "a91d019db703c758ee99e9e3cb9c686d87e6c037b089b70c2f148f38eb2db9c1",
+      "lit_pixels": 1937,
+      "path": "12-saved-to-plusdrive.png",
+      "sha256": "bad8d4d79768816e17683f6100485a80b09e3393b67a59433cacaa2768416cf9"
+    },
+    {
+      "framebuffer_sha256": "f8ea39d8de2a5a412f6cdfb2fd26e5b7a23242a0cfffff25ee1d9e6103cfa2cf",
+      "lit_pixels": 742,
+      "path": "13-track2-still-unsaved.png",
+      "sha256": "5d8bc028aa6869f9ba9add642760352b766973b1224ccfb8756270c91bd16351"
+    },
+    {
+      "framebuffer_sha256": "c59b798cb3980f88d0c961e5f130b644b0730a282572494762bd59c68f8d31b2",
+      "lit_pixels": 1929,
+      "path": "14-track1-recorder-unlocked.png",
+      "sha256": "0802837ea30a70fb43ae9b7d0039fda27ceae4e72e9a70077b04d7f587f2438b"
+    }
+  ],
+  "source_manifest": {
+    "path": "out/runs/flex-save-screen-verification-20261019-01/source-hashes.json",
+    "sha256": "f2538cc2dbcf76e524832cab5b8dc24c4a808f5aa5e71c955a5f96bca2b77aaf"
+  },
+  "status": "passed-emulator"
+}

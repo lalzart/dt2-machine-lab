@@ -1,0 +1,56 @@
+{
+  "schema_version": "sonic-research-lab-experiment-v1",
+  "status": "ready",
+  "title": "Author release STRETCH replacement",
+  "sample_rate_hz": 48000,
+  "supported_block_frames": [
+    1,
+    7,
+    32,
+    127
+  ],
+  "seed": 619,
+  "conditions": [
+    {
+      "id": "author-release",
+      "purpose": "Exact unchanged host release generator",
+      "events": [
+        {
+          "frame": 0,
+          "event": "Published replay record"
+        }
+      ]
+    },
+    {
+      "id": "relocated-target",
+      "purpose": "Packaged native author engine",
+      "events": [
+        {
+          "frame": 0,
+          "event": "Same replay and int16 PCM"
+        }
+      ]
+    }
+  ],
+  "comparator_condition_id": "author-release",
+  "outputs": [
+    {
+      "kind": "metrics",
+      "name": "report.json"
+    },
+    {
+      "kind": "PCM",
+      "name": "native.f32"
+    }
+  ],
+  "tolerances": {
+    "max": 0.0001,
+    "rms": 1e-05,
+    "stock": 0
+  },
+  "artifact_retention": {
+    "location": "out/runs/<unique>",
+    "policy": "reproducible-only"
+  },
+  "timeline_convention": "Replay records apply before each 32-frame call, source pointers mapped identically; native events apply before frame."
+}

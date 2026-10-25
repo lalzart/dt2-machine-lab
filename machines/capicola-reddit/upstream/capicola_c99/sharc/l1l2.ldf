@@ -1,0 +1,43 @@
+// l1l2.ldf -- l1_diag.ldf plus L2 for rarely run code (seg_cold, work/cold_split.py):
+// L1 as l1_diag.ldf; seg_cold at L2 0x200a0000 (build_cap.py COLD_LO/COLD_HI, inside
+// the region dt2capicola_memtest found untouched by the firmware).
+
+ARCHITECTURE(ADSP-21569)
+
+$OBJECTS = $COMMAND_LINE_OBJECTS;
+
+MEMORY
+{
+   mem_code { TYPE(BW RAM) START(0x002D7570) END(0x002DE9AF) WIDTH(8) }
+   mem_cold { TYPE(BW RAM) START(0x200A0000) END(0x200DFFFF) WIDTH(8) }
+   mem_data { TYPE(BW RAM) START(0x002DEFF0) END(0x002DEFFF)   /* none expected: build_cap.py refuses data */ WIDTH(8) }
+}
+
+PROCESSOR p0
+{
+   OUTPUT($COMMAND_LINE_OUTPUT_FILE)
+   ENTRY(cc_dt2_entry.)
+
+   SECTIONS
+   {
+      code SW
+      {
+         INPUT_SECTION_ALIGN(2)
+         FILL(0x1)
+         INPUT_SECTIONS( $OBJECTS(seg_swco seg_pmco seg_l2_swco seg_l2_pmco) )
+      } > mem_code
+
+      cold SW
+      {
+         INPUT_SECTION_ALIGN(2)
+         FILL(0x1)
+         INPUT_SECTIONS( $OBJECTS(seg_cold seg_cold_pm) )
+      } > mem_cold
+
+      data BW
+      {
+         INPUT_SECTION_ALIGN(4)
+         INPUT_SECTIONS( $OBJECTS(seg_dmda seg_l1_bss seg_l2 seg_l2_bss) )
+      } > mem_data
+   }
+}

@@ -3,21 +3,23 @@
 import json
 import re
 
-from lab.capicola_automatic import REGS
-from lab.dsp import assemble
+from lab.sharc_hooks import HOOKS, context_restores, context_stores
+from lab.sharc_tools import assemble
 
 
 def assembly_wrapper():
-    result = ".EXTERN cap_stretch_machine.;\n.GLOBAL cap_stretch_hook;\ncap_stretch_hook:\nR4=R13; R12=R15;\nDM(0x200e0800)=R0;\n"
-    for i, reg in enumerate(REGS[1:], 1):
-        result += f"R0={reg}; DM({0x200E0800 + 4 * i:#x})=R0;\n"
+    contract = HOOKS["stretch"]
+    scratch = contract.scratch.in_space("dsp-byte")
+    stack = contract.stack.in_space("dsp-byte")
+    resume = contract.continuation.in_space("dsp-sw")
+    result = ".EXTERN cap_stretch_machine.;\n.GLOBAL cap_stretch_hook;\ncap_stretch_hook:\nR4=R13; R12=R15;\n"
+    result += context_stores(scratch)
     result += "M5=0; M6=1; M7=-1; M14=1;\n"
     result += " ".join(f"L{i}=0;" for i in range(16)) + "\n"
-    result += "I7=0x200dff00; I6=I7; R2=I6;\nCJUMP cap_stretch_machine. (DB);\nDM(I7,M7)=R2; DM(I7,M7)=cap_stretch_return-1;\ncap_stretch_return:\nDM(0x200e0900)=R0;\n"
-    for i, reg in reversed(list(enumerate(REGS[1:], 1))):
-        result += f"R0=DM({0x200E0800 + 4 * i:#x}); {reg}=R0;\n"
+    result += f"I7={stack:#x}; I6=I7; R2=I6;\nCJUMP cap_stretch_machine. (DB);\nDM(I7,M7)=R2; DM(I7,M7)=cap_stretch_return-1;\ncap_stretch_return:\nDM(0x200e0900)=R0;\n"
+    result += context_restores(scratch)
     result += "R0=DM(0x200e0900); R1=0; COMP(R0,R1); IF EQ JUMP cap_stretch_stock;\n"
-    result += "R1=DM(0x200e0804); R0=DM(0x200e0800); JUMP 0x1c6af8;\ncap_stretch_stock:\nR1=DM(0x200e0804); R0=DM(0x200e0800); JUMP 0x1c6af1;\n"
+    result += f"R1=DM({scratch + 4:#x}); R0=DM({scratch:#x}); JUMP 0x1c6af8;\ncap_stretch_stock:\nR1=DM({scratch + 4:#x}); R0=DM({scratch:#x}); JUMP {resume:#x};\n"
     return result
 
 
@@ -27,7 +29,9 @@ def patch_hook(raw, blocks, out):
     # Stock uses one six-byte parallel PASS/MOVE. The assembler emits two
     # compressed moves for our replay, so guard the inspected stock bytes.
     expected = bytes.fromhex("ff700286d014")
-    offset = sharcldr.offset_for_address(blocks, 0x1C6AEE)
+    offset = sharcldr.offset_for_address(
+        blocks, HOOKS["stretch"].site.in_space("dsp-sw")
+    )
     if raw[offset : offset + len(expected)] != expected or len(expected) != 6:
         raise ValueError("Unexpected native STRETCH call setup")
     listing = (out / "listing.txt").read_text()
@@ -39,11 +43,11 @@ def patch_hook(raw, blocks, out):
     (out / "stretch-hook.json").write_text(
         json.dumps(
             dict(
-                address=0x1C6AEE,
+                address=HOOKS["stretch"].site.in_space("dsp-sw"),
                 target=target,
                 before=expected.hex(),
                 after=jump.hex(),
-                stock_resume=0x1C6AF1,
+                stock_resume=HOOKS["stretch"].continuation.in_space("dsp-sw"),
                 custom_resume=0x1C6AF8,
             ),
             indent=2,

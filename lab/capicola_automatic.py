@@ -3,25 +3,26 @@
 import json
 import re
 
-from lab.dsp import assemble
+from lab.sharc_hooks import HOOKS, context_restores, context_stores
+from lab.sharc_hooks import REGS as REGS
+from lab.sharc_tools import assemble
 
 # Both event hooks run in the serialized sample-link callback. They must never
 # share scratch or stack with a preempted audio/maintenance wrapper.
-REGS = [f"{kind}{i}" for kind in ("R", "I", "M", "L") for i in range(16)]
 
 
 def wrapper(label, function, scratch, stack, args, displaced, resume):
+    scratch = scratch.in_space("dsp-byte")
+    stack = stack.in_space("dsp-byte")
+    resume = resume.in_space("dsp-sw")
     result = f".EXTERN {function}.;\n.GLOBAL {label};\n{label}:\n" + displaced
-    result += f"DM({hex(scratch)})=R0;\n"
-    for i, reg in enumerate(REGS[1:], 1):
-        result += f"R0={reg}; DM({hex(scratch + i * 4)})=R0;\n"
+    result += context_stores(scratch)
     result += args
     result += "M5=0; M6=1; M7=-1; M14=1;\n"
     result += " ".join(f"L{i}=0;" for i in range(16)) + "\n"
     result += f"I7={hex(stack)}; I6=I7; R2=I6;\n"
     result += f"CJUMP {function}. (DB);\nDM(I7,M7)=R2; DM(I7,M7)={label}_return-1;\n{label}_return:\n"
-    for i, reg in reversed(list(enumerate(REGS[1:], 1))):
-        result += f"R0=DM({hex(scratch + i * 4)}); {reg}=R0;\n"
+    result += context_restores(scratch)
     result += f"R0=DM({hex(scratch)});\n"
     # Event hooks replay their displaced instructions AFTER restoring the
     # original registers. Maintenance first clears the stock SIMD mode.
@@ -39,38 +40,38 @@ def assembly_wrappers():
         wrapper(
             "cap_frame_hook",
             "cap_maintenance",
-            0x200E0A00,
-            0x200DBF00,
+            HOOKS["maintenance"].scratch,
+            HOOKS["maintenance"].stack,
             "",
             "BIT CLR MODE1 0x200000;\n",
-            0x1C75A5,
+            HOOKS["maintenance"].continuation,
         )
         + wrapper(
             "cap_page_hook",
             "cap_event",
-            0x200E0C00,
-            0x200D9F00,
+            HOOKS["sample-page"].scratch,
+            HOOKS["sample-page"].stack,
             "R8=R4; R4=1; R12=4096;\n",
             "",
-            0x1C4040,
+            HOOKS["sample-page"].continuation,
         )
         + wrapper(
             "cap_guard_hook",
             "cap_event",
-            0x200E0C00,
-            0x200D9F00,
+            HOOKS["sample-guard"].scratch,
+            HOOKS["sample-guard"].stack,
             "R12=R8; R8=R4; R4=3;\n",
             "",
-            0x1C4014,
+            HOOKS["sample-guard"].continuation,
         )
         + wrapper(
             "cap_header_hook",
             "cap_event",
-            0x200E0C00,
-            0x200D9F00,
+            HOOKS["sample-header"].scratch,
+            HOOKS["sample-header"].stack,
             "R12=DM(1,I6); R4=2;\n",
             "",
-            0x1C3FE8,
+            HOOKS["sample-header"].continuation,
         )
     )
 
@@ -81,10 +82,22 @@ def patch_hooks(raw, blocks, code, out):
     listing = (out / "listing.txt").read_text()
     records = []
     for address, label, source in (
-        (0x1C75A2, "cap_frame_hook", "BIT CLR MODE1 0x200000;"),
-        (0x1C403C, "cap_page_hook", "R2=I5; I12=DM(I6,M7);"),
-        (0x1C3FE5, "cap_header_hook", "MODIFY(I7,-2);"),
-        (0x1C400F, "cap_guard_hook", ""),
+        (
+            HOOKS["maintenance"].site.in_space("dsp-sw"),
+            "cap_frame_hook",
+            "BIT CLR MODE1 0x200000;",
+        ),
+        (
+            HOOKS["sample-page"].site.in_space("dsp-sw"),
+            "cap_page_hook",
+            "R2=I5; I12=DM(I6,M7);",
+        ),
+        (
+            HOOKS["sample-header"].site.in_space("dsp-sw"),
+            "cap_header_hook",
+            "MODIFY(I7,-2);",
+        ),
+        (HOOKS["sample-guard"].site.in_space("dsp-sw"), "cap_guard_hook", ""),
     ):
         expected = (
             bytes.fromhex("7e713f818715fffffeff")

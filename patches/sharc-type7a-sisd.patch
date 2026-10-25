@@ -1,0 +1,53 @@
+--- a/tools/sharc_core/forms_dag.py
++++ b/tools/sharc_core/forms_dag.py
+@@ -60,7 +60,18 @@
+     # register selector at bits 29-27, the same field Type7b uses.
+     cond = _field(f, "cond")
+     if cond not in (0x1F, 0x17):
+-        return [_stop(state, insn, "unsupported Type7a predicate")]
++        # Lab-only bounded extension. ADI SHARC+ PRM rev1.5, 14-46/47:
++        # SISD predicates gate both the DAG update and parallel compute.
++        # Keep legacy unconditional/NOT SV behavior for stock comparisons.
++        mode1 = _ureg(state.uregs, UREG_CODES["MODE1"])
++        if not isinstance(mode1, Const) or mode1.value & (1 << 21):
++            return [_stop(state, insn, "unsupported Type7a conditional SIMD/mode")]
++        predicate = _predicate(state, cond)
++        if predicate is None:
++            return [_stop(state, insn, "unknown Type7a SISD predicate")]
++        if predicate is False:
++            _event(state, insn, "i-modify-skipped", condition=cond)
++            return _advance(state, insn)
+     bank = 8 if _field(f, "g") else 0
+     source_low = _field(f, "is[2:2]") << 2 | _field(f, "is[1:0]")
+     destination_low = source_low ^ _field(f, "idis")
+@@ -83,10 +94,12 @@
+         access_width = "normal-word"
+     else:
+         access_width = None
+-    conditional = cond == 0x17
++    conditional = cond != 0x1F
+     circular_wrap: Const | None = None
+     if conditional:
+-        if _field(f, "compute[22:16]") or _field(f, "compute[15:0]"):
++        if cond == 0x17 and (
++            _field(f, "compute[22:16]") or _field(f, "compute[15:0]")
++        ):
+             return [_stop(state, insn, "unsupported Type7a conditional compute")]
+         length = _ureg(state.uregs, UREG_CODES["L%d" % source])
+         if isinstance(length, Const) and length.value != 0:
+@@ -103,11 +116,14 @@
+                 and isinstance(index_now, Const)
+                 and isinstance(modifier_now, Const)
+             ):
++                modifier_int = modifier_now.value
++                if cond != 0x17:
++                    modifier_int = _signed(modifier_int, 32)
+                 wrapped_value = _circular_wrap_const(
+                     index_now.value,
+                     base.value,
+                     length.value,
+-                    modifier_now.value * scale_now,
++                    modifier_int * scale_now,
+                 )
+                 if wrapped_value is None:
+                     return [

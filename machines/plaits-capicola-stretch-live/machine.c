@@ -37,6 +37,9 @@ typedef char stretch_bank_size[sizeof(CapBank)==32 ? 1 : -1];
 #define HANDOFF ((volatile CapHandoff *)0x200e4000)
 #define STATUS ((volatile CapStatus *)0x200e4600)
 #define LANES ((CapStretchLane *)0x200e8000)
+#ifdef CAP_CACHED_MAINTENANCE
+#include "../capicola/maintenance.h"
+#endif
 
 static unsigned stretch_selected(unsigned track,unsigned *source,unsigned *frames) {
  *source=0;*frames=0;
@@ -90,6 +93,9 @@ void cap_maintenance(void) {
   }
   s->magic=CAP_AUTO_MAGIC;
  }
+#ifdef CAP_CACHED_MAINTENANCE
+ cap_cycle_cached();
+#else
  cap_cache_cycle(CACHE);
  for(unsigned lane=0;lane<32;lane++) {
   CapStretchLane *r=&LANES[lane];
@@ -109,6 +115,7 @@ void cap_maintenance(void) {
   if(!stretch_selected(track,&source,&frames))
    cap_cache_select(CACHE,(const short *)source,(int)frames,source);
  }
+#endif
  cap_cache_step(CACHE,32);
  unsigned ready=0,used=0;
  for(int i=0;i<CAP_CACHE_SLOTS;i++) {
@@ -178,8 +185,10 @@ int cap_stretch_machine(unsigned voice,float *destination,int count) {
  /* Prototype diagnostic tap at the actual renderer boundary. Native envelopes
   * and effects subsequently reuse/modify destination; retain these 32 words
   * so the runner never mistakes a post-effect buffer for the sparse reader. */
+#ifndef CAP_DISABLE_TRACE
  float *trace=((float *)0x200eb000)+lane*32u;
  for(int i=0;i<count;i++) trace[i]=destination[i];
+#endif
  s->renders++;s->last_destination=(unsigned)destination;
  return 1;
 }

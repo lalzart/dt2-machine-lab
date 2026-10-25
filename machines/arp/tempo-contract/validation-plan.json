@@ -1,0 +1,218 @@
+{
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_arp_tempo.py"
+      ],
+      "cost": "bounded native CPU",
+      "evidence_level": "host-structural",
+      "freshness_inputs": [
+        "lab/arp_firmware.py",
+        "lab/arp_firmware_storage.py",
+        "tests/test_arp_firmware.py",
+        "lab/arp_tempo.py",
+        "lab/arp_tempo_persistence.py",
+        "tests/test_arp_tempo.py"
+      ],
+      "id": "focused-native"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/check-arp-firmware.py",
+        "out/runs/<unique>",
+        "--record",
+        "--storage",
+        "--tempo-ui"
+      ],
+      "cost": "bounded native CPU, modeled eMMC",
+      "evidence_level": "host-structural",
+      "freshness_inputs": [
+        "lab/arp_firmware.py",
+        "lab/arp_firmware_storage.py",
+        "scripts/check-arp-firmware.py"
+      ],
+      "id": "panel-record-save"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/build-arp-firmware.py",
+        "out/runs/<unique>",
+        "--elekloader-reference",
+        "out/references/elekloader-upload-audit",
+        "--tempo-ui"
+      ],
+      "cost": "bounded pack/build",
+      "evidence_level": "target-build",
+      "freshness_inputs": [
+        "lab/arp_firmware.py",
+        "lab/arp_firmware_storage.py",
+        "scripts/build-arp-firmware.py"
+      ],
+      "id": "target-build"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/check-arp-firmware-boot.py",
+        "out/runs/<package>",
+        "out/runs/<unique>"
+      ],
+      "cost": "bounded CPU startup",
+      "evidence_level": "target-build",
+      "freshness_inputs": [
+        "scripts/check-arp-firmware-boot.py"
+      ],
+      "id": "boot"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/check-upload-depacker.py",
+        "out/runs/<package>",
+        "--elekloader-reference",
+        "out/references/elekloader-upload-audit"
+      ],
+      "cost": "native bootstrap depacker",
+      "evidence_level": "target-build",
+      "freshness_inputs": [
+        "scripts/check-upload-depacker.py"
+      ],
+      "id": "depacker"
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cost": "one stable source suite; no DSP/adapter changes",
+      "evidence_level": "host-structural",
+      "freshness_inputs": [
+        "lab",
+        "scripts",
+        "machines"
+      ],
+      "id": "regression"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cost": "bounded source review",
+      "evidence_level": "source",
+      "freshness_inputs": [
+        "lab/arp_firmware.py",
+        "lab/arp_firmware_storage.py",
+        "lab/coldfire.py"
+      ],
+      "id": "source-review"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/render-arp-up.py",
+        "out/runs/<compatible-native-capture>",
+        "out/runs/<unique>"
+      ],
+      "cost": "bounded optional stock voice render; native capture metadata adaptation required",
+      "evidence_level": "host-signal",
+      "freshness_inputs": [
+        "scripts/render-arp-up.py",
+        "scripts/render-pattern.py"
+      ],
+      "id": "objective-render"
+    }
+  ],
+  "evidence_levels": [
+    {
+      "check_ids": [],
+      "level": "research",
+      "promotion_rule": "Cited sources support the selected mechanism.",
+      "status": "available"
+    },
+    {
+      "check_ids": [],
+      "level": "proposal",
+      "promotion_rule": "The approved proposal fingerprint matches the implementation contract.",
+      "status": "available"
+    },
+    {
+      "check_ids": [
+        "source-review"
+      ],
+      "level": "source",
+      "promotion_rule": "Implementation exists with provenance and complete-diff review.",
+      "status": "planned"
+    },
+    {
+      "check_ids": [
+        "focused-native",
+        "panel-record-save",
+        "regression"
+      ],
+      "level": "host-structural",
+      "promotion_rule": "Focused state, bounds, negative, and adapter-parity checks pass.",
+      "status": "planned"
+    },
+    {
+      "check_ids": [
+        "objective-render"
+      ],
+      "level": "host-signal",
+      "promotion_rule": "Optional native capture voice rendering requires frame/tick metadata adapter. Until then no new PCM or listening claim; the stock DSP remains byte-identical.",
+      "status": "planned"
+    },
+    {
+      "check_ids": [
+        "target-build",
+        "boot",
+        "depacker"
+      ],
+      "level": "target-build",
+      "promotion_rule": "Guarded native MAIN and stock-only packed container, native bootstrap depacking and bounded CPU startup pass independently of physical hardware.",
+      "status": "planned"
+    },
+    {
+      "check_ids": [],
+      "level": "real-time",
+      "promotion_rule": "Worst-case and p99 callback measurements meet a declared budget.",
+      "status": "deferred"
+    },
+    {
+      "check_ids": [],
+      "level": "connected-device",
+      "promotion_rule": "Authorized device I/O, controls, feedback, and lifecycle checks pass.",
+      "status": "deferred"
+    },
+    {
+      "check_ids": [],
+      "level": "listening",
+      "promotion_rule": "A documented, appropriately blinded listening protocol supports the claim.",
+      "status": "deferred"
+    },
+    {
+      "check_ids": [],
+      "level": "production-integration",
+      "promotion_rule": "Canonical identities, graphs, providers, packaging, and release gates are accepted separately.",
+      "status": "deferred"
+    }
+  ],
+  "schema_version": "sonic-research-lab-validation-plan-v1",
+  "status": "ready",
+  "title": "Native arp tempo, rates and selector UI"
+}

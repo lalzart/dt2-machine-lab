@@ -1,0 +1,36 @@
+// l1_diag.ldf -- the DT2 generator at its instrument placement, L1 block 1 from
+// DM 0x2d7570 (after the stock image's last byte, 0x2d7563): the code may run
+// on to 0x2deeaf; 0x2deeb0..0x2deff0 is dt2gen.c's on-chip working memory
+// (GEN_REC and after).
+
+ARCHITECTURE(ADSP-21569)
+
+$OBJECTS = $COMMAND_LINE_OBJECTS;
+
+MEMORY
+{
+   mem_code { TYPE(BW RAM) START(0x002D7570) END(0x002DE9AF) WIDTH(8) }
+   mem_data { TYPE(BW RAM) START(0x002DEFF0) END(0x002DEFFF)   /* none expected: build_cap.py refuses data */ WIDTH(8) }
+}
+
+PROCESSOR p0
+{
+   OUTPUT($COMMAND_LINE_OUTPUT_FILE)
+   ENTRY(cc_dt2_entry.)
+
+   SECTIONS
+   {
+      code SW
+      {
+         INPUT_SECTION_ALIGN(2)
+         FILL(0x1)
+         INPUT_SECTIONS( $OBJECTS(seg_swco seg_pmco seg_l2_swco seg_l2_pmco seg_cold_pm) )
+      } > mem_code
+
+      data BW
+      {
+         INPUT_SECTION_ALIGN(4)
+         INPUT_SECTIONS( $OBJECTS(seg_dmda seg_l1_bss seg_l2 seg_l2_bss) )
+      } > mem_data
+   }
+}

@@ -1,0 +1,51 @@
+{
+  "arp_identical_to_r3": true,
+  "controlled_missing_reference_cause_confirmed": true,
+  "dsp_identical_to_r3": true,
+  "hardware_tested": false,
+  "hardware_uploaded": false,
+  "limits": [
+    "User project not read; physical failure may have an additional cause",
+    "GUI checksum function modeled explicitly; no native hashing timing claim",
+    "Native stock project reload and fresh-runtime save are component tests, not a physical power cycle",
+    "32 identity ceiling unchanged; missing RAM audio is not recovered"
+  ],
+  "package": {
+    "dsp_sha256": "fdd5619fbdc6c4f1cc35ce781896400791c1d1a38c91c603fe75548e7ea7f2a2",
+    "main_sha256": "85ba2bc62aa4c0e9d1ca393afbe899d2ee9a63e599ffc22fac796eb820428c26",
+    "path": "out/runs/flex-project-save-r4-package-20261019-01/EXPERIMENTAL_ALL_FEATURES_CAPI_REDDIT_R2_ANY_TRACK_R1_FLEX_SAVE_SCREEN_R4_SAVE_FIX_OS1.16.syx",
+    "sha256": "e8a0bb48d171b66f9118aa68dca5c95b9dd50f0ba497457473f6d4d605e0263a"
+  },
+  "reported_hardware_cause_confirmed": false,
+  "reports": {
+    "boot": {
+      "path": "out/runs/flex-project-save-r4-boot-20261019-01/report.json",
+      "sha256": "9697ca75db16b9728df45d543d639525bd539ad1fafdc51ec3146b60ca730989",
+      "status": "passed"
+    },
+    "native": {
+      "path": "out/runs/flex-project-save-r4-native-20261019-01/report.json",
+      "sha256": "23241f850cc4fe8b580ccfe60792a4f777441e54f412ccb3ec881829dd400578",
+      "status": "passed"
+    },
+    "original_failure_control": {
+      "path": "out/runs/project-save-orphan-native-20261019-01/report.json",
+      "sha256": "d5bff0ab09a005e7a563cdd6df337f1d9dc05c54b31f58256e969f36466dcef0",
+      "status": "passed"
+    },
+    "repeat": {
+      "path": "out/runs/flex-project-save-r4-verification-20261019-01/build-repeat.json",
+      "sha256": "5f8aa56f2a250f605e930176c4dea6498621728d36f0a9f848a1227d37aa882f",
+      "status": "passed"
+    },
+    "ui_sha256_modeled": {
+      "path": "out/runs/flex-project-save-r4-ui-20261019-01/report.json",
+      "sha256": "7a10749e6a6775865fd4023f4fd9c9dca339a384a1f977cb580fb2c7acf3ca4a",
+      "status": "passed"
+    }
+  },
+  "scoped_ruff_passed": true,
+  "source_unchanged": true,
+  "status": "local-validation-passed",
+  "tests_passed": 266
+}

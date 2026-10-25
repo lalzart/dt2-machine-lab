@@ -1,0 +1,73 @@
+{
+  "acceptance_tests": [
+    "14 author host golden replays exact",
+    "Relocated target PCM max1e-4 RMS1e-5; stock OFF exact",
+    "Stereo/controls/native routing and protected section checks",
+    "Repeat build, depacker/startup, source suite and SINE"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement explicit optional source overlay",
+      "Use existing toolchain and fixed resource limits"
+    ],
+    "must_not": [
+      "Change pinned dependencies or frozen original core",
+      "Flash hardware, commit or publish",
+      "Relax failing tolerances"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "EXPERIMENTAL_ALL_FEATURES_CAPI_REDDIT_OS1.16.syx",
+    "Pinned source, adapter and reports"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "primary_claim": "Direct author release-default WSOLA backend with original native optimization paths",
+    "why": "User requests replacement with shared implementation"
+  },
+  "inputs": [
+    "User-supplied archive 87bb2b073dae7253d7694198eced9a63ea4313373eb5ac1573902560cf19ad23",
+    "Existing all-feature OS1.16 CPU and Plaits"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-REDDIT-PORT.md",
+    "revision": "1",
+    "sha256": "1e73ff25cb34a1710cd21294ec16dc16fe034a45f79853a5a18f2853c772d97f",
+    "approval": {
+      "state": "approved",
+      "reference": "Latest direct user request: wire his up and replace existing one"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "out": [
+      "Hardware flashing",
+      "Author other-machine and OS1.17 additions",
+      "Performance-driven algorithm changes"
+    ],
+    "in": [
+      "STRETCH engine replacement",
+      "Memory/control adapter",
+      "All-feature package"
+    ]
+  },
+  "status": "ready",
+  "target": "Digitakt II OS 1.16 SHARC STRETCH",
+  "technical_spec": {
+    "path": "docs/CAPICOLA-REDDIT-PORT.md",
+    "sha256": "1e73ff25cb34a1710cd21294ec16dc16fe034a45f79853a5a18f2853c772d97f"
+  },
+  "title": "Author release STRETCH replacement",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "EXPERIMENTAL_ALL_FEATURES_CAPI_REDDIT_OS1.16.syx",
+    "evidence_level": "target-build",
+    "success_observation": "Target build plus retained host/native evidence; physical timing and listening deferred"
+  }
+}

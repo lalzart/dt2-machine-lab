@@ -1,0 +1,73 @@
+{
+  "acceptance_tests": [
+    "Old build fails actual MAIN output-buffer bound; fixed build stays inside with exact PCM/memory",
+    "Source/native/stereo/Plaits/final-ring and repeat startup/package checks",
+    "Source suite and SINE replay"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement explicit optional source overlay",
+      "Use existing toolchain and fixed resource limits"
+    ],
+    "must_not": [
+      "Change pinned dependencies or frozen original core",
+      "Flash hardware, commit or publish",
+      "Relax failing tolerances"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "EXPERIMENTAL_ALL_FEATURES_CAPI_REDDIT_R2_OS1.16.syx",
+    "Actual MAIN loader overflow regression and equivalent loaded memory"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "primary_claim": "Direct author release-default WSOLA backend with original native optimization paths",
+    "why": "User requests replacement with shared implementation"
+  },
+  "inputs": [
+    "User-supplied archive 87bb2b073dae7253d7694198eced9a63ea4313373eb5ac1573902560cf19ad23",
+    "Existing all-feature OS1.16 CPU and Plaits"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-REDDIT-BOOT-FIX.md",
+    "sha256": "1f490a87517a1c91db6f9bcbe72c05cfc13ad191a060e0a25c27d3b1920191da",
+    "revision": "1",
+    "approval": {
+      "state": "approved",
+      "reference": "User reports hardware exception and explicitly requests fixing custom firmware"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "out": [
+      "Hardware flashing",
+      "Author other-machine and OS1.17 additions",
+      "Performance-driven algorithm changes"
+    ],
+    "in": [
+      "Equivalent FILL representation of zero state",
+      "Exact stock DSP staging bounds",
+      "Actual MAIN depacker regression",
+      "Rebuilt all-feature R2 package"
+    ]
+  },
+  "status": "ready",
+  "target": "Digitakt II OS 1.16 SHARC STRETCH",
+  "technical_spec": {
+    "path": "docs/CAPICOLA-REDDIT-BOOT-FIX.md",
+    "sha256": "1f490a87517a1c91db6f9bcbe72c05cfc13ad191a060e0a25c27d3b1920191da"
+  },
+  "title": "Author CAPI boot-buffer repair",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "EXPERIMENTAL_ALL_FEATURES_CAPI_REDDIT_R2_OS1.16.syx",
+    "evidence_level": "target-build",
+    "success_observation": "Target build plus retained host/native evidence; physical timing and listening deferred"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "acceptance_tests": [
+    "Native CPU control/locks/transport/status ABI",
+    "OFF exact stock, ON R3 max1e-4 RMS1e-5",
+    "Trigger latching, 16 tracks, generation and fallback",
+    "Omitted flag exact CPU/DSP/SYX, source suite and SINE"
+  ],
+  "decision_rights": {
+    "may": [
+      "Implement the documented finite-file adapter",
+      "Use existing build tools"
+    ],
+    "must_not": [
+      "Change pinned dependencies",
+      "Flash hardware",
+      "Commit or publish",
+      "Relax failing tolerances",
+      "Change the preserved double core/oracle or their original contract"
+    ]
+  },
+  "deferred_evidence": [
+    "real-time",
+    "connected-device",
+    "listening",
+    "production-integration"
+  ],
+  "deliverables": [
+    "Optional metadata/UI/routing layer",
+    "Native CPU/DSP reports and build hashes",
+    "Lightweight results and physical gaps"
+  ],
+  "dependency_contracts": [],
+  "goal": {
+    "why": "Compare stock and Capicola on the same STRETCH track",
+    "primary_claim": "Engine is latched at trigger; omitted option reproduces baseline bytes"
+  },
+  "inputs": [
+    "Pinned public AGPL source",
+    "Exact private OS1.16 images and fixtures",
+    "Captured CPU panel frames and LP0 sample transfers"
+  ],
+  "proposal": {
+    "path": "docs/CAPICOLA-TOGGLE.md",
+    "sha256": "5905d5eb3ec060774b7fbba0744d7082cb480468a33aa88124fb0f0eb9d369be",
+    "revision": "3",
+    "approval": {
+      "state": "approved",
+      "reference": "User Yes, let us go ahead and implement that, 2026-10-13; revision 2 corrects CPU placement within that implementation scope"
+    }
+  },
+  "schema_version": "sonic-research-lab-implementation-contract-v2",
+  "scope": {
+    "in": [
+      "CAPI metadata, storage and transport",
+      "Separate trigger guard and track status wrapper",
+      "Bounded CPU status cache, SRC reflection and optional packaging"
+    ],
+    "out": [
+      "Core algorithm edits",
+      "Mid-note cross-engine switch",
+      "Stereo or enlarged DSP arena",
+      "Hardware operation or publication"
+    ]
+  },
+  "status": "ready",
+  "target": "C99 host and standalone SHARC under DTII 1.16 fixture",
+  "title": "Optional CAPI comparison toggle",
+  "work_type": "source-reimplementation",
+  "working_definition": {
+    "artifact": "out/runs/<unique>/report.json and optional package",
+    "evidence_level": "target-build",
+    "success_observation": "Native CPU transports and recalls CAPI, OFF matches stock, ON matches R3, and status reflects actual backend"
+  }
+}

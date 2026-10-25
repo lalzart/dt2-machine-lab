@@ -1,0 +1,185 @@
+{
+  "advances": [
+    0.0009765625,
+    0.02125,
+    0.5,
+    1,
+    2,
+    16
+  ],
+  "artifact_retention": {
+    "location": "out/runs/<unique>",
+    "policy": "reproducible-only"
+  },
+  "capacity": 576004,
+  "combined_fixture": "Preserved integration runner two-tone 8192 frames; normalized quantization and duplicated PCM as defined there.",
+  "comparator_condition_id": "original-granule",
+  "conditions": [
+    {
+      "id": "original-granule",
+      "purpose": "Unmodified Granule over materialized periodic medium",
+      "events": [
+        {
+          "frame": 0,
+          "event": "Spawn at padded virtual sample start; render complete audio"
+        }
+      ]
+    },
+    {
+      "id": "source-port",
+      "purpose": "New source playback implementation",
+      "events": [
+        {
+          "frame": 0,
+          "event": "Native finite/loop start at selected sample start"
+        }
+      ]
+    },
+    {
+      "id": "old-quality",
+      "purpose": "Falsifier for independent edge fades/short grain handoffs",
+      "events": [
+        {
+          "frame": 0,
+          "event": "Preserved reader with old boundary/transition policy"
+        }
+      ]
+    }
+  ],
+  "decimal_rates": [
+    [
+      1,
+      0.7
+    ],
+    [
+      0.7,
+      1
+    ],
+    [
+      1.1,
+      0.7
+    ]
+  ],
+  "fixtures": {
+    "input_frames": [
+      4096,
+      8192,
+      48000
+    ],
+    "start": 0,
+    "render_frames": [
+      8192,
+      48000
+    ],
+    "pitch": [
+      0.5,
+      1,
+      2
+    ],
+    "advance": [
+      0.425,
+      1,
+      2
+    ],
+    "leash": 128,
+    "full_start": true
+  },
+  "host_frames": [
+    1,
+    1024,
+    576000
+  ],
+  "input_frames": 576000,
+  "leashes": [
+    16,
+    128
+  ],
+  "normalization": "signed int16 /32768; stride 2 inserts -sample into skipped words",
+  "oracle_adaptation": "Materialize synthetic start key plus original extrema in selected direction repeatedly; original unmodified Granule runs well inside padded medium. Output finite transport applied outside original grain.",
+  "outputs": [
+    {
+      "kind": "metrics",
+      "name": "report.json"
+    },
+    {
+      "kind": "equal-gain PCM",
+      "name": "audition-chord-source.wav"
+    },
+    {
+      "kind": "equal-gain PCM",
+      "name": "audition-chord-original.wav"
+    },
+    {
+      "kind": "equal-gain PCM",
+      "name": "audition-chord-previous-quality.wav"
+    }
+  ],
+  "pitches": [
+    0.03125,
+    0.5,
+    1,
+    2,
+    32
+  ],
+  "play_modes": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "recipes": {
+    "tone": "int(0.5*32767*sin(2*pi*220*i/48000))/32768",
+    "chord": "int(0.2*32767*sum(sin(2*pi*110*r*i/48000) for r in [1,1.25992105,1.49830708]))/32768",
+    "noise": "seed619:lp=0.4*lp+0.6*Random.uniform(-1,1); int(0.5*lp*32767)/32768",
+    "percussion": "seed619:lp=0.4*lp+0.6*noise; (0.5*lp+0.4*sin(2*pi*73*t))*exp(-(t%0.125)*35); int16 quantization",
+    "complex": "0.15*sum(sin(2*pi*(419+137*j+0.371*j*j)*t)/(j+2) for j in range(12)); int16 quantization",
+    "silence": "zero",
+    "impulse": "0.7 at frame n//2 elsezero; int16 quantization"
+  },
+  "regions": [
+    [
+      0,
+      2400
+    ],
+    [
+      600,
+      1800
+    ],
+    [
+      1200,
+      2400
+    ]
+  ],
+  "sample_rate_hz": 48000,
+  "schema_version": "sonic-research-lab-experiment-v1",
+  "seed": 619,
+  "status": "ready",
+  "supported_block_frames": [
+    1,
+    7,
+    32,
+    127
+  ],
+  "target_frames": 1024,
+  "timeline_convention": "Events applied before sample at frame; start0, pitch512, trim/direction1024, retrigger2048, stop4096; generation fault1024 separate",
+  "title": "Capicola complete source playback",
+  "tolerances": {
+    "host_max": 0.0001,
+    "host_rms": 1e-05,
+    "keyframe_time": 5.960464477539063e-08,
+    "peak_slack": 1e-06,
+    "pitch_hz": 2,
+    "removed_image": 0,
+    "stock_pcm": 0,
+    "target_max": 0.0001,
+    "target_rms": 1e-05
+  },
+  "native_stereo": {
+    "tracks": 16,
+    "channels": 32,
+    "frames_per_channel": 512,
+    "input": "Native stereo file and actual LP0 reset/pages/slot-header callbacks",
+    "partial_ready": "Trigger when only first channel bank ready; both stock",
+    "invalidation": "Real LP0 reset of stereo slot; both CAPI channels silent, no stock takeover"
+  }
+}

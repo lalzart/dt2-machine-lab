@@ -1,0 +1,129 @@
+{
+  "groups": {
+    "buf-native": {
+      "description": "Native BUF capture, automatic USE, FREEZE and generation lifetime",
+      "modules": [
+        "test_sketch",
+        "test_sketch_device",
+        "test_buf_freeze",
+        "test_buf_next_bar",
+        "test_buf_performance",
+        "test_buf_auto_retirement",
+        "test_recorder_worker_native",
+        "test_recorder_freeze_native",
+        "test_recorder_freeze_worker",
+        "test_recorder_seat_reuse",
+        "test_recorder_native_retirement",
+        "test_recorder_retirement",
+        "test_recorder_ack",
+        "test_recorder_ack_loop"
+      ]
+    },
+    "recorder": {
+      "description": "Shared recorder input, sample heap, pattern clock and sector overlay",
+      "modules": [
+        "test_flex_recorder",
+        "test_flex_heap",
+        "test_pattern_clock",
+        "test_recorder_overlay"
+      ]
+    },
+    "buf-models": {
+      "description": "Earlier BUF host models and restricted DSP-reuse proof",
+      "modules": [
+        "test_flex_buffers",
+        "test_flex_quick_record",
+        "test_flex_dsp_probe",
+        "test_recorder_gestures",
+        "test_recorder_trigger_model",
+        "test_recorder_dsp_reuse"
+      ]
+    },
+    "flex-native": {
+      "description": "Existing Flex source lifecycle, save/discard and RAM banks",
+      "modules": [
+        "test_flex_native",
+        "test_flex_allocation",
+        "test_flex_memory",
+        "test_flex_resources",
+        "test_flex_retirement",
+        "test_flex_native_save",
+        "test_flex_persist_missing",
+        "test_flex_save_screen",
+        "test_flex_discard",
+        "test_flex_bank"
+      ]
+    },
+    "capicola": {
+      "description": "Capicola engine, layouts, memory, source and quality experiments",
+      "modules": [
+        "test_capicola",
+        "test_capicola_cache",
+        "test_capicola_capacity",
+        "test_capicola_layout",
+        "test_capicola_live",
+        "test_capicola_memory",
+        "test_capicola_quality",
+        "test_capicola_reddit",
+        "test_capicola_source",
+        "test_capicola_split",
+        "test_capicola_stretch",
+        "test_capicola_toggle"
+      ]
+    },
+    "arp": {
+      "description": "Arp controls, native execution, clocking and persistence",
+      "modules": [
+        "test_arp_firmware",
+        "test_arp_integration",
+        "test_arp_modes",
+        "test_arp_native",
+        "test_arp_persistence",
+        "test_arp_stopped",
+        "test_arp_storage",
+        "test_arp_tempo"
+      ]
+    },
+    "integration": {
+      "description": "Cross-feature builders, any-track behavior and shared resources/save",
+      "modules": [
+        "test_all_features",
+        "test_any_track",
+        "test_reuse",
+        "test_reuse_builds",
+        "test_reuse_save",
+        "test_stretch_resources"
+      ]
+    },
+    "core": {
+      "description": "Test runner, fixture integrity, CPU/DSP tooling and diagnostics",
+      "modules": [
+        "test_unit_suites",
+        "test_harness",
+        "test_coldfire",
+        "test_cpu_extension",
+        "test_diagnostics",
+        "test_dsp_boot_staging",
+        "test_resource_workloads",
+        "test_type7a_matrix",
+        "test_type7a_runtime"
+      ]
+    }
+  },
+  "profiles": {
+    "buf": {
+      "description": "Routine BUF work: native BUF plus shared recorder checks (default)",
+      "groups": [
+        "buf-native",
+        "recorder"
+      ]
+    },
+    "flex": {
+      "description": "Existing Flex work: native Flex plus shared recorder checks",
+      "groups": [
+        "flex-native",
+        "recorder"
+      ]
+    }
+  }
+}

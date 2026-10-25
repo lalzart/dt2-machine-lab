@@ -1,0 +1,143 @@
+{
+  "cancel_exact_same_screen": true,
+  "default_main_exact": {
+    "exact": true,
+    "main_sha256": "95e1b3b5bcf2b40f31942349a2e34ba99f79547926db9ba5e0e47d59d45b5831"
+  },
+  "dsp_exact_previous_save_screen": true,
+  "firmware": "Digitakt II OS1.16",
+  "gallery": "out/runs/flex-discard-packaged-flow-20261019-01/flow.html",
+  "hardware_tested": false,
+  "hardware_uploaded": false,
+  "heap_net_recovered_bytes": 7424,
+  "limits": [
+    "Discard is irreversible and removes this take throughout the current project",
+    "32 issued identities per boot remains; descriptors are not recycled",
+    "Prepared CPU UI and native allocator; recorder, storage and DSP peers modeled",
+    "No physical timing, audio continuity or hardware discard test"
+  ],
+  "native_source_free": {
+    "address": "0x450fdc40",
+    "bytes": 12624,
+    "native_free_count": 1
+  },
+  "package": {
+    "dsp_sha256": "fdd5619fbdc6c4f1cc35ce781896400791c1d1a38c91c603fe75548e7ea7f2a2",
+    "main_sha256": "03c04d4532363b69ddf7e03455d8229e388942ed624f48224c956e303f68cd2f",
+    "path": "out/runs/flex-discard-package-20261019-01/EXPERIMENTAL_ALL_FEATURES_CAPI_REDDIT_R2_ANY_TRACK_R1_FLEX_SAVE_SCREEN_R2_DISCARD_OS1.16.syx",
+    "repeat_exact": true,
+    "sha256": "b232f48b67b91f4bed237005370e2787ca555af15174481c366fe5da0afbb7e4"
+  },
+  "reports": {
+    "boot": {
+      "path": "out/runs/flex-discard-boot-20261019-01/report.json",
+      "sha256": "c6be1d0357191d6edac35a2b5c232c412fbcd5e9ff25bedf8914ab3fe13516d2",
+      "status": "passed"
+    },
+    "discard_ui": {
+      "path": "out/runs/flex-discard-packaged-flow-20261019-01/report.json",
+      "sha256": "fc4ea3d8c7976c37c2285f9589c7ac74e80ee8289e979e139a38e66780b06da4",
+      "status": "passed"
+    },
+    "project_roundtrip": {
+      "path": "out/runs/flex-discard-project-20261019-01/report.json",
+      "sha256": "0b55bc9fe8d22619f9ac9299d373eb6e5aa2326f05de0f2667a16ac6109ac604",
+      "status": "passed"
+    },
+    "save_ui": {
+      "path": "out/runs/flex-discard-save-regression-20261019-01/report.json",
+      "sha256": "7b22d1c0c5c0bc25684db2ca958dd9304ffa87fab83a9ba12d236f1907eadbda",
+      "status": "passed"
+    },
+    "staging": {
+      "path": "out/runs/flex-discard-staging-20261019-01/report.json",
+      "sha256": "b3e6a6c4bb6c4ce80a871154d6ebce4381f1ae709fcd7a4de3919d71c0f3c4ac",
+      "status": "passed"
+    }
+  },
+  "screenshots": [
+    {
+      "framebuffer_sha256": "a2c4b9af60be353a567eca610cde2cf3212d5681ec8b752343eb7cebe51ffa75",
+      "lit_pixels": 1068,
+      "path": "01-track9-save-menu.png",
+      "sha256": "adb6fae6b6ea333e98c872d244e799d9f721c78e242a108ca014593a88fa1b59"
+    },
+    {
+      "framebuffer_sha256": "24f892215b9ebcc8dff270fcec8dea278efb0e4c8f31ee397ed8c4128bf99dfe",
+      "lit_pixels": 1068,
+      "path": "02-discard-selected.png",
+      "sha256": "cb409bf209555444c6b2684914be732aa9cfb2f00b01b7f48c6987e00009c205"
+    },
+    {
+      "framebuffer_sha256": "64fbf9df45702ca006975dbdebc5c500c47769fb81b082b5a7b1601ea35996fa",
+      "lit_pixels": 909,
+      "path": "03-confirm-discard.png",
+      "sha256": "f1183e36dd4f36a1f3e9852a3874862a786256a050f2a3896edf0b3abc48f1af"
+    },
+    {
+      "framebuffer_sha256": "a2c4b9af60be353a567eca610cde2cf3212d5681ec8b752343eb7cebe51ffa75",
+      "lit_pixels": 1068,
+      "path": "04-cancel-keeps-take.png",
+      "sha256": "adb6fae6b6ea333e98c872d244e799d9f721c78e242a108ca014593a88fa1b59"
+    },
+    {
+      "framebuffer_sha256": "68a44c2371d68f9e9d120660f3cf39bb52bb7870c87fa1a62ac1f0b171ab071a",
+      "lit_pixels": 1179,
+      "path": "05-active-reader-busy.png",
+      "sha256": "97536b6b902c0dbccaac637a8356ec8c6ced99b78c53ea83cfeca51a4247980a"
+    },
+    {
+      "framebuffer_sha256": "a2c4b9af60be353a567eca610cde2cf3212d5681ec8b752343eb7cebe51ffa75",
+      "lit_pixels": 1068,
+      "path": "06-retry-save-menu.png",
+      "sha256": "adb6fae6b6ea333e98c872d244e799d9f721c78e242a108ca014593a88fa1b59"
+    },
+    {
+      "framebuffer_sha256": "64fbf9df45702ca006975dbdebc5c500c47769fb81b082b5a7b1601ea35996fa",
+      "lit_pixels": 909,
+      "path": "07-confirm-discard-again.png",
+      "sha256": "f1183e36dd4f36a1f3e9852a3874862a786256a050f2a3896edf0b3abc48f1af"
+    },
+    {
+      "framebuffer_sha256": "cb32b71ac4753ff41eab0c5ccd2ed17261755a859f5ce7e25c03e6ac5f629335",
+      "lit_pixels": 1950,
+      "path": "08-discarded.png",
+      "sha256": "f83433201bf05d5f27f3784a8a5e0270a30ef5228215605d1342a91bb04fe548"
+    },
+    {
+      "framebuffer_sha256": "c59b798cb3980f88d0c961e5f130b644b0730a282572494762bd59c68f8d31b2",
+      "lit_pixels": 1929,
+      "path": "09-recorder-restored.png",
+      "sha256": "0802837ea30a70fb43ae9b7d0039fda27ceae4e72e9a70077b04d7f587f2438b"
+    },
+    {
+      "framebuffer_sha256": "a2c4b9af60be353a567eca610cde2cf3212d5681ec8b752343eb7cebe51ffa75",
+      "lit_pixels": 1068,
+      "path": "10-new-take-defaults-to-save.png",
+      "sha256": "adb6fae6b6ea333e98c872d244e799d9f721c78e242a108ca014593a88fa1b59"
+    },
+    {
+      "framebuffer_sha256": "8a74b89729f42cf850bb9ae22a2d60c4d3cdc8be68627355e9de2c697a5f13cd",
+      "lit_pixels": 1701,
+      "path": "11-name-editor.png",
+      "sha256": "bd8c1e1d134d548a2975c6668eb272bc7ce391a5a87fb17cc81798b6dc93cc63"
+    },
+    {
+      "framebuffer_sha256": "a91d019db703c758ee99e9e3cb9c686d87e6c037b089b70c2f148f38eb2db9c1",
+      "lit_pixels": 1937,
+      "path": "12-new-take-saved.png",
+      "sha256": "bad8d4d79768816e17683f6100485a80b09e3393b67a59433cacaa2768416cf9"
+    }
+  ],
+  "source_manifest": {
+    "path": "out/runs/flex-discard-verification-20261019-01/source-hashes.json",
+    "sha256": "f7cba7af57767fb12118737450284dcb461da00505c4ccd134b2aa66532d857c"
+  },
+  "source_tests": {
+    "passed": 262,
+    "path": "out/runs/flex-discard-verification-20261019-01/source-tests.log",
+    "sha256": "015a148b7fb713cffe47bb1b147eac40fbeb8b2eeb980761bbe74359202170b5"
+  },
+  "source_unchanged": true,
+  "status": "passed-emulator"
+}

@@ -1,0 +1,12 @@
+{
+  "assertions": "Original source, all assertions and baselines remain unchanged",
+  "change": "Native TRK+TRIG1 before opening SAMPLING with a BUF destination; assert native recording targets T1",
+  "negative_controls": [
+    "recorder-type7a-matrix-20261022-01",
+    "recorder-type7a-matrix-20261022-02"
+  ],
+  "reason": "Unmodified exact-repeat matrix audtions selected T6, so subsequent USE correctly reassigned that selected track. Original frozen descriptor and PCM stayed intact.",
+  "schema": 1,
+  "source": "scripts/check-recorder-ack-loop.py",
+  "source_sha256": "88837dfbb6dc3afc5385ad0c77c1413f79480de1ff6125d3189b54fd55b0105a"
+}

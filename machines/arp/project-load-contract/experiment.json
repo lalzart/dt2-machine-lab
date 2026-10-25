@@ -1,0 +1,417 @@
+{
+  "artifact_retention": {
+    "policy": "reproducible-only",
+    "location": "out/runs/<unique>; retain failures and manifests"
+  },
+  "comparator_condition_id": "off",
+  "conditions": [
+    {
+      "id": "off",
+      "purpose": "Stock negative comparator",
+      "events": [
+        {
+          "tick": 0,
+          "op": "initialize",
+          "mode": 0
+        },
+        {
+          "tick": 100,
+          "op": "press",
+          "notes": [
+            67,
+            64,
+            60
+          ]
+        },
+        {
+          "tick": 200,
+          "op": "play"
+        },
+        {
+          "tick": 60000,
+          "op": "release-all"
+        },
+        {
+          "tick": 80000,
+          "op": "stop"
+        }
+      ]
+    },
+    {
+      "id": "up",
+      "purpose": "Native ascending held notes",
+      "events": [
+        {
+          "tick": 0,
+          "op": "initialize",
+          "mode": 1
+        },
+        {
+          "tick": 100,
+          "op": "press",
+          "notes": [
+            67,
+            64,
+            60
+          ]
+        },
+        {
+          "tick": 200,
+          "op": "play"
+        },
+        {
+          "tick": 60000,
+          "op": "release-all"
+        },
+        {
+          "tick": 80000,
+          "op": "stop"
+        }
+      ]
+    },
+    {
+      "id": "lifecycle",
+      "purpose": "Duplicates, release, Stop, disable, endpoints, wrap and overdue clock",
+      "events": [
+        {
+          "tick": 0,
+          "op": "initialize",
+          "mode": 1
+        },
+        {
+          "tick": 100,
+          "op": "press",
+          "notes": [
+            67,
+            64,
+            60
+          ]
+        },
+        {
+          "tick": 200,
+          "op": "play"
+        },
+        {
+          "tick": 60000,
+          "op": "release-all"
+        },
+        {
+          "tick": 80000,
+          "op": "stop"
+        }
+      ]
+    },
+    {
+      "id": "panel-up",
+      "purpose": "Real mapped keyboard integration",
+      "events": [
+        {
+          "tick": 0,
+          "op": "initialize",
+          "mode": 1
+        },
+        {
+          "tick": 100,
+          "op": "press",
+          "notes": [
+            67,
+            64,
+            60
+          ]
+        },
+        {
+          "tick": 200,
+          "op": "play"
+        },
+        {
+          "tick": 60000,
+          "op": "release-all"
+        },
+        {
+          "tick": 80000,
+          "op": "stop"
+        }
+      ]
+    },
+    {
+      "id": "order",
+      "purpose": "Native key-entry order",
+      "events": [
+        {
+          "tick": 0,
+          "op": "initialize",
+          "mode": 2
+        },
+        {
+          "tick": 100,
+          "op": "press",
+          "notes": [
+            67,
+            64,
+            60
+          ]
+        },
+        {
+          "tick": 200,
+          "op": "play"
+        },
+        {
+          "tick": 60000,
+          "op": "release-all"
+        },
+        {
+          "tick": 80000,
+          "op": "stop"
+        }
+      ]
+    },
+    {
+      "id": "random",
+      "purpose": "Native seeded held-note choice",
+      "events": [
+        {
+          "tick": 0,
+          "op": "initialize",
+          "mode": 3
+        },
+        {
+          "tick": 100,
+          "op": "press",
+          "notes": [
+            67,
+            64,
+            60
+          ]
+        },
+        {
+          "tick": 200,
+          "op": "play"
+        },
+        {
+          "tick": 60000,
+          "op": "release-all"
+        },
+        {
+          "tick": 80000,
+          "op": "stop"
+        }
+      ]
+    },
+    {
+      "id": "record-save",
+      "purpose": "Panel-generated notes, stock serialization and independent reload",
+      "events": [
+        {
+          "tick": 0,
+          "op": "initialize",
+          "mode": 1
+        },
+        {
+          "tick": 100,
+          "op": "press",
+          "notes": [
+            67,
+            64,
+            60
+          ]
+        },
+        {
+          "tick": 200,
+          "op": "play"
+        },
+        {
+          "tick": 60000,
+          "op": "release-all"
+        },
+        {
+          "tick": 80000,
+          "op": "stop"
+        }
+      ]
+    },
+    {
+      "id": "gui-up",
+      "purpose": "Exact native menu project/mode recall; missing/corrupt companion is OFF comparator",
+      "events": [
+        {
+          "tick": 0,
+          "op": "restore-private-card-before-mount"
+        },
+        {
+          "tick": 1,
+          "op": "native-read-and-save-test-slot"
+        },
+        {
+          "tick": 2,
+          "op": "panel SETTINGS PROJECT LOAD; select slot; stock save/discard confirmations"
+        },
+        {
+          "tick": 3,
+          "op": "await-native-success; compare whole recorded pattern and modes",
+          "mode": 1
+        },
+        {
+          "tick": 4,
+          "op": "repeat-cache-hit; UP also missing slot 1 and corrupt slot 0"
+        }
+      ]
+    },
+    {
+      "id": "gui-order",
+      "purpose": "Exact native menu project/mode recall; missing/corrupt companion is OFF comparator",
+      "events": [
+        {
+          "tick": 0,
+          "op": "restore-private-card-before-mount"
+        },
+        {
+          "tick": 1,
+          "op": "native-read-and-save-test-slot"
+        },
+        {
+          "tick": 2,
+          "op": "panel SETTINGS PROJECT LOAD; select slot; stock save/discard confirmations"
+        },
+        {
+          "tick": 3,
+          "op": "await-native-success; compare whole recorded pattern and modes",
+          "mode": 2
+        },
+        {
+          "tick": 4,
+          "op": "repeat-cache-hit; UP also missing slot 1 and corrupt slot 0"
+        }
+      ]
+    },
+    {
+      "id": "gui-random",
+      "purpose": "Exact native menu project/mode recall; missing/corrupt companion is OFF comparator",
+      "events": [
+        {
+          "tick": 0,
+          "op": "restore-private-card-before-mount"
+        },
+        {
+          "tick": 1,
+          "op": "native-read-and-save-test-slot"
+        },
+        {
+          "tick": 2,
+          "op": "panel SETTINGS PROJECT LOAD; select slot; stock save/discard confirmations"
+        },
+        {
+          "tick": 3,
+          "op": "await-native-success; compare whole recorded pattern and modes",
+          "mode": 3
+        },
+        {
+          "tick": 4,
+          "op": "repeat-cache-hit; UP also missing slot 1 and corrupt slot 0"
+        }
+      ]
+    },
+    {
+      "id": "gui-missing",
+      "purpose": "Exact native menu project/mode recall; missing/corrupt companion is OFF comparator",
+      "events": [
+        {
+          "tick": 0,
+          "op": "restore-private-card-before-mount"
+        },
+        {
+          "tick": 1,
+          "op": "native-read-and-save-test-slot"
+        },
+        {
+          "tick": 2,
+          "op": "panel SETTINGS PROJECT LOAD; select slot; stock save/discard confirmations"
+        },
+        {
+          "tick": 3,
+          "op": "await-native-success; compare whole recorded pattern and modes",
+          "mode": 0
+        },
+        {
+          "tick": 4,
+          "op": "repeat-cache-hit; UP also missing slot 1 and corrupt slot 0"
+        }
+      ]
+    },
+    {
+      "id": "gui-corrupt",
+      "purpose": "Exact native menu project/mode recall; missing/corrupt companion is OFF comparator",
+      "events": [
+        {
+          "tick": 0,
+          "op": "restore-private-card-before-mount"
+        },
+        {
+          "tick": 1,
+          "op": "native-read-and-save-test-slot"
+        },
+        {
+          "tick": 2,
+          "op": "panel SETTINGS PROJECT LOAD; select slot; stock save/discard confirmations"
+        },
+        {
+          "tick": 3,
+          "op": "await-native-success; compare whole recorded pattern and modes",
+          "mode": 0
+        },
+        {
+          "tick": 4,
+          "op": "repeat-cache-hit; UP also missing slot 1 and corrupt slot 0"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "name": "arp.json",
+      "kind": "events and provenance"
+    },
+    {
+      "name": "control.dtfr",
+      "kind": "native CPU-to-DSP frames"
+    },
+    {
+      "name": "core.json",
+      "kind": "core state and ABI checks"
+    },
+    {
+      "name": "storage.json",
+      "kind": "native save/reload and authenticated companion results"
+    },
+    {
+      "name": "menu.png",
+      "kind": "native G-slot rendered feedback"
+    },
+    {
+      "name": "project-load.json",
+      "kind": "native menu bindings, exact patterns, dialog text and provenance"
+    },
+    {
+      "name": "profile.json",
+      "kind": "exact incremental overlay parity and host synchronization timing"
+    }
+  ],
+  "sample_rate_hz": 48000,
+  "schema_version": "sonic-research-lab-experiment-v1",
+  "seed": 324508639,
+  "status": "ready",
+  "supported_block_frames": [
+    1,
+    16,
+    32
+  ],
+  "timeline_convention": "Unsigned sample ticks; inputs before clock at equal ticks; off before on; exclude host time",
+  "title": "Arp project recall and emulator optimization",
+  "tolerances": {
+    "core_order": "exact",
+    "state_repeat": "all bytes equal",
+    "core_deadline": "0 through block_frames-1 output samples",
+    "adapter_latency": "measured separately",
+    "off_path": "unchanged stock key events",
+    "project_recall": "Exact 121740 pattern bytes and 128 mode values; unknown/missing/corrupt is OFF; no held notes or transport restored"
+  }
+}

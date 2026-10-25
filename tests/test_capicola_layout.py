@@ -55,10 +55,11 @@ class LayoutTests(unittest.TestCase):
         layout.validate_layout("reserved-state", True, "capicola-feedback")
         layout.validate_layout("reserved-state", True, "capicola-live-feedback")
         layout.validate_layout("reserved-state", True, "capicola-stretch")
+        layout.validate_layout("reserved-state", True, "integration")
         for args in (
             ("other", True, "capicola-controls"),
             ("reserved-state", False, "capicola-controls"),
-            ("reserved-state", True, "integration"),
+            ("reserved-state", True, "va"),
         ):
             with self.assertRaises(ValueError):
                 layout.validate_layout(*args)

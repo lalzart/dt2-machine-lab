@@ -1,0 +1,27 @@
+// memtest_l2.ldf -- memfn.asm's L2 copy at byte 0x20090000 (the memory test).
+ARCHITECTURE(ADSP-21569)
+$OBJECTS = $COMMAND_LINE_OBJECTS;
+MEMORY
+{
+   mem_code { TYPE(BW RAM) START(0x20090000) END(0x20090FFF) WIDTH(8) }
+   mem_data { TYPE(BW RAM) START(0x20091000) END(0x200910FF) WIDTH(8) }
+}
+PROCESSOR p0
+{
+   OUTPUT($COMMAND_LINE_OUTPUT_FILE)
+   ENTRY(cc_l2fn.)
+   SECTIONS
+   {
+      code SW
+      {
+         INPUT_SECTION_ALIGN(2)
+         FILL(0x1)
+         INPUT_SECTIONS( $OBJECTS(seg_swco seg_pmco) )
+      } > mem_code
+      data BW
+      {
+         INPUT_SECTION_ALIGN(4)
+         INPUT_SECTIONS( $OBJECTS(seg_dmda) )
+      } > mem_data
+   }
+}

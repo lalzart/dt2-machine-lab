@@ -1,0 +1,35 @@
+// bench.ldf -- links the Capicola benchmark into L2 for digikit's runner only.
+// (The runner does not care where code sits; the instrument build will use its
+// own placement.)
+
+ARCHITECTURE(ADSP-21569)
+
+$OBJECTS = $COMMAND_LINE_OBJECTS;
+
+MEMORY
+{
+   mem_code { TYPE(BW RAM) START(0x20080000) END(0x200bffff) WIDTH(8) }
+   mem_data { TYPE(BW RAM) START(0x200c0000) END(0x200dffff) WIDTH(8) }
+}
+
+PROCESSOR p0
+{
+   OUTPUT($COMMAND_LINE_OUTPUT_FILE)
+   ENTRY(cap_bench_init.)
+
+   SECTIONS
+   {
+      code SW
+      {
+         INPUT_SECTION_ALIGN(2)
+         FILL(0x1)
+         INPUT_SECTIONS( $OBJECTS(seg_swco seg_pmco seg_l2_swco seg_l2_pmco seg_cold_pm) )
+      } > mem_code
+
+      data BW
+      {
+         INPUT_SECTION_ALIGN(4)
+         INPUT_SECTIONS( $OBJECTS(seg_dmda seg_l1_bss seg_l2 seg_l2_bss) )
+      } > mem_data
+   }
+}
