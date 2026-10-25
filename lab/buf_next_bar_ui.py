@@ -25,7 +25,9 @@ class NextBarUI(PerformanceUI):
         super().install(main)
         fw = self.fw
         self.recorder_settings = None
-        parts = b.payload()
+        parts = b.payload(
+            performance_controls=getattr(self, "performance_controls", False)
+        )
         for at, expected in (
             (b.ARM_SITE, b.ARM_BYTES),
             (b.CLOCK_SITE, b.CLOCK_BYTES),
@@ -77,6 +79,7 @@ class NextBarUI(PerformanceUI):
         ):
             fw.write(at, code)
             fw.uc.ctl_remove_cache(at, at + len(code))
+
         def settings_observe(uc, _pc, *_):
             self.recorder_settings = uc.reg_read(k.UC_M68K_REG_A0)
 

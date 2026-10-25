@@ -19,6 +19,8 @@ class SketchUI(NextBarUI):
         sketch_enabled=False,
         arm_enabled=False,
         freeze_enabled=False,
+        buf_selector=False,
+        performance_controls=False,
         **kwargs,
     ):
         require(not arm_enabled or sketch_enabled, "Sketch ARM needs Sketch enabled")
@@ -28,6 +30,13 @@ class SketchUI(NextBarUI):
         self.sketch_enabled = sketch_enabled
         self.arm_enabled = arm_enabled
         self.freeze_enabled = freeze_enabled
+        require(not buf_selector or sketch_enabled, "BUF selector needs Sketch enabled")
+        self.buf_selector = buf_selector
+        require(
+            not performance_controls or arm_enabled,
+            "Performance controls require real ARM",
+        )
+        self.performance_controls = performance_controls
         super().__init__(*args, **kwargs)
 
     def install(self, main):
@@ -36,7 +45,10 @@ class SketchUI(NextBarUI):
             return
         fw = self.fw
         parts = s.payload(
-            main, arm_enabled=self.arm_enabled, freeze_enabled=self.freeze_enabled
+            main,
+            arm_enabled=self.arm_enabled,
+            freeze_enabled=self.freeze_enabled,
+            performance_controls=self.performance_controls,
         )
         sites = (
             (
@@ -93,3 +105,25 @@ class SketchUI(NextBarUI):
                 + bytes.fromhex("4e71") * ((len(expected) - 6) // 2),
             )
             fw.uc.ctl_remove_cache(at, at + len(expected))
+        if self.buf_selector:
+            from lab import buf_selector as selector
+
+            for at, raw in selector.payload(main).items():
+                fw.write(at, raw)
+            fw.uc.ctl_remove_cache(selector.BASE, selector.END)
+            for at, (before, target) in selector.HOOKS.items():
+                before = bytes.fromhex(before)
+                require(fw.read(at, len(before)) == before, "BUF selector site drift")
+                fw.write(
+                    at,
+                    bytes.fromhex("4ef9")
+                    + struct.pack(">I", target)
+                    + bytes.fromhex("4e71") * ((len(before) - 6) // 2),
+                )
+                fw.uc.ctl_remove_cache(at, at + len(before))
+            for at, (before, target) in selector.POINTERS.items():
+                require(
+                    fw.read(at, 4) == struct.pack(">I", before),
+                    "BUF selector pointer drift",
+                )
+                fw.write(at, struct.pack(">I", target))

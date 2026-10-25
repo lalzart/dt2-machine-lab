@@ -31,6 +31,13 @@ NORMAL retains Elektron's record/trim/name/save/assignment behavior.
   16/32/64 steps (one/two/four bars), bounded by the existing ten-second take
   limit. Other lengths/MAX refuse explicitly. Overlong capture preserves the
   prior committed take and reports the capacity limit.
+- Sketch may offer START BAR (default) or START NOW as one volatile menu
+  setting. NOW begins on the native GUI recorder service without a bar wait
+  and captures the full selected length from that start. Its first slice is
+  during playback; native tempo changes cancel it. Recorder DEST=NORMAL stays
+  independent. TRIG/SRC/FLTR/AMP/FX/MOD presses leave Sketch for the native page.
+  TRK press leaves Sketch as native track selection starts; bare
+  performance/step trigs retain their existing behavior.
 - Recorder admission does not depend on unrelated track machines. ONESHOT is
   the initially validated reader path; broader playback compatibility and the
   more restrictive retirement proof remain separate engineering work.
@@ -38,8 +45,9 @@ NORMAL retains Elektron's record/trim/name/save/assignment behavior.
   from backend publication, ownership and snapshot operations.
 - Keep existing project slots/sample numbering intact. The user's 2026-10-23
   selector direction is BUF 1–4 immediately before A00 OFF, using UI aliases of
-  the existing logical buffers. That presentation is investigated, not installed;
-  see docs/BUF-SELECTOR-AND-STARTUP.md. Native +Drive saving/project persistence
+  the existing logical buffers. The selector profile implements that presentation; ordinary bank browsing
+  must remain on its bank when traversing a BUF backing row. The backing slots
+  remain guarded reservations. See docs/BUF-BANK-TRACK-REVIEW.md. Native +Drive saving/project persistence
   are later work.
 - Reclaim DSP PCM only through proven ownership/reader fences and stock memory
   management. Physical metadata seats may be reused with fresh generation

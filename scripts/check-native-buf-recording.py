@@ -41,6 +41,21 @@ p.add_argument(
     help="opt-in clock fix: one native capture, real bar-edge trace, refusal/cancellation controls; skip broad audio flow",
 )
 p.add_argument(
+    "--performance-controls",
+    action="store_true",
+    help="BAR/NOW and page-exit slice; requires --clock-only",
+)
+p.add_argument(
+    "--now-only",
+    action="store_true",
+    help="Target the NOW slice without repeating the BAR capture",
+)
+p.add_argument(
+    "--targeted-replacement",
+    action="store_true",
+    help="One BAR then NOW replacement; reuse existing clock-negative coverage",
+)
+p.add_argument(
     "--replay", type=Path, help="Compare a completed native flow; zero new recordings"
 )
 p.add_argument(
@@ -48,10 +63,48 @@ p.add_argument(
     action="store_true",
     help="Optional second capture workflow; saved audio already repeats by default",
 )
+p.add_argument(
+    "--navigation-fixes",
+    action="store_true",
+    help="native bank and track-exit regression; requires performance controls",
+)
+p.add_argument(
+    "--track-only",
+    action="store_true",
+    help="target the native controller gesture after unchanged-selector bank validation",
+)
+p.add_argument(
+    "--fixed-buf-slots",
+    action="store_true",
+    help="validate the fixed H124-H127 profile",
+)
 a = p.parse_args()
+require(
+    not a.performance_controls or a.clock_only,
+    "Performance slice requires --clock-only",
+)
+require(
+    not a.now_only or a.performance_controls, "NOW-only requires performance controls"
+)
+require(
+    not a.targeted_replacement or (a.performance_controls and not a.now_only),
+    "Targeted replacement requires performance controls and a BAR take",
+)
 require(
     not a.clock_only or not (a.replay or a.repeat_flow),
     "Clock slice is separate from broad flow/replay",
+)
+require(
+    not a.navigation_fixes or a.performance_controls,
+    "Navigation fixes require performance controls",
+)
+require(
+    not a.track_only or (a.navigation_fixes and a.now_only),
+    "Track-only requires navigation fixes and NOW-only",
+)
+require(
+    not a.fixed_buf_slots or a.navigation_fixes,
+    "Fixed BUF slots require navigation fixes",
 )
 out, upstream = a.output.resolve(), a.native_upstream.resolve()
 require(out.is_relative_to(ROOT / "out/runs"), "Use a fresh ignored output")
@@ -282,6 +335,13 @@ if a.replay:
 try:
     report["adapter"] = prepare_recorder_boot(upstream, out / "native-boot")
     flags = dict(arm_diagnostics=True, clock_fix=True) if a.clock_only else {}
+    if a.performance_controls:
+        flags.update(
+            buf_selector=True,
+            performance_controls=True,
+            navigation_fixes=a.navigation_fixes,
+            fixed_buf_slots=a.fixed_buf_slots,
+        )
     main, meta = build(STOCK_MAIN.read_bytes(), **flags)
     require(
         build(STOCK_MAIN.read_bytes(), **flags) == (main, meta),
@@ -353,6 +413,12 @@ try:
     write_json(out / "symbols.json", symbols)
     spec = dict(
         clock_only=a.clock_only,
+        performance_controls=a.performance_controls,
+        now_only=a.now_only,
+        targeted_replacement=a.targeted_replacement,
+        navigation_fixes=a.navigation_fixes,
+        track_only=a.track_only,
+        fixed_buf_slots=a.fixed_buf_slots,
         output=str(out),
         stock_syx=inputs["syx"],
         card=inputs["card"],
@@ -362,7 +428,7 @@ try:
         blob=str(out / "dsp/RETIRE_BLOB.bin"),
     )
     write_json(out / "spec.json", spec)
-    if not a.clock_only:
+    if not a.clock_only or a.fixed_buf_slots:
         prepare_replay_template(Path(spec["blob"]))
     # A small independent Python-model oracle checks Rust wrap/count/readback.
     import struct
@@ -427,10 +493,26 @@ try:
     run("model", [str(out / "runner"), str(out / "spec.json"), "model"], cwd=upstream)
     if not a.prepare_only:
         for mode in (
-            ("flow",)
+            ("flow", "fixed-replay")
+            if a.fixed_buf_slots
+            else ("flow",)
             if a.clock_only
             else ("flow", *(("repeat",) if a.repeat_flow else ()), "replay")
         ):
+            if mode == "fixed-replay":
+                from lab.flex_lite import publication_bytes
+                from lab.sketch_validation import pages
+
+                # Native dump_pages is a variable-length recorder trace, not
+                # the replay adapter's fixed-width LP0 packet stream.
+                (out / "flow/fixed-pages.lp0").write_bytes(
+                    b"".join(publication_bytes(pages(out / "flow/pages-A-frozen.bin")))
+                )
+                run(
+                    "stock-replay-inputs",
+                    helper("recorder_replay_inputs.py", out / "spec.json"),
+                    cwd=upstream,
+                )
             if mode == "replay":
                 run("stock-oracle", helper("recorder_oracle.py", out / "spec.json"))
                 run(
@@ -460,6 +542,8 @@ try:
     report["status"] = (
         "prepared-native-recorder-adapter"
         if a.prepare_only
+        else "passed-native-performance-controls"
+        if a.performance_controls
         else "passed-native-clock-recording"
         if a.clock_only
         else "passed-native-recorder-flow"

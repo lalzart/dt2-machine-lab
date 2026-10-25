@@ -95,9 +95,17 @@ class DeviceBuild:
         require(
             build(
                 stock,
+                copy_shortcuts=self.meta.get("copy_shortcuts", False),
+                stopped_recording=self.meta.get("stopped_recording", False),
+                recording_led=self.meta.get("recording_led", False),
                 arm_diagnostics=self.meta.get("arm_diagnostics", False),
                 clock_fix=self.meta.get("clock_fix", False),
                 operation_diagnostics=self.meta.get("operation_diagnostics", False),
+                buf_selector=self.meta.get("buf_selector", False),
+                performance_controls=self.meta.get("performance_controls", False),
+                navigation_fixes=self.meta.get("navigation_fixes", False),
+                fixed_buf_slots=self.meta.get("fixed_buf_slots", False),
+                startup_capture=self.meta.get("startup_capture", False),
             )
             == (self.image, self.meta),
             "Current emitters differ from sealed device build",
@@ -145,7 +153,9 @@ class DeviceBuild:
         for at, size in self.meta["guards"]:
             require(fw.read(at, size) == GUARD, f"Device canary changed at {at:#x}")
         for item in self.meta["writes"] + self.meta["hooks"]:
-            if item["kind"] in ("code", "stock-trampoline"):
+            if item["kind"] in ("code", "stock-trampoline") or (
+                item["kind"] == "pointers" and item["label"].startswith("buf-selector/")
+            ):
                 raw = bytes.fromhex(item["after"])
                 require(
                     fw.read(item["address"], len(raw)) == raw,

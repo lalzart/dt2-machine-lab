@@ -20,6 +20,11 @@ JOB_RESULT, CANCEL, OWN = 80, 84, 88
 PUBLISH_TICK, QUEUE_TICK = 92, 96
 NORMAL_DEST = 100  # Recorder UI setting; independent of the admitted target.
 DURATION_BARS, LAST_BAR = 104, 108  # Latched duration and serviced bar receipt.
+START_MODE, BEATS_LEFT, BEAT_PHASE, LAST_TICK, TEMPO = range(112, 132, 4)
+ARM_NOW, NOW_TIME = BASE + 0x400, BASE + 0x800
+NOW_COMPLETED = BASE + 0xA00
+COUNT_MARGIN = 64  # Native start/readback sample-clock granularity.
+TEMPO_GET, BEAT_UNITS = 0x4002D744, 345600000  # BPM*120 per 48 kHz quarter note.
 PUBLISHES = USES  # Retain the existing trace ABI; publication never assigns.
 SERIAL, CEPOCH, LAST_STEP, LIVE, PATTERN, ENABLED = range(0x100, 0x118, 4)
 PRIMED, EDGE_TICK, DISCONTINUITIES, VALID = range(0x118, 0x128, 4)
@@ -167,8 +172,10 @@ def initialize():
     return c.finish(INIT)
 
 
-def initialize_buffers():
+def initialize_buffers(*, setup_backoff=False):
     """Shared empty-BUF setup, including an explicit request at DEST=NORMAL."""
+    from lab import buf_startup as pending
+
     c = Code()
     c.emit("4feffff0 48d70303")
     c.imm("2039", w.STATE + 64)
@@ -178,11 +185,30 @@ def initialize_buffers():
         c.imm("2039", at)
         c.emit("4a80")
         c.branch(6, "return")
+    if setup_backoff:
+        load(c, pending.SETUP_RETRY)
+        c.emit("4a80")
+        c.branch(7, "attempt")
+        c.imm("2039", TICK)
+        load(c, pending.SETUP_RETRY_TICK, 1)
+        c.emit("9081")
+        c.imm("0c80", pending.SETUP_RETRY_FRAMES)
+        c.branch(5, "return")
+        c.label("attempt")
     c.emit("7001")
     c.imm("23c0", w.STATE + 12)
     n.call(c, w.SETUP)
     c.emit("4a80")
-    c.branch(6, "release")
+    if setup_backoff:
+        c.branch(7, "setup_ready")
+        c.imm("2039", TICK)
+        store(c, pending.SETUP_RETRY_TICK)
+        setv(c, pending.SETUP_RETRY, 1)
+        c.branch(0, "release")
+        c.label("setup_ready")
+        setv(c, pending.SETUP_RETRY, 0)
+    else:
+        c.branch(6, "release")
     c.imm("41f9", w.STATE + 96)
     c.imm("43f9", n.STATE + 32)
     for _ in range(4):
@@ -336,12 +362,21 @@ def arm():
     return c.finish(ARM)
 
 
-def arm_only(*, diagnostics=False, operation_diagnostics=False):
+def arm_only(
+    *,
+    diagnostics=False,
+    operation_diagnostics=False,
+    performance_controls=False,
+    startup_capture=False,
+    stopped=False,
+):
     """GUI-thread ABI (controller*, BUF 1..4); never toggle or change UI DEST.
 
     Refusals return in D0 without modifying an admitted transaction. Only the
     guarded legacy wrapper retains its second-chord cancellation semantics.
     """
+    from lab import buf_startup as pending
+
     c = Code()
     failures = {}
 
@@ -370,14 +405,20 @@ def arm_only(*, diagnostics=False, operation_diagnostics=False):
         (n.STATE + 24, "LOCK"),
         (q.STOCK_BUSY, "LOADER"),
     ):
+        if startup_capture and reason in ("FREEZE", "LOADER"):
+            continue
         if operation_diagnostics and reason == "FREEZE":
             n.call(c, OP_SNAPSHOT)
         else:
             c.imm("2039", at)
         c.emit("4a80")
         fail(6, "busy", reason)
+    if startup_capture:
+        n.call(c, pending.ADMIT)
+        c.emit("4a80")
+        fail(6, "busy", "LOADER")
     n.call(c, perf.PLAY_GET)
-    c.imm("0c80", 1)
+    c.imm("0c80", 0 if stopped else 1)
     fail(6, "refuse", "PLAY")
     c.emit("4a82")
     fail(7, "refuse", "CTRL", 2)
@@ -399,22 +440,41 @@ def arm_only(*, diagnostics=False, operation_diagnostics=False):
         c.imm("283c", bars)  # D4 survives the original native service calls.
         c.branch(0, "supported_length")
     c.label("supported_length")
+    if stopped:
+        # Same finite LEN and native sample clock as NOW, without a bar clock.
+        n.call(c, TEMPO_GET)
+        c.imm("0c80", 3600)
+        fail(5, "refuse", "MODE")
+        c.imm("0c80", 36000)
+        fail(2, "refuse", "MODE")
+        c.emit("2c00")  # D6 survives native context getters.
+        c.branch(0, "capture_context")
     load(c, VALID)
     c.imm("0c80", 1)
     fail(6, "refuse", "CLOCK")
     n.call(c, CLOCK_MODE)
     c.imm("0c80", CLOCK_VALUE)
     fail(6, "refuse", "MODE")
-    # Setup uses stock project/slot helpers and never writes recorder DEST.
-    n.call(c, INIT_BODY)
-    for at, reason in (
-        (w.STATE + 64, "SETUP"),
-        (w.STATE + 68, "POOL"),
-        (0x80004704, "KIT"),
-    ):
-        c.imm("2039", at)
+    c.label("capture_context")
+    if startup_capture:
+        n.call(c, pending.POOL_GET)
+        c.emit("2a00 4a80")
+        fail(7, "refuse", "POOL")
+        c.imm("2039", 0x80004704)
         c.emit("4a80")
-        fail(7, "refuse", reason)
+        fail(7, "refuse", "KIT")
+        store(c, POOL, 5)
+    else:
+        # Existing initialized-slot admission remains byte-identical.
+        n.call(c, INIT_BODY)
+        for at, reason in (
+            (w.STATE + 64, "SETUP"),
+            (w.STATE + 68, "POOL"),
+            (0x80004704, "KIT"),
+        ):
+            c.imm("2039", at)
+            c.emit("4a80")
+            fail(7, "refuse", reason)
     store(c, DURATION_BARS, 4)
     store(c, DEST, 3)
     store(c, CTRL, 2)
@@ -428,8 +488,18 @@ def arm_only(*, diagnostics=False, operation_diagnostics=False):
         (STATE + SERIAL, AFTER),
         (w.DEST, NORMAL_DEST),
     ):
+        if startup_capture and field == POOL:
+            continue
         c.imm("2039", actual)
         store(c, field)
+    if startup_capture:
+        for actual, field in (
+            (0x44F370A0, pending.PROJECT),
+            (STATE + pending.BATCH_SERIAL, pending.ADMITTED_BATCH),
+            (q.CURRENT_TCB, pending.CAPTURE_TASK),
+        ):
+            c.imm("2039", actual)
+            store(c, field)
     load(c, POOL)
     c.emit("2040")
     c.imm("d1fc", -36)
@@ -437,11 +507,29 @@ def arm_only(*, diagnostics=False, operation_diagnostics=False):
     for _ in range(9):
         c.emit("22d8")
     setv(c, CANCEL, 0)
+    if startup_capture:
+        # A newly admitted user action may retry setup without the poll delay.
+        setv(c, pending.SETUP_RETRY, 0)
     setv(c, OWN, 1)
-    c.emit("7001")
-    c.imm("23c0", w.STATE + 12)
+    if not startup_capture:
+        c.emit("7001")
+        c.imm("23c0", w.STATE + 12)
     setv(c, PHASE, 1)
     setv(c, RESULT, 0)
+    if performance_controls:
+        # RESULT just loaded D0=0. Six bytes fit the guarded ARM_ONLY extent.
+        # Legacy callers always admit BAR; ARM_NOW changes only its own success.
+        store(c, START_MODE)
+    if stopped:
+        from lab import buf_stopped as free
+
+        store(c, TEMPO, 6)
+        load(c, DURATION_BARS)
+        c.emit("d080 d080")
+        store(c, BEATS_LEFT)
+        setv(c, BEAT_PHASE, 0)
+        setv(c, START_MODE, free.MODE)
+        setv(c, free.FINISH, 0)
     if diagnostics:
         store(c, ARM_DIAG)
         store(c, ARM_DIAG_VALUE)
@@ -466,7 +554,9 @@ def arm_only(*, diagnostics=False, operation_diagnostics=False):
             c.branch(0, "return")
     c.label("return")
     c.emit("4cd77cfc 4fef0030 4e75")
-    return c.finish(ARM_ONLY)
+    return c.finish(
+        free.ARM if stopped else pending.ARM_BODY if startup_capture else ARM_ONLY
+    )
 
 
 def operation_snapshot():
@@ -483,7 +573,9 @@ def operation_snapshot():
     return c.finish(OP_SNAPSHOT)
 
 
-def check(*, clock_fix=False):
+def check(*, clock_fix=False, startup_capture=False, stopped_recording=False):
+    from lab import buf_startup as pending
+
     c = Code()
     c.emit("4feffff0 48d70302")  # D1/A0/A1; return in D0.
     for actual, field in (
@@ -493,23 +585,61 @@ def check(*, clock_fix=False):
         (STATE + CEPOCH, CLOCK_EPOCH),
         (w.DEST, NORMAL_DEST),
     ):
-        c.imm("2039", actual)
+        if stopped_recording and field == CLOCK_EPOCH:
+            load(c, START_MODE)
+            c.imm("0c80", 2)
+            c.branch(7, "skip_clock_epoch")
+        if startup_capture and field == POOL:
+            n.call(c, pending.POOL_GET)
+        else:
+            c.imm("2039", actual)
         load(c, field, 1)
         c.emit("b081")
         c.branch(6, "bad")
+        if stopped_recording and field == CLOCK_EPOCH:
+            c.label("skip_clock_epoch")
+    if startup_capture:
+        load(c, pending.POISON)
+        c.emit("4a80")
+        c.branch(6, "bad")
+        for actual, field in (
+            (0x44F370A0, pending.PROJECT),
+            (STATE + pending.BATCH_SERIAL, pending.ADMITTED_BATCH),
+        ):
+            c.imm("2039", actual)
+            load(c, field, 1)
+            c.emit("b081")
+            c.branch(6, "bad")
     for off, value in ((OWN, 1), (VALID, 1), (CANCEL, 0)):
+        if stopped_recording and off == VALID:
+            load(c, START_MODE)
+            c.imm("0c80", 2)
+            c.branch(7, "skip_clock_valid")
         load(c, off)
         c.imm("0c80", value)
         c.branch(6, "bad")
+        if stopped_recording and off == VALID:
+            c.label("skip_clock_valid")
+    if startup_capture:
+        load(c, PHASE)
+        c.imm("0c80", 4)
+        c.branch(6, "capture_lease")
     c.imm("2039", w.STATE + 12)
     c.imm("0c80", 1)
     c.branch(6, "bad")
+    if startup_capture:
+        c.label("capture_lease")
+    if stopped_recording:
+        load(c, START_MODE)
+        c.imm("0c80", 2)
+        c.branch(7, "capture_settings")
     n.call(c, perf.PLAY_GET)
     c.imm("0c80", 1)
     c.branch(6, "bad")
     n.call(c, CLOCK_MODE)
     c.imm("0c80", CLOCK_VALUE)
     c.branch(6, "bad")
+    c.label("capture_settings")
     load(c, POOL)
     c.emit("2040")
     c.imm("d1fc", -36)
@@ -517,7 +647,12 @@ def check(*, clock_fix=False):
     for off in CAPTURE_SETTINGS:
         c.emit(f"2028{off:04x} 2229{off:04x} b081")
         c.branch(6, "bad")
+    if stopped_recording:
+        load(c, START_MODE)
+        c.imm("0c80", 2)
+        c.branch(7, "good")
     master(c, "bad", semantic=clock_fix)
+    c.label("good")
     c.emit("7000")
     c.branch(0, "return")
     c.label("bad")
@@ -527,17 +662,25 @@ def check(*, clock_fix=False):
     return c.finish(CHECK)
 
 
-def poll():
+def poll(*, startup_capture=False):
     c = Code()
     c.emit("4feffff0 48d70303")
+    if startup_capture:
+        load(c, PHASE)
+        c.emit("4a80")
+        c.branch(6, "pending")
     n.call(c, INIT)
+    if startup_capture:
+        c.label("pending")
     n.call(c, STEP)
     c.emit("4cd70303 4fef0010")
     c.imm("4ef9", auto.POLL)
     return c.finish(POLL)
 
 
-def step():
+def step(*, performance_controls=False, startup_capture=False, stopped_recording=False):
+    from lab import buf_startup as pending
+
     c = Code()
     c.emit("4fefffd0 48d77cfc")
     load(c, PHASE)
@@ -551,14 +694,38 @@ def step():
     load(c, PHASE)
     c.imm("0c80", 4)
     c.branch(7, "return")
+    if startup_capture:
+        c.imm("0c80", pending.WAIT_LOAD)
+        c.branch(7, "normalizing")
     c.imm("0c80", 3)
     c.branch(7, "normalizing")
+    if stopped_recording:
+        from lab import buf_stopped as free
+
+        load(c, START_MODE)
+        c.imm("0c80", free.MODE)
+        c.branch(6, "timed_capture")
+        n.call(c, free.CAPTURE)
+        c.branch(0, "return")
+        c.label("timed_capture")
     controller(c, auto.RECORDER_STATE)
     load(c, PHASE, 1)
     c.imm("0c81", 1)
     c.branch(6, "recording")
     c.emit("4a80")
     c.branch(6, "cancel")
+    if performance_controls:
+        load(c, START_MODE)
+        c.imm("0c80", 1)
+        c.branch(6, "wait_bar")
+        load(c, SERIAL)
+        store(c, START_BAR)
+        store(c, LAST_BAR)
+        c.imm("2039", TICK)
+        store(c, START_EDGE)
+        store(c, LAST_TICK)
+        c.branch(0, "start_delay")
+        c.label("wait_bar")
     load(c, SERIAL)
     load(c, AFTER, 1)
     c.emit("b081")
@@ -573,7 +740,27 @@ def step():
     c.branch(0, "start_delay")
     c.label("recording")
     c.imm("0c80", 2)
-    c.branch(6, "cancel")
+    if performance_controls:
+        c.branch(7, "recording_clock")
+        load(c, START_MODE, 1)
+        c.imm("0c81", 1)
+        c.branch(6, "cancel")
+        c.imm("0c80", 3)
+        c.branch(7, "native_completed")
+        c.imm("0c80", 4)
+        c.branch(6, "cancel")
+        c.label("native_completed")
+        n.call(c, NOW_COMPLETED)
+        c.emit("4a80")
+        c.branch(6, "cancel")
+        c.imm("2039", TICK)
+        store(c, STOP_TICK)
+        inc(c, STOPS)
+        setv(c, PHASE, 3)
+        c.branch(0, "normalizing")
+        c.label("recording_clock")
+    else:
+        c.branch(6, "cancel")
     # Bound the real sample-clock duration even if the input count saturates.
     # This does not estimate tempo or schedule a stop from host elapsed time.
     c.imm("2039", TICK)
@@ -581,6 +768,16 @@ def step():
     c.emit("9081")
     c.imm("0c80", MAX_CAPTURE_FRAMES)
     c.branch(2, "capacity")
+    if performance_controls:
+        load(c, START_MODE)
+        c.imm("0c80", 1)
+        c.branch(6, "bar_duration")
+        n.call(c, NOW_TIME)
+        c.emit("4a80")
+        c.branch(7, "return")
+        c.branch(11, "cancel")
+        c.branch(0, "stop_now")
+        c.label("bar_duration")
     load(c, SERIAL)
     load(c, LAST_BAR, 1)
     c.emit("b081")
@@ -602,6 +799,8 @@ def step():
     c.emit("9081")
     c.imm("0c80", LATENCY)
     c.branch(2, "cancel")
+    if performance_controls:
+        c.label("stop_now")
     c.imm("2039", TICK)
     store(c, STOP_TICK)
     controller(c, STOP)
@@ -616,7 +815,11 @@ def step():
     c.branch(2, "cancel")
     c.imm("2039", TICK)
     store(c, START_TICK)
+    if startup_capture:
+        setv(c, pending.START_ALLOW, 1)
     controller(c, START)
+    if startup_capture:
+        setv(c, pending.START_ALLOW, 0)
     inc(c, STARTS)
     setv(c, PHASE, 2)
     c.branch(0, "return")
@@ -626,6 +829,14 @@ def step():
     c.branch(7, "return")
     c.imm("0c80", 4)
     c.branch(6, "cancel")
+    if startup_capture:
+        n.call(c, pending.PREPARE)
+        c.emit("4a80")
+        c.branch(11, "cancel")
+        c.branch(6, "queue_ready")
+        setv(c, PHASE, pending.WAIT_LOAD)
+        c.branch(0, "return")
+        c.label("queue_ready")
     n.call(c, QUEUE)
     c.branch(0, "return")
     c.label("cancel")
@@ -640,6 +851,142 @@ def step():
     c.label("return")
     c.emit("4cd77cfc 4fef0030 4e75")
     return c.finish(STEP)
+
+
+def arm_now():
+    """Same guarded two-argument admission; native GUI poll owns START."""
+    c = Code()
+    c.emit("4feffff0 48d7000c 242f0014 262f0018 2f03 2f02")
+    n.call(c, ARM_ONLY, 8)
+    c.emit("4a80")
+    c.branch(6, "return")
+    n.call(c, TEMPO_GET)
+    c.imm("0c80", 3600)
+    c.branch(5, "invalid_tempo")
+    c.imm("0c80", 36000)
+    c.branch(2, "invalid_tempo")
+    store(c, TEMPO)
+    load(c, DURATION_BARS)
+    c.emit("d080 d080")
+    store(c, BEATS_LEFT)
+    setv(c, BEAT_PHASE, 0)
+    setv(c, START_MODE, 1)
+    c.emit("7000")
+    c.branch(0, "return")
+    c.label("invalid_tempo")
+    n.call(c, CANCEL_FN)
+    c.imm("203c", ARM_REFUSED)
+    c.label("return")
+    c.emit("4cd7000c 4fef0010 4e75")
+    return c.finish(ARM_NOW)
+
+
+def now_time():
+    """Native sample-clock duration from actual START, never the next bar.
+
+    Return 0 while recording, 1 at the selected duration, -1 on lost cadence
+    or changed tempo. The accumulator stays below one quarter note, avoiding
+    overflow for all 16/32/64-step lengths. No host clock or bar reconstruction.
+    """
+    c = Code()
+    c.emit("4feffff0 48d7000c")
+    c.imm("2039", TICK)
+    c.emit("2400")
+    load(c, LAST_TICK, 1)
+    c.emit("9081")
+    c.imm("0c80", LATENCY)
+    c.branch(2, "bad")
+    c.emit("2600")
+    store(c, LAST_TICK, 2)
+    n.call(c, TEMPO_GET)
+    load(c, TEMPO, 1)
+    c.emit("b081")
+    c.branch(6, "bad")
+    c.emit("2003 4c010800")  # MULU.L D1,D0, bounded delta * BPM*120.
+    load(c, BEAT_PHASE, 1)
+    c.emit("d081")
+    c.label("beats")
+    c.imm("0c80", BEAT_UNITS)
+    c.branch(5, "waiting")
+    c.imm("0680", -BEAT_UNITS)
+    load(c, BEATS_LEFT, 1)
+    c.emit("5381")
+    store(c, BEATS_LEFT, 1)
+    c.branch(7, "complete")
+    c.branch(0, "beats")
+    c.label("waiting")
+    store(c, BEAT_PHASE)
+    c.emit("7000")
+    c.branch(0, "return")
+    c.label("complete")
+    c.emit("7001")
+    c.branch(0, "return")
+    c.label("bad")
+    c.emit("70ff")
+    c.label("return")
+    c.emit("4cd7000c 4fef0010 4e75")
+    return c.finish(NOW_TIME)
+
+
+def now_completed():
+    """Validate native completion using the actual take count before adoption.
+
+    The stock controller can stop first and enter normalization. Only a full
+    NOW take under the latched tempo is accepted, with the same late-stop bound
+    and a 64-frame native counter margin. Short takes remain cancellations.
+    Chunking keeps multiplication bounded without new arithmetic instructions.
+    """
+    c = Code()
+    c.emit("4fefffe0 48d7003c")
+    controller(c, COUNT)
+    c.imm("0c80", 141)
+    c.branch(5, "bad")
+    c.imm("0c80", MAX_CAPTURE_FRAMES)
+    c.branch(2, "bad")
+    c.imm("0680", COUNT_MARGIN)
+    c.emit("2400")
+    n.call(c, TEMPO_GET)
+    load(c, TEMPO, 1)
+    c.emit("b081")
+    c.branch(6, "bad")
+    c.emit("2a00")
+    load(c, DURATION_BARS)
+    c.emit("d080 d080 2600 7800")
+    c.label("chunk")
+    c.emit("2002")
+    c.imm("0c80", LATENCY)
+    c.branch(3, "chunk_ready")
+    c.imm("203c", LATENCY)
+    c.label("chunk_ready")
+    c.emit("2200 2002 9081 2400 2001 2205 4c010800 2204 d081")
+    c.label("beat")
+    c.imm("0c80", BEAT_UNITS)
+    c.branch(5, "partial")
+    c.imm("0680", -BEAT_UNITS)
+    c.emit("2203 5381 2601")
+    c.branch(7, "full")
+    c.branch(0, "beat")
+    c.label("partial")
+    c.emit("2800 4a82")
+    c.branch(6, "chunk")
+    c.branch(0, "bad")
+    c.label("full")
+    c.emit("2800 2002")
+    c.imm("0c80", LATENCY + COUNT_MARGIN)
+    c.branch(2, "bad")
+    c.emit("2205 4c010800 2204 d081 2800")
+    c.imm("203c", LATENCY + COUNT_MARGIN)
+    c.emit("2205 4c010800 2200 2004 b081")
+    c.branch(2, "bad")
+    c.emit("7000")
+    store(c, BEATS_LEFT)
+    store(c, BEAT_PHASE)
+    c.branch(0, "return")
+    c.label("bad")
+    c.emit("70ff")
+    c.label("return")
+    c.emit("4cd7003c 4fef0020 4e75")
+    return c.finish(NOW_COMPLETED)
 
 
 def queue():
@@ -695,7 +1042,9 @@ def queue():
     return c.finish(QUEUE)
 
 
-def worker():
+def worker(*, startup_capture=False):
+    from lab import buf_startup as pending
+
     c = Code()
     load(c, PHASE)
     c.imm("0c80", 4)
@@ -703,13 +1052,21 @@ def worker():
     load(c, CANCEL)
     c.emit("4a80")
     c.branch(6, "bad")
+    if startup_capture:
+        n.call(c, CHECK)
+        c.emit("4a80")
+        c.branch(6, "bad")
+        for field, value in ((pending.BATCH_ACTIVE, 0), (pending.BATCH_DONE, 1)):
+            load(c, field)
+            c.imm("0c80", value)
+            c.branch(6, "bad")
     c.imm("4ef9", w.WORKER)
     c.label("bad")
     c.emit("70ff 4e75")
     return c.finish(WORKER)
 
 
-def done():
+def done(*, release_recorder=False):
     c = Code()
     c.emit("4fefffd0 48d77cfc 242f0038")  # Completion status, original SP+8.
     store(c, JOB_RESULT, 2)
@@ -744,7 +1101,12 @@ def done():
     c.branch(6, "failed")
     c.imm("2039", TICK)
     store(c, PUBLISH_TICK)
-    controller(c, READY)
+    # Native finite-LEN completion enters normalization without STOP's
+    # command-2 wrapper. CPU-only READY leaves the DSP command at START (0),
+    # so another START can inherit the previous completion feedback. Once
+    # ASSIGN has published the independently owned generation, the stock
+    # DISCARD routine can release only the consumed recorder scratch take.
+    controller(c, DISCARD if release_recorder else READY)
     inc(c, USES)
     setv(c, RESULT, 1)
     c.branch(0, "release")
@@ -768,7 +1130,9 @@ def done():
     return c.finish(DONE)
 
 
-def cancel():
+def cancel(*, startup_capture=False):
+    from lab import buf_startup as pending
+
     c = Code()
     c.emit("4feffff0 48d70303")
     setv(c, CANCEL, 1)
@@ -778,9 +1142,15 @@ def cancel():
     load(c, OWN)
     c.imm("0c80", 1)
     c.branch(6, "return")
-    c.imm("2039", w.STATE + 12)
-    c.imm("0c80", 1)
-    c.branch(6, "release")
+    if not startup_capture:
+        c.imm("2039", w.STATE + 12)
+        c.imm("0c80", 1)
+        c.branch(6, "release")
+    if startup_capture:
+        c.imm("2039", 0x44F370A0)
+        load(c, pending.PROJECT, 1)
+        c.emit("b081")
+        c.branch(6, "orphan")
     c.imm("2039", n.STATE)
     load(c, EPOCH, 1)
     c.emit("b081")
@@ -802,6 +1172,8 @@ def cancel():
     load(c, OWN)
     c.imm("0c80", 1)
     c.branch(6, "return")
+    if startup_capture:
+        c.branch(0, "clear")
     c.imm("2039", w.STATE + 12)
     c.imm("0c80", 1)
     c.branch(6, "clear")
@@ -840,7 +1212,7 @@ def input_event():
     return c.finish(INPUT)
 
 
-def use_gate():
+def use_gate(*, startup_capture=False):
     """NORMAL USE must also respect an explicit BUF's shared mutation lease.
 
     Its old DEST=0 fast path otherwise bypasses the busy check, yet the worker
@@ -848,6 +1220,10 @@ def use_gate():
     Installed only with Sketch's real ARM profile.
     """
     c = Code()
+    if startup_capture:
+        load(c, PHASE)
+        c.emit("4a80")
+        c.branch(6, "busy")
     c.imm("2039", w.STATE + 12)
     c.emit("4a80")
     c.branch(6, "busy")
@@ -858,13 +1234,19 @@ def use_gate():
     return c.finish(USE_GATE)
 
 
-def payload(*, arm_diagnostics=False, clock_fix=False, operation_diagnostics=False):
+def payload(
+    *,
+    arm_diagnostics=False,
+    clock_fix=False,
+    operation_diagnostics=False,
+    performance_controls=False,
+):
     contract()
     parts = {
         ARM: arm(),
         IRQ: irq(clock_fix=clock_fix),
         POLL: poll(),
-        STEP: step(),
+        STEP: step(performance_controls=performance_controls),
         CHECK: check(clock_fix=clock_fix),
         QUEUE: queue(),
         WORKER: worker(),
@@ -874,13 +1256,19 @@ def payload(*, arm_diagnostics=False, clock_fix=False, operation_diagnostics=Fal
         INIT: initialize(),
         INIT_BODY: initialize_buffers(),
         ARM_ONLY: arm_only(
-            diagnostics=arm_diagnostics, operation_diagnostics=operation_diagnostics
+            diagnostics=arm_diagnostics,
+            operation_diagnostics=operation_diagnostics,
+            performance_controls=performance_controls,
         ),
         USE_GATE: use_gate(),
         # entry() uses absolute external targets and relative local branches.
         USE_STOCK: w.entry(),
         ARM_STOCK: ARM_BYTES + b"\x4e\xf9" + struct.pack(">I", ARM_SITE + 8),
     }
+    if performance_controls:
+        parts.update(
+            {ARM_NOW: arm_now(), NOW_TIME: now_time(), NOW_COMPLETED: now_completed()}
+        )
     if operation_diagnostics:
         parts[OP_SNAPSHOT] = operation_snapshot()
     ordered = sorted(parts.items())

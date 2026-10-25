@@ -3,7 +3,12 @@
     "buf-native": {
       "description": "Native BUF capture, automatic USE, FREEZE and generation lifetime",
       "modules": [
+        "test_buf_selector",
+        "test_buf_navigation",
+        "test_buf_fixed_slots",
         "test_sketch",
+        "test_sketch_controls",
+        "test_sketch_copy",
         "test_sketch_device",
         "test_buf_freeze",
         "test_buf_next_bar",
@@ -16,7 +21,10 @@
         "test_recorder_native_retirement",
         "test_recorder_retirement",
         "test_recorder_ack",
-        "test_recorder_ack_loop"
+        "test_recorder_ack_loop",
+        "test_buf_startup",
+        "test_buf_stopped",
+        "test_sketch_led"
       ]
     },
     "recorder": {

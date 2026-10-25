@@ -4,7 +4,7 @@
   "work_type": "new-design",
   "approval": "User architecture alignment brief 2026-10-22: global BUF publication, empty initialization, performance edits and bounded native memory reuse; user 2026-10-23 continuation: native two/four-bar LEN 32/64, bounded capture/publication/cancellation/FREEZE validation",
   "proposal": "BUF-WORKFLOW-CONTRACT.md",
-  "proposal_sha256": "f44c6448221f5324c22db3863d689e12fe8b17eb052289e1be4fdb3474f0bceb",
+  "proposal_sha256": "575a703b0063b47c9b31870d634176510cb1855553c7260554621aab9da3549a",
   "target": "OS 1.16 native BUF next-bar emulator; ONESHOT is the initial reader qualification",
   "working_artifact": "scripts/check-buf-next-bar.py",
   "evidence_level": "native input/worker/sequence/CPU-DSP execution with modeled peripherals and stock voice PCM",

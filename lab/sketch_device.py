@@ -107,6 +107,7 @@ class Overlay:
             "Sketch needs exact OS1.16 MAIN",
         )
         self.stock, self.parts, self.hooks = stock, {}, {}
+        self.pointer_hooks = {}
 
     def put(self, at, raw, label, kind="code"):
         require(
@@ -139,9 +140,33 @@ class Overlay:
         )
         self.hooks[at] = (expected, raw, label)
 
+    def pointer(self, at, expected, target, label):
+        require(
+            at not in self.pointer_hooks and at not in self.hooks,
+            "Duplicate hook " + label,
+        )
+        require(
+            self.stock[at - MAIN_BASE : at - MAIN_BASE + 4]
+            == struct.pack(">I", expected),
+            "Sketch stock pointer drift: " + label,
+        )
+        self.pointer_hooks[at] = (expected, target, label)
+
 
 def compose(
-    stock, *, arm_diagnostics=False, clock_fix=False, operation_diagnostics=False
+    stock,
+    *,
+    arm_diagnostics=False,
+    clock_fix=False,
+    operation_diagnostics=False,
+    buf_selector=False,
+    performance_controls=False,
+    navigation_fixes=False,
+    fixed_buf_slots=False,
+    startup_capture=False,
+    copy_shortcuts=False,
+    stopped_recording=False,
+    recording_led=False,
 ):
     """Final native install graph of SketchUI; no Machine or host job execution."""
     from lab import buf_auto_retirement as auto
@@ -160,7 +185,26 @@ def compose(
     from lab import sketch as s
 
     normal = dest
+    require(
+        not performance_controls or clock_fix,
+        "Performance controls require the working clock profile",
+    )
 
+    require(
+        not navigation_fixes or (buf_selector and performance_controls),
+        "Navigation fixes require BUF selector and performance controls",
+    )
+    require(
+        not fixed_buf_slots or navigation_fixes,
+        "Fixed BUF slots require navigation fixes",
+    )
+    require(
+        not startup_capture or fixed_buf_slots, "Startup capture requires fixed H slots"
+    )
+    require(
+        not stopped_recording or (startup_capture and performance_controls),
+        "Stopped recording requires the startup and performance profiles",
+    )
     o = Overlay(stock)
     o.put(dest.LABEL, b"DEST\0", "destination/label", "data")
     o.put(
@@ -221,6 +265,10 @@ def compose(
                 "data",
             )
     o.group(w.payload(), "worker")
+    if fixed_buf_slots:
+        from lab import buf_fixed_slots
+
+        o.put(w.SETUP, buf_fixed_slots.setup(), "fixed-buf-slots/setup")
     finish_raw, _, _ = o.parts.pop(w.FINISH)
     require(finish_raw[24:32] == bytes(8), "Worker FINISH padding drift")
     o.put(w.FINISH, finish_raw[:24], "worker/finish-dispatch")
@@ -280,6 +328,7 @@ def compose(
             arm_diagnostics=arm_diagnostics,
             clock_fix=clock_fix,
             operation_diagnostics=operation_diagnostics,
+            performance_controls=performance_controls,
         ),
         "next-bar",
     )
@@ -305,6 +354,12 @@ def compose(
         arm_diagnostics=arm_diagnostics,
         clock_fix=clock_fix,
         operation_diagnostics=operation_diagnostics,
+        performance_controls=performance_controls,
+        navigation_fixes=navigation_fixes,
+        fixed_buf_slots=fixed_buf_slots,
+        startup_capture=startup_capture,
+        copy_shortcuts=copy_shortcuts,
+        stopped_recording=stopped_recording,
     ).items():
         kind = (
             "pointers"
@@ -322,6 +377,80 @@ def compose(
         b"\x4e\xf9" + struct.pack(">I", w.FREEZE_GUARD) + b"\x4e\x71",
         "worker/freeze-guard",
     )
+    if buf_selector:
+        from lab import buf_selector as selector
+
+        for at, raw in selector.payload(
+            stock, navigation_fixes=navigation_fixes
+        ).items():
+            kind = "data" if selector.NAMES <= at < selector.NAMES + 128 else "code"
+            o.put(at, raw, f"buf-selector/{at:#x}", kind)
+        for at, (before, target) in selector.HOOKS.items():
+            o.jump(at, bytes.fromhex(before), target, "buf-selector/" + hex(at))
+        for at, (before, target) in selector.POINTERS.items():
+            o.pointer(at, before, target, "buf-selector/" + hex(at))
+    if startup_capture:
+        from lab import buf_startup as pending
+
+        o.group(pending.payload(), "startup-capture")
+        o.put(
+            nb.ARM_ONLY,
+            b"\x4e\xf9" + struct.pack(">I", pending.ARM_BODY),
+            "startup/arm",
+        )
+        o.put(
+            nb.INIT_BODY,
+            b"\x4e\xf9" + struct.pack(">I", pending.INIT_GATE),
+            "startup/setup-gate",
+        )
+        for at, raw in {
+            nb.CHECK: nb.check(clock_fix=True, startup_capture=True),
+            nb.STEP: nb.step(performance_controls=True, startup_capture=True),
+            nb.CANCEL_FN: nb.cancel(startup_capture=True),
+            nb.POLL: nb.poll(startup_capture=True),
+            nb.WORKER: nb.worker(startup_capture=True),
+            nb.USE_GATE: nb.use_gate(startup_capture=True),
+        }.items():
+            o.put(at, raw, "startup/" + hex(at))
+        o.put(pending.FREEZE_STOCK, o.parts[perf.ELIGIBLE][0], "startup/freeze-stock")
+        o.put(
+            perf.ELIGIBLE,
+            b"\x4e\xf9" + struct.pack(">I", pending.FREEZE_GATE),
+            "startup/freeze-gate",
+        )
+        o.put(
+            auto.STEP,
+            b"\x4e\xf9" + struct.pack(">I", pending.AUTO_GATE),
+            "startup/cleanup-gate",
+        )
+        guard = n.GUARDS + 0x100
+        o.put(pending.PROJECT_STOCK, o.parts[guard][0], "startup/project-stock")
+        o.put(
+            guard,
+            b"\x4e\xf9" + struct.pack(">I", pending.PROJECT_GATE),
+            "startup/project-gate",
+        )
+        before, _raw, label = o.hooks[nb.ARM_SITE]
+        o.hooks[nb.ARM_SITE] = (
+            before,
+            b"\x4e\xf9" + struct.pack(">I", pending.ARM_GATE) + b"\x4e\x71",
+            label,
+        )
+        o.jump(
+            pending.BATCH_SITE,
+            pending.BATCH_BYTES,
+            pending.BATCH_ENTER,
+            "startup/batch-enter",
+        )
+        o.jump(
+            pending.BATCH_RETURN,
+            pending.RETURN_BYTES,
+            pending.BATCH_LEAVE,
+            "startup/batch-return",
+        )
+        o.jump(
+            nb.START, pending.START_BYTES, pending.START_GATE, "startup/recorder-start"
+        )
     for at, (raw, label, _kind) in list(o.parts.items()):
         if (
             n.TRAMPOLINES <= at < n.GUARDS
@@ -339,17 +468,59 @@ def compose(
                 "Synthetic stock prefix",
             )
             o.put(at, raw, label, "stock-trampoline")
+    if stopped_recording:
+        from lab import buf_stopped as free
+
+        o.group(free.payload(), "stopped-recording")
+        o.put(
+            nb.CHECK,
+            nb.check(clock_fix=True, startup_capture=True, stopped_recording=True),
+            "stopped/check",
+        )
+        o.put(
+            nb.STEP,
+            nb.step(
+                performance_controls=True, startup_capture=True, stopped_recording=True
+            ),
+            "stopped/step",
+        )
+    if recording_led:
+        from lab import sketch_led
+
+        require(stopped_recording, "Recording LED requires the performance recorder profile")
+        o.group(sketch_led.payload(), "sketch-recording-led")
+        o.jump(sketch_led.SITE, sketch_led.PREFIX, sketch_led.ENTRY, "sketch-recording-led/output")
     return o
 
 
 def build(
-    stock, *, arm_diagnostics=False, clock_fix=False, operation_diagnostics=False
+    stock,
+    *,
+    arm_diagnostics=False,
+    clock_fix=False,
+    operation_diagnostics=False,
+    buf_selector=False,
+    performance_controls=False,
+    navigation_fixes=False,
+    fixed_buf_slots=False,
+    startup_capture=False,
+    copy_shortcuts=False,
+    stopped_recording=False,
+    recording_led=False,
 ):
     overlay = compose(
         stock,
         arm_diagnostics=arm_diagnostics,
         clock_fix=clock_fix,
         operation_diagnostics=operation_diagnostics,
+        buf_selector=buf_selector,
+        performance_controls=performance_controls,
+        navigation_fixes=navigation_fixes,
+        fixed_buf_slots=fixed_buf_slots,
+        startup_capture=startup_capture,
+        copy_shortcuts=copy_shortcuts,
+        stopped_recording=stopped_recording,
+        recording_led=recording_led,
     )
     images = {a.name: bytearray(a.size) for a in ARENAS}
     writes, fixes = [], []
@@ -428,6 +599,22 @@ def build(
         fixes.extend(
             dict(label=label, address=at + r["offset"], **r) for r in relocations
         )
+    for at, (expected, source, label) in sorted(overlay.pointer_hooks.items()):
+        target = relocate(source)
+        data = struct.pack(">I", target)
+        image[at - MAIN_BASE : at - MAIN_BASE + 4] = data
+        hooks.append(
+            dict(
+                address=at,
+                before=struct.pack(">I", expected).hex(),
+                after=data.hex(),
+                label=label,
+                kind="pointers",
+            )
+        )
+        fixes.append(
+            dict(label=label, address=at, offset=0, source=source, target=target)
+        )
     reset_loader = loader(MAIN_BASE + len(stock))
     for at, expected, data, label in (
         (CAVE, bytes(len(reset_loader)), reset_loader, "reset/loader"),
@@ -493,10 +680,29 @@ def build(
             "NORMAL ready label retains stock SAVE; BUF ready label is not dynamically changed",
         ],
     )
+    if recording_led:
+        metadata["recording_led"] = True
     if arm_diagnostics:
         metadata["arm_diagnostics"] = True
     if clock_fix:
         metadata["clock_fix"] = True
     if operation_diagnostics:
         metadata["operation_diagnostics"] = True
+    if buf_selector:
+        metadata["buf_selector"] = True
+    if performance_controls:
+        metadata["performance_controls"] = True
+    if navigation_fixes:
+        metadata["navigation_fixes"] = True
+    if fixed_buf_slots:
+        from lab.buf_fixed_slots import PUBLIC
+
+        metadata["fixed_buf_slots"] = True
+        metadata["buf_public_slots"] = list(PUBLIC)
+    if startup_capture:
+        metadata["startup_capture"] = True
+    if copy_shortcuts:
+        metadata["copy_shortcuts"] = True
+    if stopped_recording:
+        metadata["stopped_recording"] = True
     return bytes(image), metadata

@@ -192,6 +192,225 @@ fn clock_slice(f:&mut Flow,out:&Path){
  eprintln!("focused native clock/capture passed in {:.1}s",f.start.elapsed().as_secs_f64());
 }
 
+fn navigation_slice(f: &mut Flow, out: &Path) {
+ let initial=f.slots(); let w=f.symbol("w","STATE");
+ f.sketch(false); f.chord(16,25); f.tap(2); let original=f.slots()[0] as u32;
+ assert!(original<128);
+ for _ in 0..20 {f.tap(44);if f.absolute(w+64)==1{break;}f.tap(12);f.wait(200);}
+ assert_eq!(f.absolute(w+64),1,"native selector initializes BUF before mapping inspection");
+ let logical:Vec<u32>=(0..4).map(|i|f.absolute(w+96+i*4)).collect();
+ assert_eq!(logical,vec![300,301,302,303],"prepared fixture reservation changed");
+ for _ in 0..24 {if f.slots()[0]==logical[3] as u16{break;}f.e.turn(4,-40).unwrap();f.wait(90);}
+ assert_eq!(f.slots()[0],logical[3] as u16,"fast native cursor reaches BUF 4");
+ for _ in 0..3{f.tap(14);}assert_eq!(f.slots()[0],300);f.tap(10);
+ f.tap(44);f.tap(14);assert_eq!(f.slots()[0],0,"reopened BUF has alias cursor");f.tap(12);assert_eq!(f.slots()[0],300);
+ f.tap(44);f.tap(14);assert_eq!(f.slots()[0],0);
+ f.tap(15); assert_eq!(f.slots()[0],128); f.tap(15); assert_eq!(f.slots()[0],256);
+ for _ in 0..24 {let row=f.slots()[0]-256;if row>=40{break;}f.e.turn(4,10).unwrap();f.wait(90);}
+ for _ in 0..128 {let row=f.slots()[0]-256;if row==40{break;}f.tap(if row<40{14}else{11});}
+ assert_eq!(f.slots()[0],296);
+ for row in 41..=56 {f.tap(14);assert_eq!(f.slots()[0],256+row,"ordinary C row {row}");if [43,44,45,47,55,56].contains(&row){f.screen(&format!("ordinary-C{row:02}"));}}
+ f.tap(15);assert_eq!(f.slots()[0],440,"bank D retains row 56");
+ f.tap(13);assert_eq!(f.slots()[0],312);f.tap(13);assert_eq!(f.slots()[0],184);
+ for _ in 0..20 {if f.slots()[0]>=254{break;}f.e.turn(4,40).unwrap();f.wait(90);}
+ let encoder_end=f.slots()[0];
+ for _ in 0..128 {if f.slots()[0]==255{break;}f.tap(14);}
+ assert_eq!(f.slots()[0],255,"B127 remains reachable with native arrows");f.screen("ordinary-B127");
+ for bank in 2..=7 {f.tap(15);assert_eq!(f.slots()[0],bank*128+127);}
+ f.screen("ordinary-H127");f.tap(12);assert_eq!(f.slots()[0],300,"NO restores list's original BUF assignment");assert_eq!(f.slots()[1..],initial[1..]);
+ f.tap(44);f.tap(14);
+ for _ in 0..64 {let slot=f.slots()[0] as u32;if slot>=original{break;}f.e.turn(4,10).unwrap();f.wait(90);}
+ for _ in 0..128 {let slot=f.slots()[0] as u32;if slot==original{break;}f.tap(if slot<original{14}else{11});}
+ assert_eq!(f.slots()[0],original as u16);f.tap(10);assert_eq!(f.slots(),initial);
+ for track in [0,4,15] {f.sketch(true);f.chord(16,25+track);assert_eq!(f.val("s","VIEW"),0,"TRK+track {} closes Sketch",track+1);assert_eq!(f.val("nb","PHASE"),0);}
+ f.chord(16,25);f.sketch(true);f.tap(25);assert_ne!(f.val("s","VIEW"),0,"bare performance trig preserves Sketch");
+ assert_eq!(f.slots(),initial);assert_eq!(f.val("nb","STARTS"),0);assert_eq!(f.absolute(w+80),0);
+ save(out.join("navigation.json"),&json!({"status":"passed-native-bank-and-track-navigation","logical_slots":logical,"ordinary_backing_and_private_rows_traversed":true,"B127_and_H127_reachable":true,"NO_and_reopen_alias_cursor":true,"track_exits":3,"native_tracks":[1,5,16],"encoder_B_endpoint":encoder_end,"bare_trig_keeps_view":true,"assignments_preserved":true,"recordings":0,"publications":0,"hardware":false}));
+}
+
+fn track_slice(f: &mut Flow, out: &Path) {
+ let initial=f.slots();f.sketch(false);f.tap(2);
+ for track in [0,4,15] {
+  f.sketch(true);f.chord(16,25+track);
+  assert_eq!(f.val("s","VIEW"),0,"native TRK selection {} closes Sketch",track+1);
+  assert_eq!(f.val("nb","PHASE"),0);f.screen(&format!("track-exit-{}",track+1));
+ }
+ f.chord(16,25);f.sketch(true);f.tap(25);
+ assert_ne!(f.val("s","VIEW"),0,"bare trig preserves Sketch");
+ assert_eq!(f.slots(),initial);assert_eq!(f.val("nb","STARTS"),0);
+ save(out.join("navigation.json"),&json!({"status":"passed-native-track-navigation","scope":"Targeted controller gesture follow-up; prior bank subflow is separate component evidence","track_exits":3,"native_tracks":[1,5,16],"bare_trig_keeps_view":true,"assignments_preserved":true,"recordings":0,"publications":0,"hardware":false}));
+}
+
+fn performance_slice(f: &mut Flow, out: &Path, navigation_fixes: bool) {
+ let initial = f.slots();
+ assert_eq!(f.val("s", "START_MODE"), 0, "BAR must remain the default");
+ for (key, name) in [(1,"TRIG"),(2,"SRC"),(3,"FILTER"),(4,"AMP"),(5,"FX"),(6,"MOD")] {
+  f.sketch(true); f.tap(key);
+  assert_eq!(f.val("s", "VIEW"), 0, "{name} must close Sketch");
+  assert_eq!(f.val("nb", "PHASE"), 0);
+  f.screen(&format!("page-exit-{name}"));
+ }
+ f.sketch(true);
+ for _ in 0..12 {
+  if f.val("s", "START_MODE") == 1 { break; }
+  f.e.turn(6, 10).unwrap(); f.wait(90);
+ }
+ assert_eq!(f.val("s", "START_MODE"), 1, "F selects NOW");
+ f.screen("start-now");
+ f.e.recorder_peer_mut().unwrap().source = source(2);
+ f.until("NOW away from bar", |f| (4..=7).contains(&(f.absolute(0x43164f98)>>16)), 8000);
+ let serial = f.val("nb", "SERIAL");
+ let starts = f.val("nb", "STARTS");
+ let uses = f.val("nb", "USES");
+ let meta: Value = serde_json::from_slice(&read(out.join("native-patches.json"))).unwrap();
+ let mut watches=vec![f.symbol("nb","CANCEL_FN"),f.symbol("nb","STOP"),f.symbol("nb","NOW_COMPLETED")];
+ for name in ["NOW_TIME","CHECK"] {
+  let at=f.symbol("nb",name);
+  let code=meta["writes"].as_array().unwrap().iter().find(|w|w["address"].as_u64()==Some(at as u64)).unwrap();
+  let bytes=unhex(code["after"].as_str().unwrap());
+  for (offset, pair) in bytes.windows(2).enumerate(){if offset%2==0&&pair==[0x70,0xff]{watches.push(at+offset as u32);}}
+ }
+ f.e.record_regs_at(&watches);
+ f.chord(17,24);
+ assert_eq!(f.val("nb", "STARTS"), starts+1, "NOW must start within the gesture");
+ assert_eq!(f.val("nb", "PHASE"), 2);
+ assert_eq!(f.val("nb", "START_MODE"), 1);
+ assert_eq!(f.val("nb", "SERIAL"), serial, "NOW must not wait for the next bar");
+ let start = f.val("nb", "START_TICK");
+ let last_bar = f.val("nb", "EDGE_TICK");
+ assert!(start.wrapping_sub(last_bar) > 8192, "NOW must start away from the bar receipt");
+ let tempo = f.val("nb", "TEMPO");
+ f.screen("now-recording");
+ f.tap(3);
+ assert_eq!(f.val("s", "VIEW"), 0, "page press exits during recording");
+ assert_eq!(f.val("nb", "PHASE"), 2, "page exit must preserve recording");
+ if navigation_fixes {
+  f.sketch(true);f.chord(16,26);
+  assert_eq!(f.val("s","VIEW"),0,"track selection exits while recording");
+  assert_eq!(f.val("nb","PHASE"),2,"track selection preserves recording");
+  f.chord(16,25);
+ }
+ for _ in 0..200 {
+  let phase=f.val("nb","PHASE");let published=f.val("nb","USES");
+  let state=f.symbol("nb","STATE");
+  let pool=f.val("nb","POOL");
+  let (hits,dropped)=f.e.reg_log();let hits=hits.to_vec();
+  let snapshot=json!({"phase":phase,"published":published,"state":f.e.peek(state,0x180).unwrap(),"pool_settings":f.e.peek(pool-36,36).unwrap(),"latched_settings":f.e.peek(f.symbol("nb","SETTINGS"),36).unwrap(),"tempo":f.absolute(0x402b62bc),"events":f.e.recorder_peer().unwrap().events,"watch":watches,"dropped":dropped,"hits":hits.iter().map(|h|json!({"pc":h.pc,"d":h.d,"a":h.a,"stack":h.stack})).collect::<Vec<_>>()});
+  save(out.join("now-diagnostic.json"),&snapshot);
+  if phase==0 {assert_eq!(published,uses+1,"NOW cancelled; see now-diagnostic.json");break;}
+  f.wait(50);
+ }
+ assert_eq!(f.val("nb","PHASE"),0);assert_eq!(f.val("nb","USES"),uses+1);
+ let elapsed = f.val("nb", "STOP_TICK").wrapping_sub(start);
+ let expected = (345600000u64 * 4).div_ceil(tempo as u64) as u32;
+ assert!(elapsed >= expected && elapsed <= expected+8192, "NOW selected duration: {elapsed} vs {expected}");
+ let data = f.e.recorder_peer().unwrap().completed.as_ref().unwrap().clone();
+ let state = f.symbol("w", "STATE");
+ let frames = f.absolute(state+28);
+ assert_eq!(data.len(), frames as usize*4);
+ assert_eq!(data, source(2)[..data.len()], "NOW input PCM must match the modeled source");
+ fs::write(out.join("now-take.pcm"), &data).unwrap();
+ assert_eq!(f.slots(), initial, "recording and page exits preserve assignments");
+ let dest = f.symbol("w", "DEST"); assert_eq!(f.absolute(dest), 0);
+ f.sketch(true); assert_eq!(f.val("s", "START_MODE"), 1, "one selection survives closing/reopening");
+ f.screen("now-ready");
+ let meta: Value = serde_json::from_slice(&read(out.join("native-patches.json"))).unwrap();
+ for guard in meta["guards"].as_array().unwrap() {
+  let at=guard[0].as_u64().unwrap() as u32; let n=guard[1].as_u64().unwrap() as usize;
+  assert_eq!(f.e.peek(at,n).unwrap(), [0xc0,0x57,0xa1,0x1c,0x5a,0xfe,0x11,0x60].repeat(n/8));
+ }
+ for item in meta["writes"].as_array().unwrap().iter().chain(meta["hooks"].as_array().unwrap()) {
+  if item["kind"]=="code" || item["kind"]=="stock-trampoline" || (item["kind"]=="pointers" && item["label"].as_str().unwrap().starts_with("buf-selector/")) {
+   let data=unhex(item["after"].as_str().unwrap());
+   assert_eq!(f.e.peek(item["address"].as_u64().unwrap() as u32,data.len()).unwrap(),data);
+  }
+ }
+ assert_eq!(f.shared.borrow().missing_blocks, 0);
+ let mut report: Value = if out.join("flow.json").exists(){serde_json::from_slice(&read(out.join("flow.json"))).unwrap()}else{json!({"status":"passed","host_positive_clock_writes":false,"assignments_preserved":true,"normal_recorder_DEST":0})};
+ report["scope"] = json!(if starts==0{"Native NOW capture and page exits; modeled input, no physical timing claim"}else{"Native BAR plus NOW captures and page exits; modeled input, no physical timing claim"});
+ report["CPU_canaries_and_code_intact"]=json!(true);report["missing_blocks"]=json!(0);report["hardware"]=json!(false);report["DSP_ROM_executed"]=json!(false);
+ let (hits,_)=f.e.reg_log();
+ let adopted=hits.iter().any(|h|h.pc==f.symbol("nb","NOW_COMPLETED"));
+ report["performance_controls"] = json!({"page_exits":6,"exit_during_recording":true,"track_exit_during_recording":navigation_fixes,"default":"BAR","NOW_starts_before_next_bar":true,"now_ticks":elapsed,"target_ticks":expected,"tempo_times_120":tempo,"frames":frames,"input_pcm_sha256":hash(&data),"native_completion_adopted":adopted,"assignments_preserved":true,"NORMAL_DEST_preserved":true,"code_and_canaries_intact":true});
+ report["recordings"] = json!(starts+1); report["starts"] = json!(starts+1); report["stops"] = json!(starts+1); report["publications"] = json!(uses+1);
+ save(out.join("flow.json"), &report);
+}
+
+fn fixed_slot_slice(f:&mut Flow,out:&Path) {
+ let w=f.symbol("w","STATE");let original=f.slots();
+ assert_eq!(f.absolute(f.symbol("w","DEST")),0);
+ // Explicit occupied-pool negative control, restored before native setup.
+ let view=f.val("s","VIEW");let wrap=f.absolute(view+f.symbol("s","SETTINGS"));
+ let pool=f.absolute(wrap+16)+0x1d2;let ref_at=pool+1020*16;
+ let saved=f.e.peek(ref_at,16).unwrap();assert_eq!(&saved[..4],&[255;4]);
+ f.e.poke(ref_at,&[0x12,0x34,0x56,0x78,0,0,0,0,0,0,0,0,0,0,0,0]).unwrap();
+ f.chord(17,24);assert_eq!(f.val("nb","STARTS"),0);assert_eq!(f.val("nb","PHASE"),0);
+ let diagnostic=w+0x200;assert_eq!(f.absolute(diagnostic),1);assert_eq!(f.absolute(diagnostic+4),1020);
+ f.screen("fixed-H124-conflict");assert_eq!(f.slots(),original);
+ f.e.poke(ref_at,&saved).unwrap();
+ for track in [0u32,4,5] {
+  f.sketch(false);f.chord(16,25+track as u8);f.tap(2);
+  let kit=f.absolute(0x80004704);
+  if f.e.peek(kit+track*0x450+0xd6,1).unwrap()!=[0] {f.chord(17,2);for _ in 0..8{f.tap(11);}f.tap(10);f.tap(10);}
+ }
+ for track in [0u32,4] {
+  f.chord(16,25+track as u8);f.tap(2);f.tap(44);
+  assert_eq!(f.absolute(w+64),1,"native list initializes fixed BUF seats");
+  let slots:Vec<_>=(0..4).map(|i|f.absolute(w+96+i*4)).collect();assert_eq!(slots,vec![1020,1021,1022,1023]);
+  for _ in 0..24 {if f.slots()[track as usize]==1023 {break;}f.e.turn(4,-40).unwrap();f.wait(90);}
+  assert_eq!(f.slots()[track as usize],1023,"BUF 4 alias reaches H127");
+  for target in [1022,1021,1020] {f.tap(14);assert_eq!(f.slots()[track as usize],target);}
+  f.screen(&format!("fixed-empty-list-T{}",track+1));f.tap(10);
+ }
+ let assigned=f.slots();assert_eq!(assigned[0],1020);assert_eq!(assigned[4],1020);
+ f.chord(16,25);f.tap(2);f.screen("fixed-H124-source");f.sketch(true);
+ assert_eq!(f.val("s","START_MODE"),0);
+ for _ in 0..12 {if f.val("s","START_MODE")==1{break;}f.e.turn(6,10).unwrap();f.wait(90);}
+ assert_eq!(f.val("s","START_MODE"),1);f.e.recorder_peer_mut().unwrap().source=source(1);
+ f.until("fixed NOW away from bar",|f|(4..=7).contains(&(f.absolute(0x43164f98)>>16)),8000);
+ f.chord(17,24);assert_eq!(f.val("nb","STARTS"),1);
+ f.until("fixed H124 publishes",|f|f.val("nb","USES")==1&&f.val("nb","PHASE")==0,10000);
+ let data=f.e.recorder_peer().unwrap().completed.as_ref().unwrap().clone();let frames=f.absolute(w+28);
+ assert_eq!(data.len(),frames as usize*4);assert_eq!(data,source(1)[..data.len()]);assert!(nonzero(&data));
+ fs::write(f.out.join("take-1.pcm"),&data).unwrap();
+ let desc=descriptor(&f.dsp,1020);assert!(desc[2]>0);assert_eq!(f.slots(),assigned);f.screen("fixed-H124-ready");
+ f.edge(24,true,850);f.edge(24,false,90);
+ let q=f.symbol("q","STATE");f.until("fixed held SONG FREEZE",|f|f.absolute(q+32)==1,5000);f.wait(240);
+ let frozen=f.absolute(q+12);assert!(frozen<1020&&frozen%128!=0);assert_eq!(descriptor(&f.dsp,frozen),desc);
+ assert_eq!(f.slots(),assigned);assert_eq!(f.absolute(f.symbol("w","DEST")),0);
+ assert_eq!((0..4).map(|i|f.absolute(w+96+i*4)).collect::<Vec<_>>(),vec![1020,1021,1022,1023]);
+ f.dump_pages("pages-A-frozen.bin");f.screen("fixed-H124-frozen");
+ fs::write(f.out.join("wire.bin"),&f.ob.borrow().wire).unwrap();
+ let meta:Value=serde_json::from_slice(&read(out.join("native-patches.json"))).unwrap();
+ for g in meta["guards"].as_array().unwrap(){let at=g[0].as_u64().unwrap() as u32;let n=g[1].as_u64().unwrap() as usize;assert_eq!(f.e.peek(at,n).unwrap(),[0xc0,0x57,0xa1,0x1c,0x5a,0xfe,0x11,0x60].repeat(n/8));}
+ for item in meta["writes"].as_array().unwrap().iter().chain(meta["hooks"].as_array().unwrap()) {if item["kind"]=="code"||item["kind"]=="stock-trampoline"{let b=unhex(item["after"].as_str().unwrap());assert_eq!(f.e.peek(item["address"].as_u64().unwrap() as u32,b.len()).unwrap(),b);}}
+ assert_eq!(f.shared.borrow().missing_blocks,0);
+ save(out.join("flow.json"),&json!({"status":"passed","scope":"Targeted fixed H slots: injected occupied-pool refusal, native aliases, one NOW capture and held FREEZE; modeled input","recordings":1,"starts":1,"publications":1,"freeze_jobs":1,"public_slots":[1020,1021,1022,1023],"frozen_slot":frozen,"frames":frames,"pcm_sha256":hash(&data),"descriptor":desc,"assignments":assigned,"assignments_preserved":true,"normal_recorder_DEST":0,"occupied_control_jobs":0,"host_positive_clock_writes":false,"CPU_canaries_and_code_intact":true,"hardware":false}));
+}
+
+fn fixed_replay(out:&Path) {
+ let image=read(out.join("reset-inputs/image.bin"));let stock=read(out.join("stock-dsp.image"));let state=read(out.join("replay.state"));
+ let options:Vec<(u32,i64)>=serde_json::from_slice(&read(out.join("replay-options.json"))).unwrap();
+ let flow:Value=serde_json::from_slice(&read(out.join("flow.json"))).unwrap();let frozen=flow["frozen_slot"].as_u64().unwrap();
+ let pages=read(out.join("flow/fixed-pages.lp0"));let wire=read(out.join("flow/wire.bin"));assert_eq!(wire.len(),0xabc);
+ let mut hashes=vec![];
+ for _repeat in 0..2 {
+  let mut actual=NativeBuf::prepared(&image,&state,&options);let mut oracle=NativeBuf::prepared(&stock,&state,&options);let mut missing=NativeBuf::prepared(&stock,&state,&options);
+  actual.publish(&pages);oracle.publish(&pages);
+  assert_eq!(actual.descriptor(1020),actual.descriptor(frozen));assert_eq!(oracle.descriptor(1020),actual.descriptor(1020));
+  let mut voice=vec![];let mut audible=false;let mut missing_detected=false;
+  for i in 0..40 {
+   let mut packet=wire.clone();for off in [0x22,0x24,0x26,0x28,0x2a]{packet[off..off+2].copy_from_slice(&(if i==0&&(off==0x22||off==0x26){49u16}else{0}).to_be_bytes());}
+   for(track,slot)in [(0,1020u16),(4,1020),(5,frozen as u16)]{packet[0xe0+track*0x60..0xe2+track*0x60].copy_from_slice(&slot.to_be_bytes());}
+   let(_,pcm)=actual.frame(&packet);let(_,reference)=oracle.frame(&packet);let(_,absent)=missing.frame(&packet);
+   assert_eq!(pcm,reference,"stock DSP H124/frozen voice PCM at block {i}");audible|=pcm.chunks_exact(4).any(|x|x!=[0;4]);missing_detected|=pcm!=absent;voice.extend(pcm);
+  }
+  assert!(audible&&missing_detected,"unloaded-H124 negative control must differ");hashes.push(hash(&voice));
+ }
+ assert_eq!(hashes[0],hashes[1]);
+ save(out.join("fixed-replay.json"),&json!({"status":"passed","repeats":2,"blocks_per_repeat":40,"voice_sha256":hashes[0],"stock_DSP_with_identical_native_pages_exact":true,"unloaded_sample_negative_detected":true,"recordings":0,"scope":"Prepared callback/SEC fixture, controlled triggers and saved native LP0 pages; no independent CPU stock-file load, final-output, listening or physical timing claim"}));
+}
+
 fn flow(spec:&Value,out:&Path,repeat:bool){
  let dir=out.join(if repeat{"repeat"}else{"flow"});fs::create_dir(&dir).unwrap();let start=Instant::now();
  let input=out.join("reset-inputs");let mut eng=Engine::from_image(&read(input.join("image.bin"))).unwrap();eng.import(&read(input.join("reset.state"))).unwrap();
@@ -210,7 +429,15 @@ fn flow(spec:&Value,out:&Path,repeat:bool){
  fs::write(dir.join("prepared.state"),f.dsp.export()).unwrap();
  f.tap(12);f.tap(19);f.chord(17,20);f.chord(17,22);f.tap(22);f.tap(12);f.tap(2);f.tap(19);f.tap(20);
  f.until("normal pattern clock",|f|f.val("nb","VALID")==1,8000);f.sketch(true);f.choose_len(4);
- if spec["clock_only"]==true {clock_slice(&mut f,out);return;}
+ if spec["fixed_buf_slots"]==true {fixed_slot_slice(&mut f,out);return;}
+ if spec["clock_only"]==true {
+  if spec["navigation_fixes"]==true {if spec["track_only"]==true {track_slice(&mut f,out);}else{navigation_slice(&mut f,out);}}
+  if spec["targeted_replacement"]==true {
+   f.capture_before(1,12);f.wait(400);
+   save(out.join("flow.json"),&json!({"status":"passed","scope":"Targeted BAR then NOW replacement; earlier clock-negative coverage is separate","host_positive_clock_writes":false,"cycles":f.cycles,"assignments_preserved":true,"normal_recorder_DEST":0}));
+  }else if spec["now_only"]!=true{clock_slice(&mut f,out);}
+  if spec["performance_controls"]==true{performance_slice(&mut f,out,spec["navigation_fixes"]==true);}return;
+ }
  f.until("setup arm away from boundary",|f|f.absolute(0x43164f98)>>16==3,8000);f.chord(17,24);f.tap(12);
  f.until("pre-start cancellation",|f|f.val("nb","PHASE")==0&&f.val("nb","OWN")==0,4000);assert_eq!(f.val("nb","STARTS"),0);
  f.tap(21);f.tap(21);let w=f.symbol("w","STATE");assert_eq!(f.absolute(w+96),300);assert_eq!(f.absolute(0x405b1368+300*16+8),0);
@@ -294,4 +521,4 @@ fn replay(out:&Path){
  }
  save(out.join("replay.json"),&json!({"status":"passed","blocks_per_repeat":96,"repeats":repeat_hashes,"stock_file_voice_exact":true,"stock_file_reply_signal_exact":true,"stock_file_master_and_ring_exact":true,"wrong_frozen_source_detected":true,"retained_readers_preserved":true,"recordings":0,"scope":"Saved native pages and independent stock CPU file loads; final output uses current native semantics"}));
 }
-fn main(){let a:Vec<_>=env::args().collect();let spec:Value=serde_json::from_slice(&read(&a[1])).unwrap();let out=Path::new(spec["output"].as_str().unwrap());match a[2].as_str(){"model"=>model(out),"flow"=>flow(&spec,out,false),"repeat"=>flow(&spec,out,true),"replay"=>replay(out),_=>panic!("mode not implemented")};}
+fn main(){let a:Vec<_>=env::args().collect();let spec:Value=serde_json::from_slice(&read(&a[1])).unwrap();let out=Path::new(spec["output"].as_str().unwrap());match a[2].as_str(){"model"=>model(out),"flow"=>flow(&spec,out,false),"repeat"=>flow(&spec,out,true),"replay"=>replay(out),"fixed-replay"=>fixed_replay(out),_=>panic!("mode not implemented")};}

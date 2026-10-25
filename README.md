@@ -1,7 +1,55 @@
 # Digitakt II machine lab
 
+The current staged [SONG recording indicator](docs/SKETCH-RECORDING-LED.md) adds
+an optional display-only red SONG output during actual BUF capture. R7 remains
+the preserved baseline; stage results distinguish UART output from hardware.
+
+The current staged [Sketch performance navigation](docs/SKETCH-PERFORMANCE-NAVIGATION.md)
+shows the remembered BAR/NOW preference while stopped and adds all sixteen bare
+trig exits in the stopped-recording profile. R6's recorder cleanup is preserved;
+see this stage's validation and package notes for global FUNC+SONG coverage.
+
 This lab develops Digitakt II OS 1.16 emulator experiments. Start with the
 [feature guide](docs/FEATURES.md) and [testing guide](docs/TESTING.md).
+
+The opt-in [Sketch COPY/PASTE frontend](docs/SKETCH-COPY-PASTE.md) uses the existing
+FREEZE backend with FUNC+RECORD, then FUNC+STOP to assign the preserved take to the
+current ONESHOT track. It keeps the stock clipboard and existing build profiles
+intact. See the stage results for validation and remaining limits.
+
+The staged [pending Sketch capture implementation](docs/BUF-STARTUP-INTEGRATION.md)
+adds an opt-in startup capture/publication split over the fixed H slots. Recording
+can begin before playback-slot setup; one completed take waits for safe later
+publication. Existing R4 and the original feasibility experiment are preserved.
+See the stage results for native versus instruction-fixture evidence and gaps.
+The [review corrections](docs/BUF-STARTUP-INTEGRATION.md#engineering-review-corrections)
+fix waiting status and fixed-slot metadata, and throttle unsuccessful startup
+setup without changing the existing reservation or preserved firmware profiles.
+
+The staged [startup recording experiment](docs/BUF-STARTUP-RECORDING-EXPERIMENT.md)
+captures through the stock recorder while project samples load, retains a
+stopped take through 113 later loads, and then publishes identical PCM to H124.
+Firmware and loader guards remain exact to R4. NO cancellation remains
+unqualified; early Sketch ARM and hardware timing are not implemented or proven.
+
+The staged [fixed BUF layout](docs/BUF-FIXED-H-SLOTS.md) puts BUF 1–4 at
+H124–H127, with occupied-slot refusal and no reassignment controls. The native
+setup validates a full reservation before publication and can recognize matching
+retained empty-BUF identities. R3 remains the preserved comparison profile;
+the new build flag is `--fixed-buf-slots`.
+
+The authorized local [experimental fixed-H R4 OS and use notes](out/runs/fixed-h-experimental-02/package/README.md)
+package this exact validated build. H124–H127 must be free of ordinary samples;
+occupied rows refuse setup. Startup loading and stale REC status limits remain.
+The previous R3 image is preserved. No hardware transfer was performed.
+
+The staged [bank and track review](docs/BUF-BANK-TRACK-REVIEW.md) repairs ordinary
+sample-bank navigation through BUF backing rows and adds Sketch exits on native
+TRK plus track selection. Its opt-in `--navigation-fixes` profile builds on the
+[BAR/NOW performance controls](docs/SKETCH-PERFORMANCE-CONTROLS.md). [Experimental R3 and use notes](out/runs/buf-navigation-experimental-01/package/README.md).
+The R2 image, its sources and the original sibling checkout are preserved. Normal recorder and
+A00 defaults stay unchanged. Slot reservations and startup loading remain
+explicit design limits; no new bank, memory arena or BUF persistence is added.
 
 ## BUF performance buffers
 
@@ -33,12 +81,12 @@ and assigning prototype's evidence; they are not the product specification.
 
 ## Sketch UI prototype
 
-The user reports the clock-correction firmware now works on their device.
-The [selector and startup investigation](docs/BUF-SELECTOR-AND-STARTUP.md) traces
-the remaining loader wait and the native encoder-D list. Empty BUFs already
-select through their backing slots; four aliases before A00 are the requested
-next UI. Changing slot addresses alone does not isolate the shared allocator.
-This investigation leaves the working firmware unchanged.
+The user reports the selector experimental firmware works on their device.
+Its four aliases precede A00 in the encoder-D quick list. The earlier
+[selector and startup investigation](docs/BUF-SELECTOR-AND-STARTUP.md) retains the
+source/loader evidence; its unimplemented status describes that earlier slice.
+The startup loader wait and compact backing-slot SRC label remain. Changing
+slot addresses alone does not isolate the shared allocator.
 
 The [clock correction candidate](docs/SKETCH-CLOCK-CORRECTION.md) follows the
 user's report that startup loading clears and ARM then reaches `REF CLOCK 0`.

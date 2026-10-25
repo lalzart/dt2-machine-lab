@@ -1,4 +1,84 @@
+2026-10-24 Sketch COPY/PASTE candidate: opt-in familiar shortcuts over the unchanged
+FREEZE backend, with a volatile Sketch clipboard and native sample setter.
+PASTE targets the current ONESHOT track; repeated PASTE shares the retained take.
+76 focused checks, SINE and a native A/COPY/B/repeat-PASTE flow pass. Stock SRC
+page copy/paste reaches its original routines; one snapshot/job is issued.
+The prior profiles and all backend parts/hooks remain exact. Validation results
+and physical limitations are recorded in this stage's results and the
+[control/lifetime note](SKETCH-COPY-PASTE.md).
+
+2026-10-24 BUF engineering corrections: waiting status now says WAIT, fixed-H
+metadata includes H124–H127 independently of startup mode, and failed startup
+setup retries at most once per native sample-clock second (new ARM/batch retries
+immediately). All 154 scoped checks, fresh native startup publication and NO
+cancellation, and SINE compatibility pass. Repeated capacity-refused polls fall
+from 36,695 to 46 interpreted instructions in the prepared fixture. The original
+reviewed stage and R4 remain preserved; DSP, backend ownership and the 360,448-byte
+reservation stay unchanged. No distributable OS or hardware transfer.
+[Corrections, reproduction and remaining gaps](BUF-STARTUP-INTEGRATION.md#engineering-review-corrections).
+
+2026-10-24 pending Sketch startup capture: opt-in `--startup-capture` separates
+one retained recorder take from playback-slot setup/publication, keeping fixed
+H124–H127, NORMAL defaults, DSP/FREEZE backend and the DDR reservation unchanged.
+74 scoped checks pass. Final native early recording publishes exact PCM to H124;
+native NO cancellation discards with zero later publication. Targeted ownership
+checks include idle gaps, cancellation, project invalidation, second requests,
+selector setup deferral and stale completion. Native startup capture/cancel results and
+remaining coupled WAIT LOAD/hardware limits are documented in
+[the implementation note](BUF-STARTUP-INTEGRATION.md).
+
+2026-10-24 startup recorder experiment (OS1.16): unchanged R4 bytes support
+modeled external capture during real native project loads through the stock
+SAMPLING view. One take stops with 113 later loads still pending, survives the
+batch, then native USE reads/copies exact PCM and publishes BUF 1/H124 while
+preserving track assignments. The NO-only cancellation control remains failed
+and unqualified; no pending-transaction implementation or new OS is provided.
+[Results, screenshots, provenance and next ownership boundary](BUF-STARTUP-RECORDING-EXPERIMENT.md).
+
+2026-10-24 fixed-H R4 package (OS1.16): the user authorized local OS packaging
+after the implementation stage. Exact rebuild, protected-container sections and
+native CPU upload/backpressure checks pass for the tested MAIN/DSP. The final
+container is byte-identical to the native recording fixture. No new recordings
+or device transfer; the prior R3 package and 946 baseline files remain intact.
+[R4 package, checksum and limitations](../out/runs/fixed-h-experimental-02/package/README.md).
+
+2026-10-24 fixed H BUF implementation stage (OS1.16): public BUF 1–4 are H124–H127 in the
+`--fixed-buf-slots` profile. Occupied rows refuse without fallback; native aliases,
+one NOW publication and FREEZE preserve assignments/defaults. Original-DSP
+saved-page playback passes 40 blocks twice with an unloaded-sample control.
+The native parent run retains its failed replay-packing status; its passed flow
+is a component with exact final firmware bytes, followed by a zero-capture replay
+repair. Sixty focused checks and SINE pass. No new DSP image, reservation growth,
+reassignment menu, project/audio persistence or hardware package. See
+[fixed-layout implementation and evidence limits](BUF-FIXED-H-SLOTS.md).
+
+2026-10-24 staged BUF navigation R3 (OS1.16): fixes ordinary-bank cursor jumps
+through backing slots and preserves BUF aliases across native rebuild callbacks.
+TRK leaves Sketch before the stock controller owns track selection; foreign
+modals and SONG ownership retain precedence. Thirty-two focused checks and six
+catalogue checks pass. Native bank component reaches B127/H127 with exact final
+selector bytes; its parent run retains its later failed track-exit status. The
+final targeted native flow passes tracks 1/5/16, six page exits, one NOW take and
+track selection during capture, exact modeled PCM and preserved assignments.
+Build, SINE, upload/stream and package checks pass; DSP/BUF/FREEZE backend and
+reservation remain exact. Twelve pool reservations, startup wait, compact slot
+labels and BUF persistence limits remain. No hardware transfer or validation.
+[Review, evidence and R3 package](BUF-BANK-TRACK-REVIEW.md).
+
 # Current status
+
+2026-10-23 staged performance-controls R2: user reports the preceding BUF selector
+firmware works. Encoder F now selects START BAR (default) or NOW; six native page
+buttons leave Sketch while a valid take continues. A native completion race was
+reproduced and corrected: a full NOW take already in normalization is validated
+by its recorded count and adopted without a second STOP. Ten focused controls
+checks plus fourteen selector checks, source-frozen SINE, fresh package/upload
+checks and native BAR-then-NOW replacement pass. The native fix path executes;
+113,440 modeled stereo frames publish, all assignments and NORMAL DEST stay
+unchanged, and code/canaries hold. DSP and the 360,448-byte reservation stay exact.
+The experimental R2 package is local and has not been flashed. NOW currently
+requires playback/stable tempo; compact SRC naming and startup waiting remain.
+[Details, limits and package](SKETCH-PERFORMANCE-CONTROLS.md).
 
 2026-10-23 device follow-up: the user reports the clock-correction firmware now
 works. A source/native-panel investigation confirms empty BUF selection through

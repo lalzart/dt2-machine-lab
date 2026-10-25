@@ -30,6 +30,7 @@ FREEZE_RESULT, FREEZE_DONE = 76, 80
 ARM_COUNT, ARM_EPOCH, ARM_KIT, ARM_PROJECT, ARM_BUF, ARM_POOL = range(84, 108, 4)
 ARM_DIAG, ARM_DIAG_VALUE = 108, 112  # Snapshot the last physical ARM request.
 OP_CONTEXT = 116
+START_MODE = 0x100  # One volatile menu selection; 0=BAR, 1=NOW.
 OP_DIAG = BASE + 0x5400
 OP_DIAGNOSTICS = ("LOAD", "UNLOAD", "CLEAR")
 ARM_WAITING = 8
@@ -164,10 +165,41 @@ def bridge(at, fallback):
     return c.finish(at)
 
 
-def input_event(*, arm_enabled=False, freeze_enabled=False):
+def input_event(
+    *,
+    arm_enabled=False,
+    freeze_enabled=False,
+    performance_controls=False,
+    navigation_fixes=False,
+    startup_capture=False,
+    copy_shortcuts=False,
+):
     c = Code()
     c.emit(abi.PRESAVE + " 246f0028 266f002c 242b000c 262b0010")
     setv(c, SEEN, 1)
+    if copy_shortcuts:
+        from lab import sketch_copy as clip
+
+        c.emit("2f0b 2f0a")
+        call(c, clip.KEY, 8)
+        c.emit("4a80")
+        c.branch(6, "invalidate")
+    if startup_capture:
+        # NO can close the view before the global key bridge sees it. Latch
+        # cancellation here too, without consuming input or calling the recorder.
+        c.imm("0c82", 12)
+        c.branch(7, "pending_cancel_key")
+        c.imm("0c82", 21)
+        c.branch(6, "pending_cancel_done")
+        c.label("pending_cancel_key")
+        c.emit("2003")
+        c.imm("0280", 1)
+        c.branch(7, "pending_cancel_done")
+        nb.load(c, nb.PHASE)
+        c.emit("4a80")
+        c.branch(7, "pending_cancel_done")
+        nb.setv(c, nb.CANCEL, 1)
+        c.label("pending_cancel_done")
     # Context is latched at press. Never infer destination from the track.
     load(c, OWN)
     c.imm("0c80", 1)
@@ -212,11 +244,21 @@ def input_event(*, arm_enabled=False, freeze_enabled=False):
     c.branch(7, "back")
     c.imm("0c82", 50)
     c.branch(7, "sampling")
+    if performance_controls:
+        for key in range(1, 7):  # Authenticated native TRIG/SRC/FLTR/AMP/FX/MOD IDs.
+            c.imm("0c82", key)
+            c.branch(7, "page_exit")
     for key in (10, 11, 14):
         c.imm("0c82", key)
         c.branch(7, "page_key")
     # STOP and all performance/cancellation keys continue through controller.
     c.branch(0, "no")
+    if performance_controls:
+        c.label("page_exit")
+        c.emit("2003")
+        c.imm("0280", 9)
+        c.imm("0c80", 1)
+        c.branch(6, "no")
     c.label("sampling")
     c.emit("2f0a")
     call(c, 0x4011AEEA, 4)
@@ -444,11 +486,11 @@ def dispose():
     return c.finish(DISPOSE)
 
 
-def rotation():
+def rotation(*, performance_controls=False):
     c = Code()
     c.emit(abi.PRESAVE + " 246f0028 266f002c")
     # Predicate + original scaler preserve native acceleration/filtering.
-    for i in range(5):
+    for i in range(6 if performance_controls else 5):
         c.imm("4879", i)
         c.emit("2f0b")
         call(c, 0x40111732, 8)
@@ -456,7 +498,7 @@ def rotation():
         c.emit("4a80")
         c.branch(6, f"encoder{i}")
     c.branch(0, "done")
-    for i in range(5):
+    for i in range(6 if performance_controls else 5):
         c.label(f"encoder{i}")
         c.imm("4879", 0x44D2E61C)
         c.emit("2f0b 41ea0050 2f08")
@@ -472,6 +514,19 @@ def rotation():
             c.emit("d082")
             clamp(c, 1, 4, "buf")
             store(c, BUF)
+        elif i == 5:
+            nb.load(c, nb.PHASE)
+            c.emit("4a80")
+            c.branch(6, "done")
+            call(c, 0x4019988A)
+            c.emit("2f00")
+            call(c, 0x40015F6C, 4)
+            c.emit("4a80")
+            c.branch(6, "done")
+            load(c, START_MODE)
+            c.emit("d082")
+            clamp(c, 0, 1, "start_mode")
+            store(c, START_MODE)
         else:
             # Keep the recorder's existing edit gate; active capture owns settings.
             call(c, 0x4019988A)
@@ -533,9 +588,44 @@ def ready():
     return c.finish(READY)
 
 
-def route(prefix):
+def route(prefix, *, navigation_fixes=False, copy_shortcuts=False, trig_exits=False):
     c = Code()
     c.emit(abi.PRESAVE)
+    if navigation_fixes:
+        # The native controller's registered track listener runs before view
+        # input. Close only its actual top Sketch view, before routing starts.
+        load(c, OWN)
+        c.emit("4a80")
+        c.branch(6, "route_stock")
+        c.emit("246f0028 266f002c 202b000c")
+        c.imm("0c80", 16)  # Leave as native TRK selection starts.
+        if trig_exits:
+            c.branch(7, "exit_press")
+            c.imm("0680", -25)
+            c.imm("0c80", 15)
+            c.branch(2, "route_stock")  # Unsigned range: trig IDs 25..40.
+            c.label("exit_press")
+        else:
+            c.branch(6, "route_stock")
+        c.emit("202b0010")
+        c.imm("0280", 9)
+        c.imm("0c80", 1)
+        c.branch(6, "route_stock")
+        load(c, VIEW, 1)
+        c.emit("4a81")
+        c.branch(7, "route_stock")
+        # Authenticated OS1.16 ViewController reverse-list walk: sentinel+0x14,
+        # previous node at +4, shared_ptr<View>::pointer at node+8.
+        c.emit("41ea0014 22680004 2009 2208 b081")
+        c.branch(7, "route_stock")
+        c.emit("20290008")
+        load(c, VIEW, 1)
+        c.emit("b081")
+        c.branch(6, "route_stock")
+        load(c, VIEW)
+        c.emit("2f00")
+        call(c, 0x4011AEEA, 4)
+        c.label("route_stock")
     setv(c, SEEN, 0)
     c.emit("2f2f002c 2f2f002c")
     call(c, ROUTE_STOCK, 8)
@@ -561,8 +651,23 @@ def route(prefix):
     c.branch(0, "done")
     c.label("foreign_func")
     c.imm("0c80", 17)
-    c.branch(6, "done")
+    c.branch(6, "foreign_copy" if copy_shortcuts else "done")
     setv(c, FUNC_OWN, 0)
+    if copy_shortcuts:
+        from lab import sketch_copy as clip
+
+        c.label("foreign_copy")
+        c.emit("2028000c")
+        for key_id, bit in ((19, 1), (21, 2)):
+            c.imm("0c80", key_id)
+            c.branch(7, f"foreign_copy{bit}")
+        c.branch(0, "done")
+        for bit in (1, 2):
+            c.label(f"foreign_copy{bit}")
+            clip.load(c, clip.OWN)
+            c.imm("0280", ~bit)
+            clip.store(c, clip.OWN)
+            c.branch(0, "done")
     c.label("done")
     c.emit("2002 " + abi.RESTORE + " 4e75")
     trampoline = (
@@ -571,7 +676,7 @@ def route(prefix):
     return c.finish(ROUTE), trampoline
 
 
-def update(*, arm_enabled=False):
+def update(*, arm_enabled=False, copy_shortcuts=False):
     """Native View update callback, throttled status refresh without jobs.
 
     Invalidating inside draw is cleared by ViewController after that draw.
@@ -591,6 +696,10 @@ def update(*, arm_enabled=False):
     load(c, UPDATES)
     c.emit("5280")
     store(c, UPDATES)
+    if copy_shortcuts:
+        from lab import sketch_copy as clip
+
+        call(c, clip.FEEDBACK)
     if arm_enabled:
         call(c, ARM_FEEDBACK)
     call(c, FREEZE_FEEDBACK)
@@ -601,14 +710,38 @@ def update(*, arm_enabled=False):
     return c.finish(UPDATE)
 
 
-def submit_arm(*, diagnostics=False, clock_fix=False, operation_diagnostics=False):
+def submit_arm(
+    *,
+    diagnostics=False,
+    clock_fix=False,
+    operation_diagnostics=False,
+    performance_controls=False,
+    stopped_recording=False,
+):
     """Native GUI action; request the latched BUF without forging panel input."""
     c = Code()
+    if stopped_recording:
+        from lab import buf_stopped as free
+
+        load(c, START_MODE)
+        c.emit("2f00")
     load(c, LATCH)
     c.emit("2f00")
     call(c, 0x4019988A)
     c.emit("2f00")
+    if stopped_recording:
+        call(c, free.DISPATCH, 12)
+        c.branch(0, "armed_result")
+    if performance_controls:
+        load(c, START_MODE)
+        c.imm("0c80", 1)
+        c.branch(6, "bar_arm")
+        call(c, nb.ARM_NOW, 8)
+        c.branch(0, "armed_result")
+        c.label("bar_arm")
     call(c, nb.ARM_ONLY, 8)
+    if performance_controls:
+        c.label("armed_result")
     store(c, ARM_RESULT)
     if diagnostics:
         for source, target in (
@@ -748,7 +881,7 @@ def freeze_feedback():
     return c.finish(FREEZE_FEEDBACK)
 
 
-def arm_feedback():
+def arm_feedback(*, startup_capture=False):
     """Read-only lifecycle feedback for the last admitted Sketch ARM.
 
     A newer action owns its own message. Never infer completion from an old
@@ -769,11 +902,19 @@ def arm_feedback():
         (nb.STATE + nb.DEST, ARM_BUF),
         (worker.STATE + 68, ARM_POOL),
     ):
-        c.imm("2039", actual)
+        if startup_capture and field == ARM_POOL:
+            from lab import buf_startup as pending
+
+            call(c, pending.POOL_GET)
+        else:
+            c.imm("2039", actual)
         load(c, field, 1)
         c.emit("b081")
         c.branch(6, "stale")
     c.imm("2039", nb.STATE + nb.PHASE)
+    if startup_capture:
+        c.imm("0c80", 6)
+        c.branch(7, f"action{ARM_LOADING}")
     for phase, action in enumerate(
         (ARM_WAITING, ARM_RECORDING, ARM_PROCESSING, ARM_LOADING, ARM_CANCELLING), 1
     ):
@@ -834,12 +975,23 @@ def draw(
     arm_diagnostics=False,
     clock_fix=False,
     operation_diagnostics=False,
+    performance_controls=False,
+    fixed_buf_slots=False,
+    startup_capture=False,
+    copy_table=None,
+    stopped_recording=False,
 ):
     c = Code()
     c.emit("4fefffa0 48d77cfc 246f0064 266f0068")
+    if stopped_recording:
+        from lab import buf_stopped as free
     load(c, DRAWS)
     c.emit("5280")
     store(c, DRAWS)
+    if copy_table is not None:
+        from lab import sketch_copy as clip
+
+        call(c, clip.FEEDBACK)
     if arm_enabled:
         call(c, ARM_FEEDBACK)
 
@@ -873,7 +1025,21 @@ def draw(
     load(c, PAGE)
     c.emit("4a80")
     c.branch(6, "takes")
-    fmt("title", ["2f39" + f"{STATE + BUF:08x}"])
+    if performance_controls:
+        # F displays the remembered preference even when stopped capture
+        # starts immediately. The stopped hint explains that override.
+        load(c, START_MODE)
+        c.imm("0c80", 1)
+        c.branch(7, "title_now")
+        c.imm("243c", strings["start_bar"])
+        c.branch(0, "title_mode")
+        c.label("title_now")
+        c.imm("243c", strings["start_now"])
+        c.label("title_mode")
+    fmt(
+        "title",
+        ["2f39" + f"{STATE + BUF:08x}"] + (["2f02"] if performance_controls else []),
+    )
     text(56)
     # Native source/category and channel labels; getters take live wrapper.
     c.emit("2f2a014c")
@@ -904,7 +1070,17 @@ def draw(
     table(TEXTS + 44, 5)
     c.emit("2400")
     c.imm("2039", nb.STATE + nb.PHASE)
+    if startup_capture:
+        from lab import buf_startup as pending
+
+        c.imm("0c80", pending.WAIT_LOAD)
+        c.branch(6, "ordinary_buf_status")
+        c.imm("203c", strings["wait_load"])
+        c.branch(0, "buf_status_ready")
+        c.label("ordinary_buf_status")
     table(TEXTS + 64, 6)
+    if startup_capture:
+        c.label("buf_status_ready")
     c.emit("2600")
     fmt("status", ["2f02", "2f03"])
     text(32)
@@ -922,6 +1098,32 @@ def draw(
             c.emit(reg)
         fmt("pair", [i, "2f02", i + 1, "2f03"])
         text(y)
+    if fixed_buf_slots:
+        from lab import buf_fixed_slots as fixed
+
+        c.imm("2039", worker.STATE + 64)
+        c.emit("4a80")
+        c.branch(6, "fixed_feedback_done")
+        c.imm("2039", fixed.STATE + fixed.STATUS)
+        for status, name in (
+            (fixed.CONFLICT, "fixed_conflict"),
+            (fixed.CAPACITY, "fixed_capacity"),
+            (fixed.PROJECT, "fixed_project"),
+        ):
+            c.imm("0c80", status)
+            c.branch(7, name)
+        c.branch(0, "fixed_feedback_done")
+        c.label("fixed_conflict")
+        c.imm("2039", fixed.STATE + fixed.SLOT)
+        c.imm("0280", 127)
+        fmt("fixed_conflict", ["2f00"])
+        text(9)
+        c.branch(0, "navigation")
+        for name in ("fixed_capacity", "fixed_project"):
+            c.label(name)
+            text(9, strings[name])
+            c.branch(0, "navigation")
+        c.label("fixed_feedback_done")
     load(c, ACTION)
     if clock_fix:
         c.emit("4a80")
@@ -938,6 +1140,16 @@ def draw(
             c.branch(7, "arm_diagnostic")
         c.label("normal_feedback")
     load(c, LATCH, 2)
+    if copy_table is not None:
+        c.imm("0c80", clip.QUEUED)
+        c.branch(5, "ordinary_action")
+        c.imm("0c80", clip.PASTE_STALE)
+        c.branch(2, "ordinary_action")
+        clip.load(c, clip.TARGET, 2)
+        c.imm("0680", -clip.QUEUED)
+        table(copy_table, len(clip.LABELS))
+        c.branch(0, "format_feedback")
+        c.label("ordinary_action")
     c.imm("0c80", ARM_WAITING)
     c.branch(7, "arm_target")
     c.imm("0c80", ARM_RECORDING)
@@ -948,6 +1160,19 @@ def draw(
     load(c, ARM_BUF, 2)
     c.label("feedback_label")
     table(TEXTS + 88, 29)
+    if stopped_recording:
+        c.emit("2600")
+        call(c, free.IS_STOPPED)
+        c.emit("4a80")
+        c.branch(7, "hint_ready")
+        load(c, ACTION, 1)
+        c.emit("4a81")
+        c.branch(6, "hint_ready")
+        c.imm("263c", strings["hint_stopped"])
+        c.label("hint_ready")
+        c.emit("2003")
+    if copy_table is not None:
+        c.label("format_feedback")
     c.emit("2f02 2f00")
     c.imm("4879", LINE)
     call(c, PRINT, 12)
@@ -1034,6 +1259,12 @@ def payload(
     arm_diagnostics=False,
     clock_fix=False,
     operation_diagnostics=False,
+    performance_controls=False,
+    navigation_fixes=False,
+    fixed_buf_slots=False,
+    startup_capture=False,
+    copy_shortcuts=False,
+    stopped_recording=False,
 ):
     """All feature behavior is emitted ColdFire; installation only is Python."""
     require(
@@ -1042,6 +1273,26 @@ def payload(
     )
     strings, data, cursor = {}, {}, STRINGS
     labels = dict(LABELS)
+    if copy_shortcuts:
+        from lab import sketch_copy as clip
+
+        require(freeze_enabled, "Sketch COPY requires the real FREEZE backend")
+        labels.update(clip.LABELS)
+        labels["nav"] = "YES:TAKES F+REC:COPY"
+    if stopped_recording:
+        labels["hint_stopped"] = "STOPPED:F+SONG NOW"
+    if startup_capture:
+        labels["arm_loading"] = "BUF %u: WAIT LOAD"
+        labels["wait_load"] = "WAIT"
+    if fixed_buf_slots:
+        require(clock_fix, "Fixed BUF feedback requires the clock profile")
+        labels.update(
+            fixed_conflict="BUF: H%03u IN USE",
+            fixed_capacity="BUF: NEED 8 FREE",
+            fixed_project="BUF: POOL CHANGED",
+        )
+    if performance_controls:
+        labels.update(title="A:BUF %u F:START %s", start_bar="BAR", start_now="NOW")
     if arm_diagnostics:
         require(arm_enabled, "ARM diagnostics require real ARM")
         for index, (name, result) in enumerate(nb.ARM_DIAGNOSTICS, 1):
@@ -1120,6 +1371,10 @@ def payload(
                 + (len(OP_DIAGNOSTICS) if operation_diagnostics else 0),
             )
         ]
+    copy_table = None
+    if copy_shortcuts:
+        copy_table = TEXTS + 4 * len(words)
+        words += [strings[name] for name in clip.LABELS]
     data[TEXTS] = struct.pack(">" + "I" * len(words), *words)
     vt = bytearray(main[0x4021DB18 - 0x40000400 : 0x4021DB64 - 0x40000400])
     for offset, target in ((0, DTOR), (8, VIEW_KEY), (16, DRAW), (0x2C, UPDATE)):
@@ -1139,42 +1394,61 @@ def payload(
     # Route prefix is a complete LEA+MOVEM pair in the authenticated image.
     prefix = main[ROUTE_SITE - 0x40000400 : ROUTE_SITE - 0x40000400 + 8]
     require(prefix == bytes.fromhex("4fefffa048d77cfc"), "Sketch route prologue drift")
-    r, rs = route(prefix)
+    r, rs = route(
+        prefix, navigation_fixes=navigation_fixes, copy_shortcuts=copy_shortcuts,
+        trig_exits=stopped_recording,
+    )
     data.update(
         {
-            INPUT: input_event(arm_enabled=arm_enabled, freeze_enabled=freeze_enabled),
+            INPUT: input_event(
+                arm_enabled=arm_enabled,
+                freeze_enabled=freeze_enabled,
+                performance_controls=performance_controls,
+                navigation_fixes=navigation_fixes,
+                startup_capture=startup_capture,
+                copy_shortcuts=copy_shortcuts,
+            ),
             KEY: bridge(KEY, perf.KEY),
             MAIN_KEY: bridge(MAIN_KEY, MAIN_KEY + 0x80),
             VIEW_KEY: bridge(VIEW_KEY, 0x4011ACFC),
             OPEN: open_view(),
             DISPOSE: dispose(),
             DTOR: destructor(),
-            ROTATE: rotation(),
+            ROTATE: rotation(performance_controls=performance_controls),
             DRAW: draw(
                 strings,
                 arm_enabled=arm_enabled,
                 arm_diagnostics=arm_diagnostics,
                 clock_fix=clock_fix,
                 operation_diagnostics=operation_diagnostics,
+                performance_controls=performance_controls,
+                fixed_buf_slots=fixed_buf_slots,
+                startup_capture=startup_capture,
+                copy_table=copy_table,
+                stopped_recording=stopped_recording,
             ),
             ROUTE: r,
             ROUTE_STOCK: rs,
             READY: ready(),
-            UPDATE: update(arm_enabled=arm_enabled),
+            UPDATE: update(arm_enabled=arm_enabled, copy_shortcuts=copy_shortcuts),
             ARM_SUBMIT: submit_arm(
                 diagnostics=arm_diagnostics,
                 clock_fix=clock_fix,
                 operation_diagnostics=operation_diagnostics,
+                performance_controls=performance_controls,
+                stopped_recording=stopped_recording,
             ),
             FREEZE_SUBMIT: submit_freeze(),
             FREEZE_FEEDBACK: freeze_feedback(),
-            ARM_FEEDBACK: arm_feedback(),
+            ARM_FEEDBACK: arm_feedback(startup_capture=startup_capture),
             CLEAR: clear_canvas(),
             MAIN_KEY + 0x80: MAIN_BYTES
             + bytes.fromhex("4ef9")
             + struct.pack(">I", MAIN_SITE + 8),
         }
     )
+    if copy_shortcuts:
+        data.update(clip.payload())
     if operation_diagnostics:
         data[OP_DIAG] = operation_diagnosis()
     ordered = sorted(data.items())

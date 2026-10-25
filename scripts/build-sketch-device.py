@@ -31,6 +31,43 @@ p.add_argument(
     action="store_true",
     help="trace the sample operation behind BUSY; requires --arm-diagnostics, separate from --clock-fix",
 )
+p.add_argument(
+    "--buf-selector", action="store_true", help="opt-in BUF 1-4 quick sample rows"
+)
+p.add_argument(
+    "--performance-controls",
+    action="store_true",
+    help="Sketch BAR/NOW and page-button exits; requires --clock-fix",
+)
+p.add_argument(
+    "--navigation-fixes",
+    action="store_true",
+    help="preserve ordinary backing rows and exit Sketch on TRK+trig",
+)
+p.add_argument(
+    "--fixed-buf-slots",
+    action="store_true",
+    help="fix BUF 1-4 to H124-H127; requires --navigation-fixes",
+)
+p.add_argument(
+    "--startup-capture",
+    action="store_true",
+    help="capture early and defer publication until project loading completes",
+)
+p.add_argument(
+    "--copy-shortcuts",
+    action="store_true",
+    help="Sketch FUNC+REC COPY and FUNC+STOP PASTE using the existing snapshot worker",
+)
+p.add_argument(
+    "--stopped-recording",
+    action="store_true",
+    help="FUNC+SONG free capture and finish while stopped",
+)
+p.add_argument(
+    "--recording-led", action="store_true",
+    help="SONG red during actual BUF capture; requires --stopped-recording",
+)
 a = p.parse_args()
 out = a.output.resolve()
 require(out.is_relative_to(ROOT / "out/runs"), "Use a fresh ignored run")
@@ -54,6 +91,14 @@ try:
         arm_diagnostics=a.arm_diagnostics,
         clock_fix=a.clock_fix,
         operation_diagnostics=a.operation_diagnostics,
+        buf_selector=a.buf_selector,
+        performance_controls=a.performance_controls,
+        navigation_fixes=a.navigation_fixes,
+        fixed_buf_slots=a.fixed_buf_slots,
+        startup_capture=a.startup_capture,
+        copy_shortcuts=a.copy_shortcuts,
+        stopped_recording=a.stopped_recording,
+        recording_led=a.recording_led,
     )
     require(
         build(
@@ -61,6 +106,14 @@ try:
             arm_diagnostics=a.arm_diagnostics,
             clock_fix=a.clock_fix,
             operation_diagnostics=a.operation_diagnostics,
+            buf_selector=a.buf_selector,
+            performance_controls=a.performance_controls,
+            navigation_fixes=a.navigation_fixes,
+            fixed_buf_slots=a.fixed_buf_slots,
+            startup_capture=a.startup_capture,
+            copy_shortcuts=a.copy_shortcuts,
+            stopped_recording=a.stopped_recording,
+            recording_led=a.recording_led,
         )
         == (image, meta),
         "Sketch build repeat differs",
