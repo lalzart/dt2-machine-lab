@@ -19,7 +19,11 @@ class UnitSuiteTests(unittest.TestCase):
         flex = set(unit.select_modules(catalog, ["flex"]))
         shared = set(unit.select_modules(catalog, ["recorder"]))
         self.assertEqual(buf & flex, shared)
-        self.assertIn("test_buf_next_bar", buf)
+        self.assertIn("test_sketch_controls", buf)
+        full = set(unit.select_modules(catalog, ["buf-full"]))
+        self.assertIn("test_buf_next_bar", full)
+        self.assertNotIn("test_buf_next_bar", buf)
+        self.assertEqual(full, buf | set(unit.select_modules(catalog, ["buf-native"])))
         self.assertIn("test_flex_bank", flex)
         self.assertNotIn("test_flex_bank", buf)
         self.assertNotIn("test_buf_next_bar", flex)
@@ -64,7 +68,7 @@ class UnitSuiteTests(unittest.TestCase):
         ):
             self.assertEqual(unit.run(["buf"], list_only=True), 0)
         load.assert_not_called()
-        self.assertIn("tests/test_buf_next_bar.py", output.getvalue())
+        self.assertIn("tests/test_sketch_controls.py", output.getvalue())
         self.assertNotIn("test_capicola", output.getvalue())
 
     def test_unit_cli_defaults_to_buf_without_private_fixture_preflight(self):

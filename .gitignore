@@ -1,5 +1,5 @@
-.deps/
-.local/
+.deps
+.local
 .venv/
 out/
 __pycache__/
@@ -18,3 +18,14 @@ __pycache__/
 *.dtfr
 *.f32
 *.wav
+*.pcm
+*.frame
+*.img
+*.sqlite
+*.elf
+*.o
+*.a
+*.so
+*.dylib
+*.i16
+!machines/capicola-reddit/upstream/test/tone.i16

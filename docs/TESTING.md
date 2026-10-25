@@ -13,41 +13,57 @@ integration tests require the private fixture. Skips are reported by unittest.
 ./labctl unit buf flex        # both features; shared modules execute once
 ./labctl unit core            # shared tooling or test-runner changes
 ./labctl unit buf-models      # earlier host models/restricted reuse proof
+./labctl unit buf-full        # current plus earlier Unicorn BUF fixtures
 ./labctl unit all             # explicit whole-repository regression
 ```
 
 BUF and Flex mean different features; see [their source guide](FEATURES.md).
-The routine BUF selection excludes the Capicola, Arp, Flex save/bank, older BUF
-model and cross-feature suites. Counts below describe this cleanup snapshot;
-new tests can increase them.
+The routine BUF selection excludes Capicola, Arp, Flex save/bank, earlier BUF
+models and cross-feature suites. `tests/suites.json` is the current catalogue;
+historical test totals are not a stable API. Use `--list` to see the current
+selection instead of maintaining another hard-coded count table.
 
-| Suite | Tests | Scope |
-| --- | ---: | --- |
-| `buf` (default) | 115 | Current native BUF and shared recorder |
-| `flex` | 93 | Existing native Flex and shared recorder |
-| `buf-native` | 99 | Native capture, next-bar/publication, FREEZE and generation lifetime |
-| `recorder` | 16 | Input/takes, sample heap, pattern clock and sector overlay |
-| `buf-models` | 46 | Earlier modeled BUF policies and restricted reuse proof |
-| `flex-native` | 77 | Flex source lifecycle, save/discard and banks |
-| `capicola` | 57 | Capicola engine, memory, layouts and quality experiments |
-| `arp` | 62 | Native arp controls, clocks and persistence |
-| `integration` | 30 | Cross-feature builders, any-track behavior, shared save/resources |
-| `core` | 52 | Test selection, fixture integrity, tooling and diagnostics |
-| `all` | 439 | Every unit test, each ID once |
+| Suite | Scope |
+| --- | --- |
+| `buf` (default) | Accepted Sketch/BUF workflow plus shared recorder checks. |
+| `sketch` | Current selector, controls, startup, stopped capture, COPY/PASTE, LED and placement fixtures. |
+| `buf-full` | Current Sketch plus the earlier Unicorn BUF/retirement fixtures and shared recorder. |
+| `flex` | Legacy native Flex plus shared recorder checks. |
+| `buf-native` | Earlier Unicorn BUF instruction and retirement fixtures, retained explicitly. |
+| `recorder` | Shared input/takes, heap, pattern clock and sector overlay. |
+| `buf-models` | Earlier host models and restricted DSP-reuse proofs. |
+| `flex-native` | Legacy Flex lifecycle, save/discard and banks. |
+| `capicola`, `arp` | Their feature-specific engines, controls and persistence. |
+| `integration` | Cross-feature composition, any-track behavior, shared save/resources. |
+| `core` | Test selection, integrity, tooling and diagnostics. |
+| `all` | Explicit whole-repository regression, each test ID once. |
 
-Profiles overlap through `recorder`; their counts should not be added directly.
-The original 428 cases are preserved. Six checks cover suite boundaries,
-catalogue completeness, selection deduplication, listing, CLI dispatch and
-failure propagation. Four subsequent BUF alignment cases cover empty destination,
-performance edits, length refusal and assignment-free publication; one recorder
-case distinguishes the explicit SSI sample clock from the legacy input default.
-Cases were not merged into large catch-all assertions to
-make the count smaller.
+Native instruction cases require an explicitly built Rust ColdFire bridge, e.g.:
+
+```sh
+DT2_BUF_SELECTOR_CORE=/absolute/path/to/libcfselector.dylib ./labctl unit buf core
+```
+
+`lab/native/buf_selector_core.rs` and `scripts/check-buf-selector.py` own that
+bridge at the pinned native upstream. It is a generated local library, not a
+committed fixture. Other prepared cases use the configured patched Unicorn and
+private inputs. Check reported skips; a skipped native case is not coverage.
+See [the R8 guide](SKETCH-BUF-CHECKPOINT.md) for the exact build and integration
+probe boundary. Profiles overlap through `recorder` and deduplicate modules.
+
+The 2026-10-25 cleanup reproduced a host SIGILL at the first Unicorn `mem_map`
+even in the preserved R8 source, before firmware execution. That old host runtime
+is not repaired by this cleanup. The default `buf` profile now selects the
+accepted Rust-bridge Sketch workflow and shared recorder models. The former
+broader selection remains available as `buf-full`; no test cases are deleted
+or instruction assertions weakened. `all` still includes those explicit cases.
+Legacy retirement/Unicorn coverage is not claimed by a passing routine BUF run.
 
 ## Which checks to run
 
-- For native BUF work, run `./labctl unit buf`. For a narrow next-bar iteration,
-  the existing focused invocation remains available:
+- For accepted Sketch/BUF work, run `./labctl unit buf`; a narrow timing-control
+  iteration can select `test_sketch_controls.py`. The older next-bar invocation
+  remains explicit and needs a working host Unicorn runtime:
   `"$LAB_PYTHON" -B -m unittest discover -s tests -p test_buf_next_bar.py -v`
   with `LAB_PYTHON` set to the configured interpreter.
 - For existing Flex work, run `./labctl unit flex`.
@@ -75,9 +91,12 @@ and duplicate case IDs. A test import error produces a failing run.
 
 Add a new module to its owning group. Test files retain their paths, so ordinary
 `python -B -m unittest discover -s tests -v` remains compatible when explicitly
-needed. Current BUF native fixtures live in `tests/buf_native_support.py`; it
-contains helpers without test cases. BUF suites do not import other test suites
-to borrow their setup.
+needed. Earlier native fixtures live in `tests/buf_native_support.py`, which
+contains helpers without test cases. Current Sketch cases also reuse setup from
+the earlier Sketch/next-bar modules with an explicit Rust Core substitution;
+those helper imports do not add their test cases to the selected suite. Keep
+the instruction backend explicit and inspect skips rather than falling back
+silently to a different emulator.
 
 Historical result documents retain their original repository-wide counts and
 commands as evidence of those runs. They are not the current routine test policy.

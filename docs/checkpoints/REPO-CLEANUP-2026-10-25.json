@@ -1,0 +1,46 @@
+{
+  "status": "organization-validated-byte-exact-R8",
+  "date": "2026-10-25",
+  "unit": {
+    "tests_run": 167,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "modules": [
+      "test_buf_selector",
+      "test_buf_navigation",
+      "test_buf_fixed_slots",
+      "test_sketch_controls",
+      "test_sketch_copy",
+      "test_sketch_device",
+      "test_buf_startup",
+      "test_buf_stopped",
+      "test_sketch_led",
+      "test_flex_recorder",
+      "test_flex_heap",
+      "test_pattern_clock",
+      "test_recorder_overlay",
+      "test_unit_suites",
+      "test_harness",
+      "test_coldfire",
+      "test_cpu_extension",
+      "test_diagnostics",
+      "test_dsp_boot_staging",
+      "test_resource_workloads",
+      "test_type7a_matrix",
+      "test_type7a_runtime"
+    ]
+  },
+  "suites": [
+    "buf",
+    "core"
+  ],
+  "MAIN_sha256": "2c8ef46712e30d92afdab1562c3682ead425dcc5a583af64a41bd45320223c18",
+  "DSP_sha256": "2ede0c37df1374f19c0d88c3130c2db2d1fc42ba7a98bd9e52a96d0dd13eb53a",
+  "firmware_behavior_changed": false,
+  "old_test_modules_deleted": 0,
+  "legacy_limit": "Earlier Unicorn first-map SIGILL reproduced in preserved R8; full legacy fixture selection remains explicit as buf-full, not claimed passing.",
+  "guard_fix": "Copied Type7a runtime refuses resolved .deps targets and aliases before patch; negative tests cannot invoke a pinned patch.",
+  "prior_work": "Older machine sources checkpointed separately without new hardware or broad-suite validation claims.",
+  "private_artifacts": "OS packages, card images, native libraries, prepared fixtures and captures remain local; complete licensed Capicola upstream source includes its hash-pinned input test tone."
+}

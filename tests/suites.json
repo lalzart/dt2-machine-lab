@@ -1,15 +1,23 @@
 {
   "groups": {
-    "buf-native": {
-      "description": "Native BUF capture, automatic USE, FREEZE and generation lifetime",
+    "sketch": {
+      "description": "Accepted Sketch/BUF workflow with explicit Rust ColdFire instruction fixtures",
       "modules": [
         "test_buf_selector",
         "test_buf_navigation",
         "test_buf_fixed_slots",
-        "test_sketch",
         "test_sketch_controls",
         "test_sketch_copy",
         "test_sketch_device",
+        "test_buf_startup",
+        "test_buf_stopped",
+        "test_sketch_led"
+      ]
+    },
+    "buf-native": {
+      "description": "Earlier Unicorn BUF instruction fixtures and retirement checks; explicit full profile",
+      "modules": [
+        "test_sketch",
         "test_buf_freeze",
         "test_buf_next_bar",
         "test_buf_performance",
@@ -21,10 +29,7 @@
         "test_recorder_native_retirement",
         "test_recorder_retirement",
         "test_recorder_ack",
-        "test_recorder_ack_loop",
-        "test_buf_startup",
-        "test_buf_stopped",
-        "test_sketch_led"
+        "test_recorder_ack_loop"
       ]
     },
     "recorder": {
@@ -120,9 +125,9 @@
   },
   "profiles": {
     "buf": {
-      "description": "Routine BUF work: native BUF plus shared recorder checks (default)",
+      "description": "Routine accepted Sketch/BUF workflow plus shared recorder checks (default)",
       "groups": [
-        "buf-native",
+        "sketch",
         "recorder"
       ]
     },
@@ -130,6 +135,14 @@
       "description": "Existing Flex work: native Flex plus shared recorder checks",
       "groups": [
         "flex-native",
+        "recorder"
+      ]
+    },
+    "buf-full": {
+      "description": "Current Sketch plus earlier Unicorn BUF/retirement fixtures; requires a working host Unicorn JIT",
+      "groups": [
+        "sketch",
+        "buf-native",
         "recorder"
       ]
     }

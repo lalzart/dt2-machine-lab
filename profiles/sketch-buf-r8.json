@@ -1,0 +1,26 @@
+{
+  "name": "sketch-buf-r8",
+  "firmware": "Digitakt II OS1.16",
+  "build_flags": [
+    "arm-diagnostics",
+    "clock-fix",
+    "buf-selector",
+    "performance-controls",
+    "navigation-fixes",
+    "fixed-buf-slots",
+    "startup-capture",
+    "copy-shortcuts",
+    "stopped-recording",
+    "recording-led"
+  ],
+  "MAIN_sha256": "2c8ef46712e30d92afdab1562c3682ead425dcc5a583af64a41bd45320223c18",
+  "DSP_sha256": "2ede0c37df1374f19c0d88c3130c2db2d1fc42ba7a98bd9e52a96d0dd13eb53a",
+  "SYX_sha256": "3de77c6ea2c5148b51c6cd823d0f72235e4c79cf83990c1d09f5ba9da229de1a",
+  "reservation_bytes": 360448,
+  "BUF_public_slots": [
+    1020,
+    1021,
+    1022,
+    1023
+  ]
+}

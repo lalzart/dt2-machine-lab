@@ -1,316 +1,101 @@
 # Digitakt II machine lab
 
-The current staged [SONG recording indicator](docs/SKETCH-RECORDING-LED.md) adds
-an optional display-only red SONG output during actual BUF capture. R7 remains
-the preserved baseline; stage results distinguish UART output from hardware.
+The current checkpoint is **Sketch/BUF R8 for Digitakt II OS1.16**: four live
+performance buffers, next-bar or immediate capture, automatic publication,
+stopped recording, snapshot COPY/PASTE and a red SONG recording indicator.
+The user reports this experimental build works on their device. That report
+is separate from emulator tests and is not exhaustive hardware qualification.
 
-The current staged [Sketch performance navigation](docs/SKETCH-PERFORMANCE-NAVIGATION.md)
-shows the remembered BAR/NOW preference while stopped and adds all sixteen bare
-trig exits in the stopped-recording profile. R6's recorder cleanup is preserved;
-see this stage's validation and package notes for global FUNC+SONG coverage.
+Start with [the working controls, architecture and limits](docs/SKETCH-BUF-CHECKPOINT.md).
+The accepted build recipe and binary hashes live in
+[profiles/sketch-buf-r8.json](profiles/sketch-buf-r8.json). Source and documents
+are committed; firmware images, captures, local dependencies and private inputs
+remain ignored. No device operation runs automatically.
 
-This lab develops Digitakt II OS 1.16 emulator experiments. Start with the
-[feature guide](docs/FEATURES.md) and [testing guide](docs/TESTING.md).
-
-The opt-in [Sketch COPY/PASTE frontend](docs/SKETCH-COPY-PASTE.md) uses the existing
-FREEZE backend with FUNC+RECORD, then FUNC+STOP to assign the preserved take to the
-current ONESHOT track. It keeps the stock clipboard and existing build profiles
-intact. See the stage results for validation and remaining limits.
-
-The staged [pending Sketch capture implementation](docs/BUF-STARTUP-INTEGRATION.md)
-adds an opt-in startup capture/publication split over the fixed H slots. Recording
-can begin before playback-slot setup; one completed take waits for safe later
-publication. Existing R4 and the original feasibility experiment are preserved.
-See the stage results for native versus instruction-fixture evidence and gaps.
-The [review corrections](docs/BUF-STARTUP-INTEGRATION.md#engineering-review-corrections)
-fix waiting status and fixed-slot metadata, and throttle unsuccessful startup
-setup without changing the existing reservation or preserved firmware profiles.
-
-The staged [startup recording experiment](docs/BUF-STARTUP-RECORDING-EXPERIMENT.md)
-captures through the stock recorder while project samples load, retains a
-stopped take through 113 later loads, and then publishes identical PCM to H124.
-Firmware and loader guards remain exact to R4. NO cancellation remains
-unqualified; early Sketch ARM and hardware timing are not implemented or proven.
-
-The staged [fixed BUF layout](docs/BUF-FIXED-H-SLOTS.md) puts BUF 1–4 at
-H124–H127, with occupied-slot refusal and no reassignment controls. The native
-setup validates a full reservation before publication and can recognize matching
-retained empty-BUF identities. R3 remains the preserved comparison profile;
-the new build flag is `--fixed-buf-slots`.
-
-The authorized local [experimental fixed-H R4 OS and use notes](out/runs/fixed-h-experimental-02/package/README.md)
-package this exact validated build. H124–H127 must be free of ordinary samples;
-occupied rows refuse setup. Startup loading and stale REC status limits remain.
-The previous R3 image is preserved. No hardware transfer was performed.
-
-The staged [bank and track review](docs/BUF-BANK-TRACK-REVIEW.md) repairs ordinary
-sample-bank navigation through BUF backing rows and adds Sketch exits on native
-TRK plus track selection. Its opt-in `--navigation-fixes` profile builds on the
-[BAR/NOW performance controls](docs/SKETCH-PERFORMANCE-CONTROLS.md). [Experimental R3 and use notes](out/runs/buf-navigation-experimental-01/package/README.md).
-The R2 image, its sources and the original sibling checkout are preserved. Normal recorder and
-A00 defaults stay unchanged. Slot reservations and startup loading remain
-explicit design limits; no new bank, memory arena or BUF persistence is added.
-
-## BUF performance buffers
-
-The [BUF workflow contract](BUF-WORKFLOW-CONTRACT.md) is the canonical product
-direction: four reusable global buffers, publication without track assignment,
-immutable generations and selectable FREEZE snapshots. See the
-[alignment audit and results](docs/BUF-WORKFLOW-ALIGNMENT.md).
-
-The [continuous recording milestone](docs/BUF-CONTINUOUS.md) captures 13
-consecutive publications during playback, 11 native releases and 10 extent
-reuses, with stable DSP and CPU memory. The capped run remains failed after a
-test-only encoder assertion stopped its fourteenth capture; saved-publication
-ONESHOT/REPITCH playback comparisons pass. The all-ONESHOT retirement guard
-remains unchanged.
-
-The current native CPU workflow supports an empty BUF, selection on multiple
-tracks, next-bar recording into global recorder DEST and automatic publication
-while performance edits continue. Publication preserves every track assignment.
-**SAMPLING+YES** and **SAMPLING + push encoder C** remain provisional record and
-FREEZE frontends. Saving and project persistence remain separate work.
-
-The [native duration extension](docs/BUF-MULTIBAR.md) admits R.LEN 16/32/64 steps
-(one/two/four bars) with the normal 16-step clock and existing ten-second cap.
-Other lengths/MAX explicitly refuse. Recording has no all-track ONESHOT requirement.
-ONESHOT is the initially proven playback path, and mixed-machine DSP runtime
-support, conservative retirement guards, target placement and hardware remain
-open. [Earlier next-bar results](docs/BUF-NEXT-BAR-RESULTS.md) retain the seed-take
-and assigning prototype's evidence; they are not the product specification.
-
-## Sketch UI prototype
-
-The user reports the selector experimental firmware works on their device.
-Its four aliases precede A00 in the encoder-D quick list. The earlier
-[selector and startup investigation](docs/BUF-SELECTOR-AND-STARTUP.md) retains the
-source/loader evidence; its unimplemented status describes that earlier slice.
-The startup loader wait and compact backing-slot SRC label remain. Changing
-slot addresses alone does not isolate the shared allocator.
-
-The [clock correction candidate](docs/SKETCH-CLOCK-CORRECTION.md) follows the
-user's report that startup loading clears and ARM then reaches `REF CLOCK 0`.
-It uses stock transport semantics and normal16 pattern fields, adds specific
-clock refusals and passive `WAIT SAMPLES`, and passes a focused native next-bar
-capture/publication. Its physical clock cause and behavior remain unconfirmed.
-
-The [startup sample-operation diagnostic](docs/SKETCH-STARTUP-SAMPLE-DIAGNOSTIC.md)
-prioritizes the first post-boot `BUSY FREEZE 1` refusal. It identifies a guarded
-stock load/unload/clear operation where possible, preserving the busy guard and
-excluding the pending clock correction. The physical cause remains unconfirmed.
-
-The opt-in [ARM diagnostic package](docs/SKETCH-ARM-DIAGNOSTIC.md) identifies the
-first blocking check behind the user's hardware BUSY/REFUSED report. It retains
-all recording guards and leaves the original experimental package intact.
-
-A local [Sketch/BUF experimental OS1.16 package](docs/SKETCH-EXPERIMENTAL-PACKAGE.md)
-now passes exact-package integrity, native CPU upload/backpressure and complete
-container application-startup checks. It reuses the identical native recorder
-workflow bytes, runs no new captures and remains hardware-unqualified.
-
-[Sketch](docs/SKETCH-UI.md) is a separate opt-in native menu over BUF with
-SONG tap navigation, dry FUNC+SONG ARM and dry held-SONG FREEZE. It remembers
-one BUF selection independently of recorder DEST=NORMAL. No jobs, preview or
-persistence are attached to those shortcuts.
-
-The optional [real ARM profile](docs/SKETCH-ARM.md) connects FUNC+SONG to the
-existing next-bar recorder and publication service using Sketch's selected BUF,
-while preserving normal recorder DEST. Held SONG remains dry in this profile.
-Its live feedback follows the admitted BUF through waiting, recording, loading,
-publication or cancellation, independently of later BUF selection.
-
-The additional [FREEZE profile](docs/SKETCH-FREEZE.md) connects held SONG to a
-generation-specific snapshot of Sketch's selected BUF. Enable ARM and FREEZE
-together for the complete opt-in Sketch control mapping. Default controls stay dry.
-
-[Combined DSP validation](docs/SKETCH-VALIDATION.md) passes two native captures,
-held-SONG FREEZE and exact stock-file voice PCM comparisons. Publication still
-takes about 196–197 ms after capture in the model; physical timing and final
-output remain unverified. The separate [device placement experiment](docs/SKETCH-DEVICE-PLACEMENT.md)
-adds a bounded DDR layout and local startup checks while preserving the existing
-Flex build profiles. It is not a hardware-ready package.
-
-[Device-address validation](docs/SKETCH-RELOCATED-VALIDATION.md) now passes the
-prepared coupled two-take/FREEZE workflow using those exact binaries, with intact
-code/canaries, no old-arena accesses and exact parity with the earlier layout.
-Paired cold startup and physical device memory behavior remain unverified.
-
-The [DSP boot-memory correction](docs/SKETCH-DSP-BOOT-MEMORY.md) removes a
-boot-kernel workspace overlap that prepared fixtures bypassed. The current
-device recipe relocates only the retirement-gate state, rejects boot-area
-writes and preserves the ordinary emulator DSP byte-for-byte. Bounded DSP
-startup and saved-page native seal/refusal controls pass with no new recordings.
-The `-07` and `-09` images are retained as emulator/application evidence.
-The subsequent [boot-stream/upload audit](docs/SKETCH-BOOT-UPLOAD.md) found and
-corrected additional FINAL ordering, alignment and FIRST-span defects. Use a
-fresh build from the current device recipe for ongoing local preparation.
-That audit's sealed build is `sketch-device-build-20261023-13`; its
-[upload evidence](out/runs/sketch-rom-upload-20261023-07/verification.json)
-records the remaining ROM, SPI FIFO and container-startup limits.
-
-[Coupled application startup](docs/SKETCH-COLD-STARTUP.md) now passes stock and
-the corrected `-09` build from CPU reset and DSP loader application entry,
-with live native control and card sample loading. Sketch renders after startup;
-reset clearing/code/canaries, a measured disconnected-DSP control, 145 BUF tests
-and final-source SINE pass without new recordings. The later boot-stream audit
-adds native CPU upload/backpressure checks under a modeled ready line. Actual
-ROM execution, SPI FIFO/tail acceptance and physical startup remain unverified.
-
-The [first native migration slice](docs/NATIVE-BUF-MIGRATION.md) now loads the
-complete candidate container through an authenticated-reference constructor,
-runs paired application startup and renders Sketch. Saved A/B/FREEZE voice PCM
-matches the old runtime exactly over 96 blocks. The reply/final-output differences
-are now explained by corrected upstream SIMD semantics. The
-[native recorder connection](docs/NATIVE-BUF-RECORDING.md) passes a two-take/FREEZE
-workflow, active cancellation and independent stock-file final-output checks.
-It remains opt-in, with modeled stereo recorder input and unchanged lab pins.
-
-## Flex recording and saving
-
-Flex is the existing RAM-take recording/save workflow. Its current R5 save flow
-uses the stock filename editor, a visible A-H RAM-bank chooser and a slot preview;
-Save/Discard and project persistence have their own code and checks. See
-[Flex R5 results](docs/FLEX-BANK-SAVE-RESULTS.md).
-
-BUF and Flex have separate adapters and test suites. Existing all-feature builds
-contain Flex; BUF has separate adapters and an isolated device profile. Their shared recorder
-helpers do not combine the two features.
-
-For a future combined OS, BUF/Sketch replaces this previous Flex implementation;
-the user does not want both included. Existing Flex profiles remain preserved
-as reference. Current experimental packaging uses the isolated Sketch/BUF profile.
-
-## Other experiments and history
-
-[Arp](docs/ANY-TRACK-FEATURES-RESULTS.md), Plaits and
-[Capicola](docs/CAPICOLA-REDDIT-BOOT-FIX-RESULTS.md) remain available independently.
-Their detailed suites run when selected. The [recorded milestone summaries](docs/EXPERIMENT-HISTORY.md)
-retain the earlier work and its evidence without making every old experiment
-part of routine BUF verification.
-
-Start with [STATUS](docs/STATUS.md), [integration findings](docs/INTEGRATION.md),
-and the [development roadmap](docs/DEVELOPMENT.md). [AGENTS.md](AGENTS.md)
-contains the short development instructions.
-
-## Everyday commands
-
-From this directory:
+## Everyday work
 
 ```sh
 ./labctl doctor
-./labctl build sine
-./labctl render sine
-./labctl test sine --replay
-./labctl profile sine
+./labctl unit buf --list
 ./labctl unit buf
+./labctl unit core
+python3 -B scripts/build-sketch-checkpoint.py out/runs/r8-checkpoint-01
 ```
 
-| Command | Result |
+The configured Python 3.12 is selected by the launcher/build script. Unit tests
+use ordinary unittest and do not launch the long coupled recorder experiments.
+Native instruction cases require the explicit ColdFire bridge configuration in
+[TESTING.md](docs/TESTING.md); inspect skips rather than treating them as coverage.
+The checkpoint builder uses a fresh output directory and refuses MAIN/DSP bytes
+that differ from accepted R8. It does not create a distributable OS or flash it.
+
+BUF tests exclude the unrelated Arp, Capicola and old Flex suites. Use affected
+suites for shared changes; keep expensive capture/audio experiments explicit.
+The former broader Unicorn BUF fixtures remain under `buf-full`; the current
+host's first-map SIGILL is documented in TESTING.md. No older tests are deleted.
+
+## Current behavior
+
+SONG opens Sketch. Encoder A remembers BUF 1–4. B/C/D/E control SRC/CHAN/LEN/MON;
+F remembers BAR/NOW. FUNC+SONG records into that BUF from ordinary track pages,
+regardless of the current track's sample. Stopped capture starts immediately;
+BAR/NOW governs playback capture. Any trig, TRK or performance page button exits
+Sketch. SONG requests red only while audio is actively being captured.
+
+BUF aliases precede A00 OFF in the SRC selector. They use fixed reserved rows
+**H124–H127**. Publication changes the live generation without assigning tracks.
+FUNC+RECORD in Sketch preserves a snapshot; FUNC+STOP pastes that snapshot to the
+current ONESHOT track. Selecting BUF in SRC instead keeps a live link. NORMAL
+recorder DEST and ordinary sample defaults stay independent.
+
+See [the checkpoint guide](docs/SKETCH-BUF-CHECKPOINT.md) for cancellation,
+startup loading, retirement, session limits and current validation gaps.
+BUF and snapshots are volatile; project/audio persistence is future work.
+
+## Source layout
+
+| Path | Role |
 | --- | --- |
-| `unit` / `unit buf` | Runs the native BUF and shared recorder unit tests. Does not run Capicola, Arp or older BUF models. |
-| `unit flex` | Runs existing Flex and shared recorder tests. |
-| `unit all` | Explicit full repository regression; see [suite selection](docs/TESTING.md). |
-| `doctor` | Checks dependency commits, clean dependency trees, Python package versions, patched Unicorn binary, tool binaries and every private fixture hash. |
-| `build sine` | Builds CPU MAIN and SHARC BLOB overrides using expected-byte guards; no firmware container or boot. |
-| `render sine` | Rebuilds and renders the saved SINE control stream; checks frequency, envelope and silence. About 40–50 seconds for one second of audio on the initial interpreter build. |
-| `test sine --replay` | Runs the complete prepared-fixture regression suite, including the original image/PCM hashes, exact repeat, stock isolation, clone parity, disabled-hook control and retrigger/switch behavior. Allow several minutes. |
-| `profile sine` | Renders the same bounded fixture and records per-block retired instructions and host timing distributions. Hardware CPU/DSP load fields remain unset. |
+| `lab/sketch*.py`, `lab/buf*.py` | Sketch frontend, BUF adapters and fixed-slot/selector logic. |
+| `lab/recorder*.py` | Shared recorder, immutable generations, loading and retirement services. |
+| `lab/native/` | Lab-owned native emulator adapters and bounded probes. |
+| `scripts/` | Explicit builds and integration checks. |
+| `profiles/` | Reproducible feature/build recipes. |
+| `tests/`, `tests/suites.json` | Scoped unit tests and ownership catalogue. |
+| `machines/` | Contracts, DSP sources and preserved upstream sources/licenses. |
+| `docs/` | Current guides, checkpoint summaries and historical results. |
+| `.deps/`, `.local/`, `out/` | Ignored dependencies, configuration/private fixtures and generated runs. |
 
-Each build/render/test gets a new `out/runs/<time>-<command>-<id>/` directory.
-It contains `manifest.json`, `run.log`, candidate images and relevant outputs.
-A successful audio run produces `sine-440.wav`. `out/latest.json` points to
-the latest successful run. Failed and timed-out runs retain a failure report;
-they do not replace that pointer. Verification remains active under Python
-`-O`. A source or fixture change during a run prevents a passing result.
+[AGENTS.md](AGENTS.md) defines the working conventions. [FEATURES.md](docs/FEATURES.md)
+maps BUF, legacy Flex, Arp, Plaits and Capicola. [STATUS.md](docs/STATUS.md)
+identifies the current checkpoint; [STATUS-HISTORY.md](docs/STATUS-HISTORY.md)
+preserves earlier observations without making their old control maps current.
 
-Earlier stages remain documented: [pool reservation](docs/CAPICOLA-OWNED-MEMORY-RESULTS.md),
-[native preparation](docs/CAPICOLA-NATIVE-PREP-RESULTS.md),
-[R1 reader integration](docs/CAPICOLA-INTEGRATION-R1-RESULTS.md), and
-[twelve-second capacity](docs/CAPICOLA-TWELVE-SECONDS-RESULTS.md).
-Their open-item lists describe those historical stages; current integration
-results are linked above.
+## Dependencies and local setup
 
-## Layout and dependencies
+The machine-lab baseline keeps DigiKit and Selache pinned by `deps.lock.json`.
+The newer native BUF slice separately uses DigiKit revision
+`38dfbe4ae88263511eed95691c07fc07e17b6f26`; it does not silently migrate the
+baseline or change the OS1.16 addresses to OS1.17. Keep dependency trees clean.
 
-- `machines/sine/`: assembly, linker placement, and the machine definition.
-- `machines/sine-controls/`: experimental pitch, duration and level wiring.
-- `machines/plaits-va/`: pinned-source C99 translation and experimental wrappers.
-- `machines/plaits-trio/`: VA/FM/BD source port, control map and upstream oracle.
-- `machines/plaits-bank/`: six-model extension, generated source and upstream oracle.
-- `machines/plaits-controls/`: dedicated macro control map and continuous adapter.
-- `profiles/dt2-1.16/`: stock image hashes and version-specific integration data.
-- `lab/`: lab-owned CPU build, DSP replay, validation, and reporting adapters.
-- `tests/`: feature-scoped unit suites in `suites.json`, shared native BUF fixtures,
-  and a hash-only private-fixture manifest. See [testing guide](docs/TESTING.md).
-- `deps.lock.json`: exact DigiKit, Selache, Unicorn and Python dependency pins.
-- `.deps/`: ignored, clean dependency checkouts; no machine source lives here.
-- `.local/`: ignored local configuration and the private replay fixture.
-- `out/`: ignored builds, database cache, images, captures, audio and reports.
+The existing Mac setup uses ignored `.local/config.json` with `digikit`,
+`selache`, `fixture` and `python` paths. The fixture inventory in
+`tests/fixtures/sine-1.16.json` and `labctl doctor` verifies hashes and tool
+versions. A source clone does not contain the firmware or prepared replay state.
+To reconstruct from the preserved local experiment, see
+[scripts/import-workspace.py](scripts/import-workspace.py) and
+[the native migration note](docs/NATIVE-BUF-MIGRATION.md). Import refuses to
+silently overwrite changed inputs or configuration.
 
-The current Mac is configured. `labctl` selects the Python executable recorded
-in `.local/config.json`; it currently reuses the original validated DigiKit
-Python environment. DigiKit/Selache source checkouts and the replay fixture
-are separate copies in this lab. No original project files were removed.
+## Preserved feature work
 
-The native library/state and Selache executable fingerprints identify the
-initial macOS arm64 fixture. A rebuilt or different-platform toolchain needs
-its own validated fixture. A matching source revision alone does not prove
-that an imported native state is compatible with a library.
+R8 is the isolated Sketch/BUF profile. Legacy all-feature builds still contain
+Flex and their Arp/Plaits/Capicola adapters; this checkpoint does not change them.
+The direction for a future full OS is to replace the old Flex workflow with BUF.
+That integration is separate work. Historical sources and upstream licenses are
+preserved; generated packages stay local.
 
-## Recreate this setup from the preserved experiment
-
-With the original workspace still available, run:
-
-```sh
-python3 scripts/import-workspace.py "/path/to/Digitect firmware research project"
-./labctl doctor
-./labctl test sine --replay
-```
-
-The importer checks the recorded input hashes, creates independent dependency
-clones at the pinned revisions, copies the small private replay fixture and
-tools, and records the Python environment explicitly. Re-running it checks
-existing files; it refuses to overwrite changed inputs or configuration.
-It does not copy the 4 GB virtual drive or CPU snapshots.
-
-This is a reproducible **prepared-fixture replay**, not yet a rebuild from
-only the original `.syx`. The next milestone is a fixture generator covering
-patched CPU and DSP initialization, sample/card preparation, and panel capture
-in one run. There is deliberately no `--clean` command claiming that today.
-
-## Working on a machine
-
-Keep a known passing run and run the relevant [unit suite](docs/TESTING.md)
-after source changes. Build/render and replay when DSP or adapter behavior changes.
-The replay suite intentionally detects changed baseline images/PCM; intentional
-algorithm changes need reviewed expectations and signal checks. Do not make a
-failing comparison pass by regenerating its expected hash automatically.
-
-The fixed SINE baseline has no controls; the separate SINE controls variant
-connects pitch, duration and level. Plaits VA adds a compiled engine experiment.
-Sample-free startup, downstream processing, more tracks and physical resource
-measurements remain open. See [DEVELOPMENT](docs/DEVELOPMENT.md).
-
-Elekloader is recorded as an optional future integration in
-[ECOSYSTEM](docs/ECOSYSTEM.md). It is not a dependency of the current DSP test.
-
-Firmware and derived files stay private and ignored. This repository builds
-emulator overrides, local experimental containers and bounded audio captures.
-Modeled final-output checks, physical timing and hardware operation remain
-separate observations.
-
-The [arp emulator prototype](docs/ARP-PROJECT-LOAD-RESULTS.md) provides G OFF/UP/ORDER/RANDOM, ordinary note recording and authenticated project-menu recall. Its local native CPU, persistence, exact musical parity and regression checks pass; physical integration remains separate.
-
-The [native stock arp build](docs/ARP-STOCK-FIRMWARE-RESULTS.md) now packages
-G OFF/UP/ORDER/RANDOM, clocking and native recorded-project mode recall on
-stock OS 1.16. It is an experimental track-1, fixed-102-BPM build; emulator
-record/save/menu-load/replay and container checks passed, but the first user
-hardware trial produced no arp. The keyboard-state follow-up is documented
-in the results; its physical result remains unconfirmed.
-
-The optional [any-track all-feature build](docs/ANY-TRACK-FEATURES-RESULTS.md)
-removes the fixed T1 restrictions: the keyboard arp follows the selected track
-and Plaits has independent state on all tracks. It retains stopped arp and the
-repaired author Capicola backend. Capicola and compatible Flex destinations
-already support other tracks. See that report for exact artifacts, validation
-and device-test boundaries.
+[The R8 checkpoint record](docs/checkpoints/SKETCH-BUF-R8.json) includes exact
+artifact identities, native observations, the qualified device report and open
+limits. Continue from this checkpoint with focused behavior changes and retain
+R8 as the comparison build.
