@@ -6,12 +6,14 @@
         "test_buf_selector",
         "test_buf_navigation",
         "test_buf_fixed_slots",
+        "test_buf_freeze_slots",
         "test_sketch_controls",
         "test_sketch_copy",
         "test_sketch_device",
         "test_buf_startup",
         "test_buf_stopped",
-        "test_sketch_led"
+        "test_sketch_led",
+        "test_sketchbook_save"
       ]
     },
     "buf-native": {

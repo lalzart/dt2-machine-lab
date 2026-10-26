@@ -2,6 +2,20 @@
 
 BASE = 0x40000400
 STOCK_SHA = "57bb4dfa8df07d846adc72fdb4fb0d3cd3c5680c524bf498338460207e008e7d"
+PANEL_BUTTON_NAMES = 0x4020ABA8
+YES, UP, NO, LEFT, DOWN, RIGHT = 10, 11, 12, 13, 14, 15
+
+
+def verify_navigation_names(stock):
+    """Check physical names against OS1.16's own panel table, independently."""
+    for code, name in ((YES, "YES"), (UP, "UP"), (NO, "NO"), (LEFT, "LEFT"),
+                       (DOWN, "DOWN"), (RIGHT, "RIGHT")):
+        at = PANEL_BUTTON_NAMES - BASE + 4 * code
+        pointer = int.from_bytes(stock[at:at + 4], "big") - BASE
+        if stock[pointer:pointer + len(name) + 1] != name.encode() + b"\0":
+            raise ValueError(f"OS1.16 physical button map drift: {name}")
+
+
 R3_SHA = "6f5a9df5f1bf17c002c7755e1682051aff9e2d990238ec62722c5a459e8e9543"
 # Exact zero intervals from the pinned 1.16 deep-reference scan. Deliberately
 # exclude Plaits' entire 0x403117c4..0x40312000 allocation and reset-copy data.

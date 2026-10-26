@@ -286,3 +286,117 @@ class PerformanceControls(unittest.TestCase):
         self.assertNotEqual(main, changed)
         self.assertEqual(metadata["reservation"], enabled["reservation"])
         self.assertTrue(enabled["performance_controls"])
+
+
+@unittest.skipUnless(
+    os.environ.get("DT2_BUF_SELECTOR_CORE"), "Explicit Rust ColdFire bridge required"
+)
+class CompactPanelControls(unittest.TestCase):
+    """Real stock encoder instructions, with explicit recorder service seams."""
+
+    def setUp(self):
+        from lab import sketchbook_ui as book
+
+        self.f = f = previous_sketch.SketchTests()
+        with patch.object(previous_sketch.u, "Uc", Core):
+            f.setUp()
+        f.cpu.mem_map(0x40300000, 0x70000)
+        f.cpu.mem_write(0x40000400, STOCK_MAIN.read_bytes())
+        f.cpu.mem_map(0x44D2E000, 4096)
+        # Stock ready-state enum resource. The cold-boot visual probe separately
+        # checks its divisor and step against initialized firmware RAM.
+        f.cpu.mem_write(
+            0x44D2E600,
+            bytes.fromhex("00000000000000000000000600000001000000000000000600000004"),
+        )
+        f.cpu.mem_map(book.ROTATE & ~4095, 4096)
+        f.native_value(book.ROTATE, 0)  # Main panel, no Sketchbook list owner.
+        f.native_value(0x4005AA8E, 300)  # Stock scaler timestamp seam.
+        f.native_value(0x4019988A, 0x205000)
+        f.native_value(0x40015F6C, 0)
+        for i, (getter, setter) in enumerate(zip(s.GETTERS, s.SETTERS, strict=True)):
+            at = 0x204800 + i * 4
+            c = Code()
+            c.imm("2039", at)
+            c.emit("4e75")
+            f.cpu.mem_write(getter, c.finish(getter))
+            c = Code()
+            c.emit("202f0008")
+            c.imm("23c0", at)
+            c.emit("4e75")
+            f.cpu.mem_write(setter, c.finish(setter))
+        c = Code()
+        c.imm("2039", 0x200900)
+        c.emit("5280")
+        c.imm("23c0", 0x200900)
+        c.emit("4e75")
+        f.cpu.mem_write(0x4011AE46, c.finish(0x4011AE46))
+        f.cpu.mem_write(
+            s.ROTATE, s.rotation(performance_controls=True, sketchbook_save=True)
+        )
+        self.event, self.oracle = 0x208400, 0x208800
+        self.accumulator = 0x200100 + s.SCALER
+
+    def test_small_motion_fast_turns_and_reversals_follow_stock_filter_one_choice(self):
+        f = self.f
+        cases = (
+            (0, s.STATE + s.BUF, 2, 1, 4),
+            (1, 0x204800, 9, 0, 18),
+            (2, 0x204804, 1, 0, 3),
+            (3, 0x204808, 4, 0, 8),
+            (4, 0x20480C, 0, 0, 1),
+            (5, s.STATE + s.START_MODE, 0, 0, 1),
+        )
+        for encoder, at, initial, low, high in cases:
+            with self.subTest(encoder=encoder):
+                f.cpu.mem_write(self.accumulator, bytes(0x100))
+                f.cpu.mem_write(self.oracle, bytes(0x100))
+                f.put(0x204800, 18)  # MON's original external-source edit gate.
+                f.put(at, initial)
+                expected = initial
+                for delta in [1] * 7 + [-1] * 7 + [96, 96, -96, -96, 0] + [6] * 8:
+                    f.put(self.event, 0, 0, 0, encoder + 1, delta & 0xFFFFFFFF, 0)
+                    scaled = f.call(0x40111B62, self.oracle, self.event, 0x44D2E600)
+                    if scaled >= 2**31:
+                        scaled -= 2**32
+                    previous = expected
+                    expected = max(low, min(high, expected + max(-1, min(1, scaled))))
+                    f.put(s.STATE + s.ACTION, 123)
+                    f.put(0x200900, 0)
+                    self.assertEqual(f.call(s.ROTATE, 0x200100, self.event), 1)
+                    self.assertEqual(int.from_bytes(f.cpu.mem_read(at, 4), "big"), expected)
+                    self.assertLessEqual(abs(expected - previous), 1)
+                    self.assertEqual(f.get(s.ACTION), 0 if expected != previous else 123)
+                    self.assertEqual(
+                        int.from_bytes(f.cpu.mem_read(0x200900, 4), "big"),
+                        int(expected != previous),
+                    )
+                    self.assertEqual(
+                        f.cpu.mem_read(self.accumulator, 0x100),
+                        f.cpu.mem_read(self.oracle, 0x100),
+                    )
+                    for acc in (self.accumulator, self.oracle):
+                        f.call(0x40111940, acc, 0)  # Native timer decay.
+
+    def test_buf_tiny_motion_is_filtered_and_fast_turn_cannot_skip_to_four(self):
+        f = self.f
+        f.put(s.STATE + s.BUF, 1)
+        for _ in range(5):
+            f.put(self.event, 0, 0, 0, 1, 1, 0)
+            f.call(s.ROTATE, 0x200100, self.event)
+            self.assertEqual(f.get(s.BUF), 1)
+        f.put(self.event, 0, 0, 0, 1, 96, 0)
+        f.call(s.ROTATE, 0x200100, self.event)
+        self.assertEqual(f.get(s.BUF), 2)
+
+    def test_busy_capture_keeps_recorder_settings_and_start_preference(self):
+        f = self.f
+        f.native_value(0x40015F6C, 2)
+        for encoder, at in ((1, 0x204800), (2, 0x204804), (3, 0x204808),
+                            (4, 0x20480C), (5, s.STATE + s.START_MODE)):
+            with self.subTest(encoder=encoder):
+                f.cpu.mem_write(self.accumulator, bytes(0x100))
+                f.put(at, 0)
+                f.put(self.event, 0, 0, 0, encoder + 1, 96, 0)
+                f.call(s.ROTATE, 0x200100, self.event)
+                self.assertEqual(int.from_bytes(f.cpu.mem_read(at, 4), "big"), 0)

@@ -74,7 +74,7 @@ def source():
     return c.finish(SOURCE)
 
 
-def admit():
+def admit(*, slot_picker=None):
     c = Code()
     c.emit("4fefffd0 48d77cfc 242f0034")
     # Stock getters may execute normally; no stock calls occur with IRQs masked.
@@ -117,6 +117,12 @@ def admit():
     n.call(c, SOURCE, 4)
     c.emit("4a80")
     c.branch(7, "empty")
+    if slot_picker is not None:
+        # Preserve both results of SOURCE across the pure admission check.
+        c.emit("2f01 2f00")
+        n.call(c, slot_picker)
+        c.emit("2600 201f 221f 4a83")
+        c.branch(11, "slot_refused")
     c.imm("23c0", STATE + GENERATION)
     c.imm("23c1", STATE + SLOT)
     c.emit("2040")
@@ -146,6 +152,10 @@ def admit():
     c.imm("23c0", q.STATE + 28)
     c.imm("23c0", q.STATE + 48)
     c.branch(0, "restore")
+    if slot_picker is not None:
+        c.label("slot_refused")
+        c.emit("2003")
+        c.branch(0, "restore")
     for label, value in (("busy", -7), ("refused", -1), ("empty", -2), ("full", -5)):
         c.label(label)
         c.emit(f"{0x7000 | (value & 255):04x}")
@@ -209,7 +219,7 @@ def gate():
     return c.finish(GATE)
 
 
-def payload():
+def payload(*, slot_picker=None):
     c = Code()
     c.emit("7000")
     c.imm("23c0", STATE + ACTIVE)
@@ -220,7 +230,7 @@ def payload():
     done.imm("4ef9", DONE_STOCK)
     parts = {
         SUBMIT: q.submit(address=SUBMIT, admission=ADMIT, queue_failure=CLEAR),
-        ADMIT: admit(),
+        ADMIT: admit(slot_picker=slot_picker),
         SOURCE: source(),
         GATE: gate(),
         GATE_STOCK: q.gate(),

@@ -1,0 +1,159 @@
+{
+  "schema": 1,
+  "status": "ready",
+  "work_type": "source-reimplementation",
+  "approval": "User: Okay, let\u2019s continue then with the plus drive persistence work. Continues the presented implementation recommendation without another pause.",
+  "proposal": "docs/SKETCHBOOK-PERSISTENCE-PLAN.md",
+  "proposal_sha256": "76a01ca7420e8846e6e4837aafb8a5dc659007d278ca396f433b22a5e586de8f",
+  "target": "Digitakt II OS1.16 native CPU/SHARC with modeled peripherals",
+  "working_artifact": "scripts/check-sketchbook-save.py",
+  "evidence_level": "native target instructions plus exact saved/reloaded PCM",
+  "dependencies": {
+    "digikit": {
+      "patches": [],
+      "revision": "277760aad51b036a4756db051409d4d3b1eeccbc",
+      "url": "https://github.com/m-dwyer/digikit.git"
+    },
+    "native": {
+      "optimized_blocks": false,
+      "profile": "release",
+      "runtime_decode": true,
+      "source_revision": "277760aad51b036a4756db051409d4d3b1eeccbc"
+    },
+    "python": {
+      "major_minor": "3.12",
+      "packages": {
+        "capstone": "5.0.7",
+        "networkx": "3.4.2",
+        "pypcode": "4.0.0",
+        "unicorn": "2.1.4"
+      },
+      "requirements": "DigiKit uv.lock",
+      "uv_lock_sha256": "b693fa89efb8cc826f4a414a555f5e243cdcc0c616cdc48127b7f67226f80450"
+    },
+    "references": {
+      "elekloader": {
+        "reviewed_revision": "793b2e473dc0f0fa1a6d6f14e69a8cc166ce9300",
+        "role": "optional future packaging and UI/control integration; not a build dependency",
+        "url": "https://github.com/irpina/elekloader"
+      }
+    },
+    "schema": 1,
+    "selache": {
+      "build": [
+        "cargo",
+        "build",
+        "--release",
+        "--locked"
+      ],
+      "revision": "2b26d3b75c53063575bc5c820fa0d38879335187",
+      "url": "https://github.com/js216/selache.git"
+    },
+    "unicorn": {
+      "installer": "tools/install-patched-unicorn.sh",
+      "installer_sha256": "124ad9c12264be1eda9853d473856b3782dec69649744884008bb1aa61e5c872",
+      "patches": {
+        "unicorn-2.1.4-count-hook-fast-path.patch": "5f7523267ed0a6324496c7ea665d6ea22d84f30d82199218f66594291adc3e17",
+        "unicorn-2.1.4-m68k-emac-fractional.patch": "8f497c939b7b772a0a00a7d16ad85e8a1a6865b772191ca5ca131fb477824603",
+        "unicorn-2.1.4-m68k-emac-mac-load.patch": "ac128dd6836997de55e0d2ad70d7a2978639168090f552c5634da50fddc70bfe",
+        "unicorn-2.1.4-m68k-flush-flags-sync.patch": "9f76167940573e1e33582f6e4fbef10d95528dfa26090406a9b40a4b45712807",
+        "unicorn-2.1.4-m68k-hook-ccr-sync.patch": "56de71acf2adbd5ca2f448095478e65e49fd79d378aeb5b5e4217d2c90f52f4e"
+      },
+      "revision": "8028ec436f2d9376525352dd38ed9ed6b9f6be10",
+      "url": "https://github.com/unicorn-engine/unicorn.git",
+      "version": "2.1.4"
+    }
+  },
+  "source_equivalence": {
+    "source_id": "user-owned-dt2-machine-lab-flex-save",
+    "revision": "864bd62a7e68f112ef281ae9ad14e64d5231bfda plus inherited R9/R10 changes",
+    "authority": "User directs modifications to their local repository; local tests/derivatives only, no redistribution. Original firmware kept private.",
+    "files": {
+      "lab/flex_native.py": "ecc37329d34499ddc3a725db329a1f913a7994fd572cf4ecfddc308f0279321f",
+      "lab/flex_native_save.py": "95830ce6da3837c25a60792c27635642d213e0bc1e0481f15df2b6dc0b50a9b1",
+      "scripts/probe-flex-dsp-memory.py": "c5879b761df2f7c37c23c378eaaf3f0310caf655dacb4145bfbb10fff06681bd",
+      "lab/recorder_freeze_code.py": "873e4d8ec10efb2513ac266b8ef68c089b67b6d662d526916c25c5d8763060a5",
+      "lab/recorder_native_retirement.py": "676f7ae7637a9786b1421a7ff791fc41fbc8c7455583890c49a297b59646fa73",
+      "lab/recorder_worker_code.py": "4f31038f4ae457f5fca0f73abf179452d3e410164ab2708ab3347037b59a8536"
+    },
+    "license": "Owned local adapters reused within this workspace; no third-party DSP algorithm is copied. Compiler/emulator dependencies are the pinned development tools; their binaries and notices are not distributed.",
+    "fidelity": "Exact original native-file bytes and default R10 behavior; only opt-in transport and explicit saving change. No signal transform.",
+    "oracle": "Earlier host-peek reconstruction and independent stock reload; disabled target readback must fail.",
+    "deviations": [
+      "New native transfer replaces host-peek surrogate",
+      "Named exports use /Sketchbook",
+      "No auto project persistence or retained full CPU PCM"
+    ]
+  },
+  "controls": {
+    "strategy": "generated constants and exhaustive packet encoding tests",
+    "source": "This contract and proposal state/control section",
+    "input": "test request selects existing generation plus relative name; later native Samples frontend",
+    "feedback": "explicit pending/saved/error; no physical-control validation inferred"
+  },
+  "state_matrix": "Proposal Exact state and control contract section",
+  "experiment": {
+    "seed": 0,
+    "conditions": [
+      "baseline",
+      "extended-idle",
+      "mono",
+      "stereo",
+      "CPU-source-released",
+      "freeze-A-replace-B",
+      "save-reload",
+      "repeat",
+      "empty",
+      "busy",
+      "stale-slot",
+      "wrong-epoch",
+      "wrong-token",
+      "wrong-serial",
+      "wrong-offset",
+      "wrong-count",
+      "short",
+      "corrupt",
+      "drop",
+      "duplicate",
+      "reorder",
+      "timeout",
+      "duplicate-file",
+      "missing-directory",
+      "existing-directory",
+      "failed-write",
+      "short-write",
+      "cancel",
+      "guards",
+      "voice-and-stock-reply-parity",
+      "disabled-readback-falsifier"
+    ],
+    "tolerance": "Byte exact",
+    "retention": "Every failed/successful fresh ignored run retained"
+  },
+  "validation": "Focused native CF/SHARC tests, exact stock-field and voice comparator, coupled CPU/DSP native job/filesystem reload; scoped buf/flex/core/integration if shared composition changes; SINE for DSP changes. Target build, real time, device and listening independent.",
+  "results": "out/runs/sketchbook-* reports and later docs/SKETCHBOOK-PERSISTENCE-RESULTS.md",
+  "gaps": "Proposal UNRESOLVED; no physical timing, power loss, hardware, listening or automatic project restoration claim.",
+  "decisions": "No field reuse, frame above0xbc0, token recycle, old-file overwrite, /recorded fallback, project-guard removal, full-CPU-PCM fallback or dependency changes.",
+  "constants": {
+    "FRAME": 3008,
+    "STOCK_FRAME": 2748,
+    "TAIL": 2748,
+    "HEADER": 36,
+    "PAYLOAD": 224,
+    "CHUNK": 4096,
+    "MAGIC": 1397445169,
+    "TAG": 1397445169,
+    "MARKER": 1397441346,
+    "CF_BASE": 282099712,
+    "DSP_CODE": 537526272,
+    "DSP_STATE": 537887744,
+    "FRAME_SCRATCH": 537891840,
+    "EVENT_SCRATCH": 537892864,
+    "FRAME_STACK": 537898752,
+    "EVENT_STACK": 537890560,
+    "SLOTS": 2455568,
+    "WINDOW": 2216868296,
+    "POOL_BYTES": 419430400,
+    "LP0_REQUEST": 2523716
+  }
+}

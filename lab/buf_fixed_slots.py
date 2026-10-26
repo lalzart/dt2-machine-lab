@@ -14,7 +14,7 @@ STATUS, SLOT, RESTORED = 0, 4, 8
 CONFLICT, CAPACITY, PROJECT = 1, 2, 3
 
 
-def setup():
+def setup(*, freeze_h_slots=False):
     """Same no-argument ABI as w.SETUP; full-plan validation precedes ownership.
 
     A retained 0x7ffd0001..4 project marker is accepted only at the matching
@@ -76,7 +76,9 @@ def setup():
     # Keep the existing private-seat count and ascending free-slot policy.
     c.emit("7401 7804")
     c.label("private")
-    c.imm("0c82", PUBLIC[0])
+    # Fixed FREEZE rows must never become hidden generation seats.
+    private_end = 1012 if freeze_h_slots else PUBLIC[0]
+    c.imm("0c82", private_end)
     c.branch(4, "capacity")
     c.emit("2002 727f c081")
     c.branch(7, "next")

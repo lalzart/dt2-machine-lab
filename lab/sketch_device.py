@@ -167,6 +167,9 @@ def compose(
     copy_shortcuts=False,
     stopped_recording=False,
     recording_led=False,
+    monitor_labels=False,
+    freeze_h_slots=False,
+    sketchbook_save=False,
 ):
     """Final native install graph of SketchUI; no Machine or host job execution."""
     from lab import buf_auto_retirement as auto
@@ -185,6 +188,12 @@ def compose(
     from lab import sketch as s
 
     normal = dest
+    require(
+        not freeze_h_slots or (fixed_buf_slots and copy_shortcuts and clock_fix),
+        "FREEZE H slots require fixed BUF slots, COPY and the clock profile",
+    )
+    if freeze_h_slots:
+        from lab import buf_freeze_slots as frozen_slots
     require(
         not performance_controls or clock_fix,
         "Performance controls require the working clock profile",
@@ -268,7 +277,11 @@ def compose(
     if fixed_buf_slots:
         from lab import buf_fixed_slots
 
-        o.put(w.SETUP, buf_fixed_slots.setup(), "fixed-buf-slots/setup")
+        o.put(
+            w.SETUP,
+            buf_fixed_slots.setup(freeze_h_slots=freeze_h_slots),
+            "fixed-buf-slots/setup",
+        )
     finish_raw, _, _ = o.parts.pop(w.FINISH)
     require(finish_raw[24:32] == bytes(8), "Worker FINISH padding drift")
     o.put(w.FINISH, finish_raw[:24], "worker/finish-dispatch")
@@ -301,6 +314,13 @@ def compose(
         "Operation diagnostics require ARM diagnostics and a separate clock profile",
     )
     o.group(q.payload(operation_diagnostics=operation_diagnostics), "freeze-queue")
+    if freeze_h_slots:
+        o.put(
+            q.BODY,
+            n.freeze(address=q.BODY, worker_gate=q.GATE, slot_picker=frozen_slots.PICK),
+            "freeze-h-slots/body",
+        )
+        o.put(frozen_slots.PICK, frozen_slots.picker(), "freeze-h-slots/picker")
     o.put(q.LABEL, b"FREEZE\0", "freeze-queue/label", "data")
     o.group(loop.cpu(), "receive-loop")
     o.group(seats.payload(), "generation-seats")
@@ -342,11 +362,19 @@ def compose(
     o.jump(nb.CLOCK_SITE, nb.CLOCK_BYTES, nb.IRQ, "next-bar/clock")
     o.jump(q.GUI, q.GUI_BYTES, nb.POLL, "next-bar/poll")
     o.put(w.ENTRY, b"\x4e\xf9" + struct.pack(">I", nb.USE_GATE), "sketch/use-gate")
-    o.group(bf.payload(), "freeze-source")
+    o.group(
+        bf.payload(slot_picker=frozen_slots.PICK if freeze_h_slots else None),
+        "freeze-source",
+    )
     o.put(q.GATE, b"\x4e\xf9" + struct.pack(">I", bf.GATE), "freeze-source/gate")
     o.put(q.DONE, b"\x4e\xf9" + struct.pack(">I", bf.DONE), "freeze-source/done")
     o.put(s.STATE + s.BUF, struct.pack(">I", 1), "sketch/selection", "data")
     pointer_tables = {s.TEXTS, s.VTABLE - 8, s.SHARED, s.SHARED + 0x50}
+    panel_code = set()
+    if sketchbook_save:
+        from lab import sketch_panel
+
+        panel_code = {sketch_panel.DRAW}
     for at, raw in s.payload(
         stock,
         arm_enabled=True,
@@ -360,12 +388,15 @@ def compose(
         startup_capture=startup_capture,
         copy_shortcuts=copy_shortcuts,
         stopped_recording=stopped_recording,
+        monitor_labels=monitor_labels,
+        freeze_h_slots=freeze_h_slots,
+        sketchbook_save=sketchbook_save,
     ).items():
         kind = (
             "pointers"
             if at in pointer_tables
             else "data"
-            if s.STRINGS <= at < s.LINE
+            if s.STRINGS <= at < s.LINE and at not in panel_code
             else "code"
         )
         o.put(at, raw, "sketch/" + hex(at), kind)
@@ -487,9 +518,79 @@ def compose(
     if recording_led:
         from lab import sketch_led
 
-        require(stopped_recording, "Recording LED requires the performance recorder profile")
+        require(
+            stopped_recording, "Recording LED requires the performance recorder profile"
+        )
         o.group(sketch_led.payload(), "sketch-recording-led")
-        o.jump(sketch_led.SITE, sketch_led.PREFIX, sketch_led.ENTRY, "sketch-recording-led/output")
+        o.jump(
+            sketch_led.SITE,
+            sketch_led.PREFIX,
+            sketch_led.ENTRY,
+            "sketch-recording-led/output",
+        )
+    if sketchbook_save:
+        from lab import sketchbook_preview as preview
+        from lab import sketchbook_save as book
+        from lab import sketchbook_ui as book_ui
+        from lab.dt2_116 import verify_navigation_names
+
+        require(freeze_h_slots, "Sketchbook save requires the R10 fixed freeze profile")
+        verify_navigation_names(stock)
+        o.group(book.payload(), "sketchbook-save")
+        o.group(preview.payload(), "sketchbook-preview")
+        require(
+            preview.OLD_ROUTE + len(o.parts[s.ROUTE][0]) <= book.RX,
+            "Preview route reaches receive data",
+        )
+        o.put(preview.OLD_ROUTE, o.parts[s.ROUTE][0], "sketchbook-preview/stock-route")
+        o.put(
+            s.ROUTE,
+            b"\x4e\xf9" + struct.pack(">I", preview.CANCEL_KEY),
+            "sketchbook-preview/cancel-key",
+        )
+        ui_parts, ui_data = book_ui.payload()
+        o.group(ui_parts, "sketchbook-ui")
+        for at, raw in ui_data.items():
+            o.put(at, raw, "sketchbook-ui/text", "data")
+        o.put(preview.NAME, b"PREVIEW\0", "sketchbook-preview/name", "data")
+        for at, target in ((book.WORKER, preview.DISPATCH), (book.DONE, preview.DONE)):
+            o.put(at, b"\x4e\xf9" + struct.pack(">I", target), "sketchbook-preview/job")
+        for op, at in (
+            ("open", preview.OPEN),
+            ("read", preview.READ),
+            ("size", preview.SIZE),
+            ("close", preview.CLOSE),
+        ):
+            pc = book.n.RESOURCE_SITES[op][0]
+            before, _raw, label = o.hooks[pc]
+            o.hooks[pc] = (
+                before,
+                b"\x4e\xf9"
+                + struct.pack(">I", at)
+                + b"\x4e\x71" * ((len(before) - 6) // 2),
+                label,
+            )
+        before, _raw, label = o.hooks[q.GUI]
+        o.hooks[q.GUI] = (before, b"\x4e\xf9" + struct.pack(">I", book_ui.POLL), label)
+        for at, target in ((w.RETIRE, book.CAPTURE), (t.DRIVER, book.DRIVER)):
+            o.put(
+                at, b"\x4e\xf9" + struct.pack(">I", target), "sketchbook-save/wrapper"
+            )
+        for i, pc in enumerate((0x40154540, n.UNLOAD, n.CLEAR)):
+            before, _raw, label = o.hooks[pc]
+            o.hooks[pc] = (
+                before,
+                b"\x4e\xf9" + struct.pack(">I", book.GUARDS + i * 128) + b"\x4e\x71",
+                label,
+            )
+        o.jump(
+            0x401586B8,
+            bytes.fromhex("66544a826724"),
+            book.EXCLUSIVE,
+            "sketchbook-save/exclusive-open",
+        )
+        o.put(book.LABEL, b"SKETCHBOOK SAVE\0", "sketchbook-save/label", "data")
+        o.put(book.DIRECTORY, b"/Sketchbook\0", "sketchbook-save/directory", "data")
     return o
 
 
@@ -507,6 +608,9 @@ def build(
     copy_shortcuts=False,
     stopped_recording=False,
     recording_led=False,
+    monitor_labels=False,
+    freeze_h_slots=False,
+    sketchbook_save=False,
 ):
     overlay = compose(
         stock,
@@ -521,6 +625,9 @@ def build(
         copy_shortcuts=copy_shortcuts,
         stopped_recording=stopped_recording,
         recording_led=recording_led,
+        monitor_labels=monitor_labels,
+        freeze_h_slots=freeze_h_slots,
+        sketchbook_save=sketchbook_save,
     )
     images = {a.name: bytearray(a.size) for a in ARENAS}
     writes, fixes = [], []
@@ -682,6 +789,15 @@ def build(
     )
     if recording_led:
         metadata["recording_led"] = True
+    if sketchbook_save:
+        metadata["sketchbook_save"] = True
+    if monitor_labels:
+        metadata["monitor_labels"] = True
+    if freeze_h_slots:
+        from lab import buf_freeze_slots as frozen_slots
+
+        metadata["freeze_h_slots"] = True
+        metadata["freeze_public_slots"] = list(frozen_slots.SLOTS)
     if arm_diagnostics:
         metadata["arm_diagnostics"] = True
     if clock_fix:

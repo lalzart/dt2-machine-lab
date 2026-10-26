@@ -196,7 +196,7 @@ def project_guard(address, fallback):
     return c.finish(address)
 
 
-def freeze(*, address=FREEZE, worker_gate=None):
+def freeze(*, address=FREEZE, worker_gate=None, slot_picker=None):
     """freeze(buf, epoch, expected_kit) -> slot or negative; diagnostic only.
 
     Native cache association; source/pin identity and serial checked before
@@ -260,15 +260,21 @@ def freeze(*, address=FREEZE, worker_gate=None):
     c.emit("2a2a0004")  # issued snapshot identities; never recycled
     c.imm("0c85", 8)
     c.branch(4, "full")
-    # Original free-slot iterator ctor/search/dtor, including the Gate-A filter.
-    c.emit("41ef0040 2f08")
-    call(c, 0x40016576, 4)
-    c.emit("41ef0040 2f08")
-    call(c, 0x40016702, 4)
-    c.emit("2e00 41ef0040 2f08")
-    call(c, 0x4019977C, 4)
-    c.imm("0c87", -1)
-    c.branch(7, "full")
+    if slot_picker is None:
+        # Original free-slot iterator ctor/search/dtor, including Gate-A.
+        c.emit("41ef0040 2f08")
+        call(c, 0x40016576, 4)
+        c.emit("41ef0040 2f08")
+        call(c, 0x40016702, 4)
+        c.emit("2e00 41ef0040 2f08")
+        call(c, 0x4019977C, 4)
+        c.imm("0c87", -1)
+        c.branch(7, "full")
+    else:
+        call(c, slot_picker)
+        c.emit("4a80")
+        c.branch(11, "return")  # Refuse before issuing an identity or mutation.
+        c.emit("2e00")
     c.emit("202a000c")
     c.imm("0c80", 1)
     c.branch(7, "full")

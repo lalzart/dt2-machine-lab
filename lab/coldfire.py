@@ -150,8 +150,12 @@ def audit_code(code, address):
             kind = "ADDQ.L #1,D0"
         elif op == 0x57C0:
             kind = "SEQ.B D0"
-        elif op == 0x4C01 and code[pos + 2 : pos + 4] == bytes.fromhex("0800"):
-            length, kind = 4, "MULS.L D1,D0"
+        elif op in (0x4C01, 0x4C02) and code[pos + 2 : pos + 4] == bytes.fromhex("0800"):
+            # CFPRM MULS.L Dy,D0, 32-bit product; checksum uses D2 as multiplier.
+            length, kind = 4, f"MULS.L D{op & 7},D0"
+        elif op == 0xB380:
+            # CFPRM ISA_A EOR.L D1,D0, register destination; FNV-1a byte folding.
+            kind = "EOR.L D1,D0"
         if kind is None:
             raise ValueError(
                 f"Unreviewed ColdFire opcode {op:04x} at {address + pos:#x}"

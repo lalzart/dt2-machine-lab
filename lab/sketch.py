@@ -173,10 +173,20 @@ def input_event(
     navigation_fixes=False,
     startup_capture=False,
     copy_shortcuts=False,
+    sketchbook_save=False,
 ):
     c = Code()
     c.emit(abi.PRESAVE + " 246f0028 266f002c 242b000c 262b0010")
     setv(c, SEEN, 1)
+    if sketchbook_save:
+        from lab import sketchbook_ui as book
+
+        c.emit("2f0b 2f0a")
+        call(c, book.KEY, 8)
+        c.imm("0c80", 2)
+        c.branch(7, "consume")
+        c.emit("4a80")
+        c.branch(6, "invalidate")
     if copy_shortcuts:
         from lab import sketch_copy as clip
 
@@ -433,7 +443,7 @@ def input_event(
     return c.finish(INPUT)
 
 
-def open_view():
+def open_view(*, sketchbook_save=False):
     c = Code()
     c.emit("4fefffe0 48d70c0c 246f0024")
     c.imm("4879", OBJECT_SIZE + 16)
@@ -452,6 +462,13 @@ def open_view():
     c.imm("203c", SHARED + 0x58)
     c.emit("21400004 2008")
     store(c, VIEW)
+    if sketchbook_save:
+        from lab import sketchbook_ui as book
+
+        book.value(c, book.MODE, 0)
+        book.value(c, book.ROW, 0)
+        book.value(c, book.BACK_KEY, 0)
+        book.value(c, book.NAME_KEY, 0)
     c.emit("2f480018 2f4b001c 41e80050 2f08")
     call(c, 0x40111888, 4)
     call(c, 0x401988A2)
@@ -468,10 +485,15 @@ def open_view():
     return c.finish(OPEN)
 
 
-def destructor():
+def destructor(*, sketchbook_save=False):
     c = Code()
     # Last raw pointer is weak observation only; controller owns lifetime.
     setv(c, VIEW, 0)
+    if sketchbook_save:
+        from lab import sketchbook_ui as book
+
+        book.value(c, book.VIEW, 0)
+        book.value(c, book.MODE, 0)
     c.emit("2f2f0004 206f0008 41e80050 2250 2f08 2251 4e91 588f")
     call(c, 0x4011AFE4, 4)
     c.emit("4e75")
@@ -486,10 +508,18 @@ def dispose():
     return c.finish(DISPOSE)
 
 
-def rotation(*, performance_controls=False):
+def rotation(*, performance_controls=False, sketchbook_save=False):
     c = Code()
     c.emit(abi.PRESAVE + " 246f0028 266f002c")
-    # Predicate + original scaler preserve native acceleration/filtering.
+    if sketchbook_save:
+        from lab import sketchbook_ui as book
+
+        c.emit("2f0b 2f0a")
+        call(c, book.ROTATE, 8)
+        c.emit("4a80")
+        c.branch(6, "done")
+    # The compact panel uses the stock discrete-choice filter. Legacy profiles
+    # retain their original fixed-point scaler and exact instruction stream.
     for i in range(6 if performance_controls else 5):
         c.imm("4879", i)
         c.emit("2f0b")
@@ -500,19 +530,29 @@ def rotation(*, performance_controls=False):
     c.branch(0, "done")
     for i in range(6 if performance_controls else 5):
         c.label(f"encoder{i}")
-        c.imm("4879", 0x44D2E61C)
+        c.imm("4879", 0x44D2E600 if sketchbook_save else 0x44D2E61C)
         c.emit("2f0b 41ea0050 2f08")
         call(c, 0x40111B62, 12)
-        c.emit("4a80")
-        c.branch(12, f"scaled{i}")
-        c.imm("0680", 255)
-        c.label(f"scaled{i}")
-        c.emit("e080 2400 4a80")
+        if sketchbook_save:
+            # Accumulate small pulses in the native per-encoder state, then
+            # allow one choice per filtered event, even during a fast turn.
+            clamp(c, -1, 1, f"choice{i}")
+            c.emit("2400 4a80")
+        else:
+            c.emit("4a80")
+            c.branch(12, f"scaled{i}")
+            c.imm("0680", 255)
+            c.label(f"scaled{i}")
+            c.emit("e080 2400 4a80")
         c.branch(7, "done")
         if i == 0:
             load(c, BUF)
             c.emit("d082")
             clamp(c, 1, 4, "buf")
+            if sketchbook_save:
+                load(c, BUF, 1)
+                c.emit("b081")
+                c.branch(7, "done")
             store(c, BUF)
         elif i == 5:
             nb.load(c, nb.PHASE)
@@ -526,6 +566,10 @@ def rotation(*, performance_controls=False):
             load(c, START_MODE)
             c.emit("d082")
             clamp(c, 0, 1, "start_mode")
+            if sketchbook_save:
+                load(c, START_MODE, 1)
+                c.emit("b081")
+                c.branch(7, "done")
             store(c, START_MODE)
         else:
             # Keep the recorder's existing edit gate; active capture owns settings.
@@ -541,8 +585,13 @@ def rotation(*, performance_controls=False):
                 c.branch(6, "done")
             c.emit("2f2a014c")
             call(c, GETTERS[i - 1], 4)
+            if sketchbook_save:
+                c.emit("2600")  # Keep the old enum value across the clamp.
             c.emit("d082")
             clamp(c, 0, (18, 3, 8, 1)[i - 1], f"setting{i}")
+            if sketchbook_save:
+                c.emit("b083")
+                c.branch(7, "done")
             c.emit("2f00 2f2a014c")
             call(c, SETTERS[i - 1], 8)
         setv(c, ACTION, 0)
@@ -826,7 +875,7 @@ def operation_diagnosis():
     return c.finish(OP_DIAG)
 
 
-def submit_freeze():
+def submit_freeze(*, freeze_h_slots=False):
     c = Code()
     # Completion count distinguishes this request from the previous result.
     c.imm("2039", freeze_jobs.STATE + 32)
@@ -837,7 +886,12 @@ def submit_freeze():
     store(c, FREEZE_RESULT)
     c.emit("4a80")
     c.branch(7, "accepted")
-    for value, action in ((-7, 14), (-2, 15), (-5, 16), (-6, 18)):
+    results = ((-7, 14), (-2, 15), (-5, 16), (-6, 18))
+    if freeze_h_slots:
+        from lab import buf_freeze_slots as slots
+
+        results += ((slots.CONFLICT, slots.ACTION),)
+    for value, action in results:
         c.imm("0c80", value)
         c.branch(7, f"action{action}")
     setv(c, ACTION, 17)
@@ -845,7 +899,7 @@ def submit_freeze():
     c.label("accepted")
     setv(c, ACTION, 12)
     c.branch(0, "return")
-    for action in (14, 15, 16, 18):
+    for action in (action for _, action in results):
         c.label(f"action{action}")
         setv(c, ACTION, action)
         c.branch(0, "return")
@@ -854,7 +908,7 @@ def submit_freeze():
     return c.finish(FREEZE_SUBMIT)
 
 
-def freeze_feedback():
+def freeze_feedback(*, freeze_h_slots=False):
     c = Code()
     load(c, ACTION)
     c.imm("0c80", 12)
@@ -867,6 +921,11 @@ def freeze_feedback():
     store(c, FREEZE_RESULT)
     c.emit("4a80")
     c.branch(10, "ready")
+    if freeze_h_slots:
+        from lab import buf_freeze_slots as slots
+
+        c.imm("0c80", slots.CONFLICT)
+        c.branch(7, "collision")
     c.imm("0c80", -3)
     c.branch(7, "stale")
     setv(c, ACTION, 18)
@@ -876,6 +935,10 @@ def freeze_feedback():
     c.branch(0, "return")
     c.label("stale")
     setv(c, ACTION, 19)
+    if freeze_h_slots:
+        c.branch(0, "return")
+        c.label("collision")
+        setv(c, ACTION, slots.ACTION)
     c.label("return")
     c.emit("4e75")
     return c.finish(FREEZE_FEEDBACK)
@@ -980,8 +1043,18 @@ def draw(
     startup_capture=False,
     copy_table=None,
     stopped_recording=False,
+    freeze_h_slots=False,
+    sketchbook_save=False,
 ):
     c = Code()
+    if sketchbook_save:
+        from lab import sketchbook_ui as book
+
+        book.load(c, book.MODE)
+        c.emit("4a80")
+        c.branch(7, "sketch")
+        c.imm("4ef9", book.DRAW)
+        c.label("sketch")
     c.emit("4fefffa0 48d77cfc 246f0064 266f0068")
     if stopped_recording:
         from lab import buf_stopped as free
@@ -1025,6 +1098,12 @@ def draw(
     load(c, PAGE)
     c.emit("4a80")
     c.branch(6, "takes")
+    if sketchbook_save:
+        from lab import sketch_panel as panel
+
+        c.emit("2f0b 2f0a")
+        call(c, panel.DRAW, 8)
+        c.branch(0, "done")
     if performance_controls:
         # F displays the remembered preference even when stopped capture
         # starts immediately. The stopped hint explains that override.
@@ -1124,6 +1203,27 @@ def draw(
             text(9, strings[name])
             c.branch(0, "navigation")
         c.label("fixed_feedback_done")
+    if freeze_h_slots:
+        from lab import buf_freeze_slots as slots
+
+        load(c, ACTION)
+        c.imm("0c80", slots.ACTION)
+        c.branch(6, "freeze_slot_ready")
+        c.imm("2039", slots.TARGET)
+        c.imm("0280", 127)
+        fmt("freeze_slot_conflict", ["2f00"])
+        text(9)
+        c.branch(0, "navigation")
+        c.label("freeze_slot_ready")
+        load(c, ACTION)
+        c.imm("0c80", 13)
+        c.branch(6, "freeze_slot_done")
+        load(c, FREEZE_RESULT)
+        c.imm("0280", 127)
+        fmt("freeze_slot_ready", ["2f00"])
+        text(9)
+        c.branch(0, "navigation")
+        c.label("freeze_slot_done")
     load(c, ACTION)
     if clock_fix:
         c.emit("4a80")
@@ -1238,6 +1338,10 @@ def draw(
         c.emit("2002 d080 d080 d080 d080")
         c.imm("0680", 0x405B6368)
         c.emit("2600 2004 5280 2800")
+        if freeze_h_slots:
+            c.emit("2002")
+            c.imm("0280", 127)
+            c.emit("2400")
         fmt("take", ["2f02", "2f03"])
         text(44 - row * 9)
         c.label(f"take_skip{row}")
@@ -1265,6 +1369,9 @@ def payload(
     startup_capture=False,
     copy_shortcuts=False,
     stopped_recording=False,
+    monitor_labels=False,
+    freeze_h_slots=False,
+    sketchbook_save=False,
 ):
     """All feature behavior is emitted ColdFire; installation only is Python."""
     require(
@@ -1279,6 +1386,10 @@ def payload(
         require(freeze_enabled, "Sketch COPY requires the real FREEZE backend")
         labels.update(clip.LABELS)
         labels["nav"] = "YES:TAKES F+REC:COPY"
+    if sketchbook_save:
+        from lab import sketch_panel as panel
+
+        labels["nav"] = "YES:TAKES   SKETCHBOOK"
     if stopped_recording:
         labels["hint_stopped"] = "STOPPED:F+SONG NOW"
     if startup_capture:
@@ -1309,16 +1420,33 @@ def payload(
                 nb.CLOCK_DIAGNOSTICS, len(nb.ARM_DIAGNOSTICS) + 1
             ):
                 labels[f"arm_diag_{index}"] = f"CLK {name} %u"
+    if monitor_labels:
+        # Stock MON is 0=POST MIX, 1=PRE MIX. Append names so every existing
+        # string and executable address stays fixed; only MON's table changes.
+        labels.update(monitor_post="POST", monitor_pre="PRE")
+    if freeze_h_slots:
+        require(clock_fix and freeze_enabled, "FREEZE H feedback needs the clock profile")
+        labels.update(
+            freeze_slot_conflict="FREEZE: H%03u IN USE",
+            freeze_slot_ready="FROZEN TO H%03u",
+        )
+        labels["take"] = "H%03u %s"
+    if sketchbook_save:
+        labels.update(panel.LABELS)
     for name, value in labels.items():
         raw = value.encode("ascii") + b"\0"
         strings[name] = cursor
         data[cursor] = raw
         cursor += len(raw)
     require(cursor < LINE, "Sketch strings overflow")
+    if sketchbook_save:
+        require(cursor <= panel.DRAW, "Sketch strings reach recorder-style panel")
+        data[panel.DRAW] = panel.draw(strings)
     words = [strings[f"len{i}"] for i in range(9)]
+    monitor_names = ("monitor_post", "monitor_pre") if monitor_labels else ("off", "on")
     words += [
         strings[n]
-        for n in ("off", "on", "ready", "armed", "recording", "processing", "trim")
+        for n in (*monitor_names, "ready", "armed", "recording", "processing", "trim")
     ]
     words += [
         strings[n]
@@ -1407,14 +1535,17 @@ def payload(
                 navigation_fixes=navigation_fixes,
                 startup_capture=startup_capture,
                 copy_shortcuts=copy_shortcuts,
+                sketchbook_save=sketchbook_save,
             ),
             KEY: bridge(KEY, perf.KEY),
             MAIN_KEY: bridge(MAIN_KEY, MAIN_KEY + 0x80),
             VIEW_KEY: bridge(VIEW_KEY, 0x4011ACFC),
-            OPEN: open_view(),
+            OPEN: open_view(sketchbook_save=sketchbook_save),
             DISPOSE: dispose(),
-            DTOR: destructor(),
-            ROTATE: rotation(performance_controls=performance_controls),
+            DTOR: destructor(sketchbook_save=sketchbook_save),
+            ROTATE: rotation(
+                performance_controls=performance_controls, sketchbook_save=sketchbook_save
+            ),
             DRAW: draw(
                 strings,
                 arm_enabled=arm_enabled,
@@ -1426,6 +1557,8 @@ def payload(
                 startup_capture=startup_capture,
                 copy_table=copy_table,
                 stopped_recording=stopped_recording,
+                freeze_h_slots=freeze_h_slots,
+                sketchbook_save=sketchbook_save,
             ),
             ROUTE: r,
             ROUTE_STOCK: rs,
@@ -1438,8 +1571,8 @@ def payload(
                 performance_controls=performance_controls,
                 stopped_recording=stopped_recording,
             ),
-            FREEZE_SUBMIT: submit_freeze(),
-            FREEZE_FEEDBACK: freeze_feedback(),
+            FREEZE_SUBMIT: submit_freeze(freeze_h_slots=freeze_h_slots),
+            FREEZE_FEEDBACK: freeze_feedback(freeze_h_slots=freeze_h_slots),
             ARM_FEEDBACK: arm_feedback(startup_capture=startup_capture),
             CLEAR: clear_canvas(),
             MAIN_KEY + 0x80: MAIN_BYTES
@@ -1448,7 +1581,7 @@ def payload(
         }
     )
     if copy_shortcuts:
-        data.update(clip.payload())
+        data.update(clip.payload(freeze_h_slots=freeze_h_slots))
     if operation_diagnostics:
         data[OP_DIAG] = operation_diagnosis()
     ordered = sorted(data.items())

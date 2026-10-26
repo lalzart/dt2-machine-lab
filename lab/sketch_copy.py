@@ -72,7 +72,7 @@ def action(c, value):
     s.setv(c, s.ACTION, value)
 
 
-def copy():
+def copy(*, freeze_h_slots=False):
     from lab import sketch as s
 
     c = Code()
@@ -87,6 +87,14 @@ def copy():
     frozen.call(c, bf.SUBMIT, 4)
     c.emit("4a80")
     c.branch(7, "accepted")
+    if freeze_h_slots:
+        from lab import buf_freeze_slots as slots
+
+        c.imm("0c80", slots.CONFLICT)
+        c.branch(6, "ordinary_refusal")
+        action(c, slots.ACTION)
+        c.branch(0, "done")
+        c.label("ordinary_refusal")
     for result, label in ((-7, "busy"), (-2, "empty"), (-5, "full")):
         c.imm("0c80", result)
         c.branch(7, label)
@@ -129,7 +137,7 @@ def context(c, bad):
         c.branch(6, bad)
 
 
-def feedback():
+def feedback(*, freeze_h_slots=False):
     from lab import sketch as s
 
     c = Code()
@@ -148,6 +156,11 @@ def feedback():
     c.label("completed")
     setv(c, PENDING, 0)
     c.imm("2439", jobs.STATE + 12)
+    if freeze_h_slots:
+        from lab import buf_freeze_slots as slots
+
+        c.imm("0c82", slots.CONFLICT)
+        c.branch(7, "collision")
     c.imm("0c82", 1)
     c.branch(13, "failed")
     c.imm("0c82", 1023)
@@ -177,7 +190,10 @@ def feedback():
     c.label("ready")
     action(c, COPIED)
     c.branch(0, "done")
-    for label, value in (("failed", FAILED), ("stale", STALE)):
+    failures = (("failed", FAILED), ("stale", STALE))
+    if freeze_h_slots:
+        failures += (("collision", slots.ACTION),)
+    for label, value in failures:
         c.label(label)
         setv(c, VALID, 0)
         setv(c, PENDING, 0)
@@ -375,10 +391,10 @@ def key():
     return c.finish(KEY)
 
 
-def payload():
+def payload(*, freeze_h_slots=False):
     return {
-        COPY: copy(),
-        FEEDBACK: feedback(),
+        COPY: copy(freeze_h_slots=freeze_h_slots),
+        FEEDBACK: feedback(freeze_h_slots=freeze_h_slots),
         CHECK: check(),
         PASTE: paste(),
         KEY: key(),
