@@ -65,21 +65,37 @@ p.add_argument(
     help="FUNC+SONG free capture and finish while stopped",
 )
 p.add_argument(
-    "--recording-led", action="store_true",
+    "--recording-led",
+    action="store_true",
     help="SONG red during actual BUF capture; requires --stopped-recording",
 )
 p.add_argument(
-    "--monitor-labels", action="store_true",
+    "--monitor-labels",
+    action="store_true",
     help="show stock MON values as POST/PRE instead of OFF/ON",
 )
 p.add_argument(
-    "--freeze-h-slots", action="store_true",
+    "--freeze-h-slots",
+    action="store_true",
     help="place immutable snapshots at H123..H116, refusing occupied rows",
 )
 p.add_argument(
-    "--sketchbook-save", action="store_true",
+    "--sketchbook-save",
+    action="store_true",
     help="experimental native DSP readback and individual /Sketchbook export; requires --freeze-h-slots",
 )
+p.add_argument(
+    "--managed-buffers",
+    action="store_true",
+    help="volatile per-BUF settings and status; requires the full Sketchbook profile",
+)
+p.add_argument(
+    "--assign-popup",
+    action="store_true",
+    help="optional stock-style prompt after BUF publication; requires --managed-buffers",
+)
+p.add_argument("--buf-loading", action="store_true")
+p.add_argument("--early-buf-setup", action="store_true")
 a = p.parse_args()
 out = a.output.resolve()
 require(out.is_relative_to(ROOT / "out/runs"), "Use a fresh ignored run")
@@ -114,6 +130,10 @@ try:
         monitor_labels=a.monitor_labels,
         freeze_h_slots=a.freeze_h_slots,
         sketchbook_save=a.sketchbook_save,
+        managed_buffers=a.managed_buffers,
+        assign_popup=a.assign_popup,
+        buf_loading=a.buf_loading,
+        early_buf_setup=a.early_buf_setup,
     )
     require(
         build(
@@ -132,6 +152,10 @@ try:
             monitor_labels=a.monitor_labels,
             freeze_h_slots=a.freeze_h_slots,
             sketchbook_save=a.sketchbook_save,
+            managed_buffers=a.managed_buffers,
+            assign_popup=a.assign_popup,
+            buf_loading=a.buf_loading,
+            early_buf_setup=a.early_buf_setup,
         )
         == (image, meta),
         "Sketch build repeat differs",
@@ -142,12 +166,12 @@ try:
     require(
         sha256(out / "dsp/RETIRE_BLOB.bin") == dsp["blob_sha256"], "DSP output changed"
     )
-    dsp_path="dsp/RETIRE_BLOB.bin"
+    dsp_path = "dsp/RETIRE_BLOB.bin"
     if a.sketchbook_save:
         from lab.sketchbook_dsp import build as build_readback
 
-        blob,dsp=build_readback(blob,dsp,out/"sketchbook-dsp")
-        dsp_path="sketchbook-dsp/SKETCHBOOK_BLOB.bin"
+        blob, dsp = build_readback(blob, dsp, out / "sketchbook-dsp")
+        dsp_path = "sketchbook-dsp/SKETCHBOOK_BLOB.bin"
     require(source_hashes() == provenance["source_hashes"], "Build source drift")
     report.update(
         status="local-build-complete",

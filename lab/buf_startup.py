@@ -32,7 +32,7 @@ RETURN_BYTES = bytes.fromhex("4cd77cfc4fef0058")
 START_BYTES = bytes.fromhex("48780002206f0008")
 
 
-def batch_enter():
+def batch_enter(*, early_setup=None):
     c = Code()
     c.emit("4feffff0 48d70003")
     b.load(c, BATCH_ACTIVE)
@@ -51,6 +51,8 @@ def batch_enter():
     c.label("poison")
     b.setv(c, POISON, 1)  # Unknown nesting must never certify completion.
     c.label("return")
+    if early_setup is not None:
+        n.call(c, early_setup)
     c.emit("7000 2f400048 2f40004c 4cd70003 4fef0010")
     c.imm("4ef9", BATCH_SITE + 8)
     return c.finish(BATCH_ENTER)

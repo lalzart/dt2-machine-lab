@@ -13,7 +13,10 @@
         "test_buf_startup",
         "test_buf_stopped",
         "test_sketch_led",
-        "test_sketchbook_save"
+        "test_sketchbook_save",
+        "test_sketch_managed",
+        "test_sketch_assign",
+        "test_buf_loading"
       ]
     },
     "buf-native": {

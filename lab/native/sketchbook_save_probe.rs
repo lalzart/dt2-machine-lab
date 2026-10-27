@@ -11,6 +11,20 @@ fn read(p:impl AsRef<Path>)->Vec<u8>{fs::read(p).unwrap()}
 fn save(p:impl AsRef<Path>,v:&Value){fs::write(p,serde_json::to_vec_pretty(v).unwrap()).unwrap()}
 fn source()->Vec<u8>{(0..240_000i32).flat_map(|i|{let l=((i*53)%20001-10000) as i16;let r=((i*89)%16001-8000) as i16;[l.to_be_bytes(),r.to_be_bytes()].concat()}).collect()}
 fn frame(e:&mut Emulator,out:&Path,name:&str){if let Some((_,b))=e.current_frame(){fs::write(out.join(format!("{name}.frame")),b).unwrap();}}
+// Sample the native bitmap immediately after Sketch draw returns. The general
+// panel latch can retain an intermediate comparison buffer (changed pixels only).
+// Observe target-generated pixels; never combine frames or paint missing labels.
+fn sketch_frame(e:&mut Emulator,t:&mut Operations,out:&Path,name:&str,draw:u32){
+ assert!(e.run_until_pc(draw,26_400_000),"Sketch draw not reached");
+ let (_,a,_,_)=e.cpu_regs();let ret=e.peek32(a[7]).unwrap();let canvas=e.peek32(a[7]+8).unwrap();
+ assert_eq!(e.peek32(canvas+4),Some(128));assert_eq!(e.peek32(canvas+8),Some(64));assert_eq!(e.peek32(canvas+12),Some(2));
+ let pixels=e.peek32(canvas+16).unwrap();
+ assert!(e.run_until_pc(ret,2_640_000),"Sketch draw did not return");
+ t.sample(e,name,false);
+ let b=e.peek(pixels,1024).unwrap();
+ assert!(b.iter().filter(|&&v|v!=0).count()>150,"Incomplete native Sketch bitmap: {name}");
+ fs::write(out.join(format!("{name}.draw.frame")),b).unwrap();
+}
 fn advance(e:&mut Emulator,t:&mut Operations,shared:&std::rc::Rc<std::cell::RefCell<elektron_native_boot::sharc_peer::Shared>>,n:u64,label:&str){
  let end=e.icount()+n;while e.icount()<end{let s=e.step_chunk((end-e.icount()).min(250_000) as u32).status;assert!(s.error.is_none(),"CPU fault {:?}",s.error);assert!(shared.borrow().halted.is_none());t.sample(e,label,s.ready);}
 }
@@ -66,10 +80,29 @@ fn main(){
  let nb=symbols["nb"]["STATE"].as_u64().unwrap() as u32;
  let view=symbols["s"]["STATE"].as_u64().unwrap() as u32;
  let field=|layer:&str,name:&str| symbols[layer][name].as_u64().unwrap() as u32;
+ let managed=spec["managed_buffers"]==true;
+ let assign_popup=spec["assign_popup"]==true;
+ let panel_draw=meta["arenas"].as_array().unwrap().iter().find(|a|a["name"]=="sketch").unwrap()["destination"].as_u64().unwrap() as u32+0x6000;
 
  let chord=|e:&mut Emulator,t:&mut Operations,key:u8,label:&str|{
   e.button(17,true).unwrap();advance(e,t,&shared,2_640_000,label);tap(e,t,&shared,key,label);e.button(17,false).unwrap();advance(e,t,&shared,2_640_000,label);
  };
+ let early_setup=spec["early_buf_setup"]==true;
+ if early_setup {
+  assert!(e.run_until_pc(0x4004e97c,1_500_000_000),"Project load batch not reached");
+  trace.sample(&mut e,"before-early-BUF-setup",false);
+  assert_eq!(e.peek32(w+64),Some(0));
+  let before=e.icount();
+  assert!(e.run_until_pc(0x4004e984,2_640_000),"Early setup did not return");
+  trace.sample(&mut e,"after-early-BUF-setup",false);
+  assert_eq!(e.peek32(field("loading","ATTEMPTS")),Some(1));
+  assert_eq!(e.peek32(field("loading","RESULT")),Some(1));
+  assert_eq!(e.peek32(w+64),Some(1));
+  for i in 0..4 {assert_eq!(e.peek32(w+96+i*4),Some(1020+i));}
+  assert_eq!(e.peek32(nb+field("pending","BATCH_ACTIVE")),Some(1));
+  assert_eq!(trace.project_loads(),0);
+  save(out.join("early-BUF-setup.json"),&json!({"status":"passed","before":before,"after":e.icount(),"project_loads_completed":0,"slots":[1020,1021,1022,1023],"batch_active":true,"setup_ready":true,"hardware":false}));
+ }
  let mut prepared=false;
  while !trace.batch_returned() || !prepared || !trace.is_quiet(){
   let st=e.step_chunk(250_000).status;assert!(st.error.is_none());trace.sample(&mut e,"read-only-startup",st.ready);
@@ -88,10 +121,27 @@ fn main(){
  let stopped_clock=json!({"before":t0,"after":t1,"delta":t1.wrapping_sub(t0),"playing":false,"bar_clock_valid":e.peek32(nb+field("nb","VALID"))});
  // Select BUF 2/NOW/LEN16 using the menu, then leave it for T5 SRC.
  tap(&mut e,&mut trace,&shared,24,"open-Sketch");
+ let settings_view=e.peek32(view+field("s","VIEW")).unwrap();
+ let settings_wrap=e.peek32(settings_view+field("s","SETTINGS")).unwrap();
+ let settings_inner=e.peek32(settings_wrap+16).unwrap();
+ let normal_values=|e:&mut Emulator|->Vec<u32>{[0x1ae,0x1be,0x1ba,0x1b6].iter().map(|off|e.peek32(settings_inner+off).unwrap()).collect()};
+ let normal_before=normal_values(&mut e);
  for _ in 0..8 {if e.peek32(view+field("s","BUF"))==Some(2){break;}let delta=if e.peek32(view+field("s","BUF")).unwrap()>2{-10}else{10};e.turn(1,delta).unwrap();advance(&mut e,&mut trace,&shared,3_960_000,"select-BUF2");}
  assert_eq!(e.peek32(view+field("s","BUF")),Some(2));
- for _ in 0..8 {if e.peek32(view+field("s","START_MODE"))==Some(1){break;}e.turn(6,10).unwrap();advance(&mut e,&mut trace,&shared,3_960_000,"select-NOW");}
- for _ in 0..20 {let object=e.peek32(view+field("s","VIEW")).unwrap();let wrap=e.peek32(object+field("s","SETTINGS")).unwrap();let inner=e.peek32(wrap+16).unwrap();let len=e.peek32(inner+0x1ba).unwrap();if len==4{break;}e.turn(4,if len>4{-10}else{10}).unwrap();advance(&mut e,&mut trace,&shared,3_960_000,"LEN16");}
+ let start_at=if managed{field("managed","SETTINGS")+32+16}else{view+field("s","START_MODE")};
+ for _ in 0..8 {if e.peek32(start_at)==Some(1){break;}e.turn(6,10).unwrap();advance(&mut e,&mut trace,&shared,3_960_000,"select-NOW");}
+ assert_eq!(e.peek32(start_at),Some(1));
+ for _ in 0..20 {let len=if managed{e.peek32(field("managed","SETTINGS")+32+8).unwrap()}else{e.peek32(settings_inner+0x1ba).unwrap()};if len==4{break;}e.turn(4,if len>4{-10}else{10}).unwrap();advance(&mut e,&mut trace,&shared,3_960_000,"LEN16");}
+ if managed{
+  let prefs=field("managed","SETTINGS");let buf2=e.peek(prefs+32,20).unwrap();
+  for _ in 0..8{if e.peek32(view+field("s","BUF"))==Some(3){break;}e.turn(1,10).unwrap();advance(&mut e,&mut trace,&shared,3_960_000,"select-BUF3");}
+  assert_eq!(e.peek32(view+field("s","BUF")),Some(3));assert_eq!(e.peek32(prefs+64+16),Some(0));
+  for _ in 0..8{if e.peek32(prefs+64+8)==Some(5){break;}e.turn(4,10).unwrap();advance(&mut e,&mut trace,&shared,3_960_000,"BUF3-LEN32");}
+  assert_eq!(e.peek32(prefs+64+8),Some(5));assert_eq!(e.peek(prefs+32,20).unwrap(),buf2);assert_eq!(normal_values(&mut e),normal_before);
+  frame(&mut e,out,"managed-BUF3-independent-length");if managed{sketch_frame(&mut e,&mut trace,out,"managed-BUF3-independent-length",panel_draw);}
+  for _ in 0..8{if e.peek32(view+field("s","BUF"))==Some(2){break;}e.turn(1,-10).unwrap();advance(&mut e,&mut trace,&shared,3_960_000,"return-BUF2");}
+  assert_eq!(e.peek32(view+field("s","BUF")),Some(2));assert_eq!(e.peek(prefs+32,20).unwrap(),buf2);frame(&mut e,out,"managed-BUF2-preferences");if managed{sketch_frame(&mut e,&mut trace,out,"managed-BUF2-preferences",panel_draw);}
+ }
  e.button(16,true).unwrap();advance(&mut e,&mut trace,&shared,2_640_000,"TRK");tap(&mut e,&mut trace,&shared,29,"select-T5");e.button(16,false).unwrap();advance(&mut e,&mut trace,&shared,2_640_000,"release-TRK");tap(&mut e,&mut trace,&shared,2,"SRC-T5");
  assert_eq!(e.peek32(view+field("s","VIEW")),Some(0));
  let kit=e.peek32(0x80004704).unwrap();let assignments=e.peek(kit,16*0x450).unwrap();let assigned=u16::from_be_bytes([assignments[4*0x450+0x80],assignments[4*0x450+0x81]]);assert!(!(1020..=1023).contains(&assigned));
@@ -105,17 +155,38 @@ fn main(){
  save(out.join("early-stopped-checkpoint.json"),&json!({"nb":e.peek(nb,0x200).unwrap(),"Sketch":e.peek(view,0x140).unwrap(),"events":e.recorder_peer().unwrap().events,"active":e.recorder_peer().unwrap().active}));
  assert_eq!(e.peek32(nb+field("nb","PHASE")),Some(2),"early take must still be active");
  assert!(e.recorder_peer().unwrap().active);
- tap(&mut e,&mut trace,&shared,24,"show-manual-recording");frame(&mut e,out,"manual-recording");
+ tap(&mut e,&mut trace,&shared,24,"show-manual-recording");frame(&mut e,out,"manual-recording");if managed{sketch_frame(&mut e,&mut trace,out,"manual-recording",panel_draw);}
  // Switch ordinary track while recording, then finish globally from T1.
  e.button(16,true).unwrap();advance(&mut e,&mut trace,&shared,2_640_000,"TRK");tap(&mut e,&mut trace,&shared,25,"select-T1");e.button(16,false).unwrap();advance(&mut e,&mut trace,&shared,2_640_000,"release-TRK");tap(&mut e,&mut trace,&shared,2,"SRC-T1");
  chord(&mut e,&mut trace,24,"manual-finish-from-T1");
  for _ in 0..1800 {if e.peek32(nb)==Some(0)&&e.peek32(nb+field("nb","USES"))==Some(1){break;}advance(&mut e,&mut trace,&shared,250_000,"manual-publication");}
  assert_eq!(e.peek32(nb+field("nb","USES")),Some(1));assert_eq!(e.peek32(dest),Some(0));assert!(!play(&mut e));
+ if managed{
+  advance(&mut e,&mut trace,&shared,5_280_000,"restore-normal-settings");
+  assert_eq!(e.peek32(field("managed","STATE")+field("managed","BORROWED")),Some(0));
+  assert_eq!(normal_values(&mut e),normal_before,"Sketch capture changed normal sampler preferences");
+ }
  let captured=trace.completed_pcm().to_vec();assert!((141*4..96_000*4).contains(&captured.len()));assert!(captured.iter().any(|&v|v!=0));
  fs::write(out.join("captured.pcm"),&captured).unwrap();
  let descriptor=e.peek32(w+36).unwrap();let published=e.peek(descriptor,64).unwrap();fs::write(out.join("published-descriptor.bin"),&published).unwrap();
  assert_eq!(e.peek32(w+100),Some(1021));
- tap(&mut e,&mut trace,&shared,24,"show-manual-ready");frame(&mut e,out,"manual-ready");
+ if assign_popup{
+  let prompt=field("assign","STATE");
+  for _ in 0..80{if e.peek32(prompt+field("assign","SHOWN"))==Some(1){break;}advance(&mut e,&mut trace,&shared,250_000,"wait-assignment-prompt-A");}
+  let q=meta["arenas"].as_array().unwrap().iter().find(|a|a["name"]=="freeze_queue").unwrap()["destination"].as_u64().unwrap() as u32;
+  let brain=e.peek32(0x44f37098).unwrap();let node=e.peek32(brain+0x58).unwrap();let top=e.peek32(node+8).unwrap();let vt=e.peek32(top).unwrap();let name=e.peek32(top+0x28).unwrap();
+  let mut stack=vec![];let mut cursor=node;for _ in 0..32{if cursor==brain+0x54{break;}let v=e.peek32(cursor+8).unwrap();let table=e.peek32(v).unwrap();let view_name=e.peek32(v+0x28).unwrap();stack.push(json!({"view":v,"vtable":table,"key":e.peek32(table+8),"name":e.peek(view_name,64)}));cursor=e.peek32(cursor+4).unwrap();}
+  save(out.join("assign-A-checkpoint.json"),&json!({"stack":stack,"state":e.peek(prompt,256),"sketch":e.peek(view,0x140),"brain":brain,"node":node,"top":top,"vtable":vt,"key":e.peek32(vt+8),"name":e.peek(name,64),"busy":e.peek32(0x405b1360),"jobs_lease":e.peek32(q+56),"worker_lease":e.peek32(w+12),"borrowed":e.peek32(field("managed","STATE")+field("managed","BORROWED"))}));
+  assert_ne!(e.peek32(prompt+field("assign","VIEW")),Some(0),"Successful capture must open assignment prompt from normal SRC page");
+  assert_eq!(e.peek32(prompt+field("assign","BUF")),Some(2));assert_eq!(e.peek32(prompt+field("assign","SLOT")),Some(1021));
+  sketch_frame(&mut e,&mut trace,out,"assign-A-stock-prompt",field("assign","STOCK_DRAW"));
+  let before=e.peek(kit,16*0x450).unwrap();
+  tap(&mut e,&mut trace,&shared,12,"NO-skip-assign-A");
+  assert_eq!(e.peek32(prompt+field("assign","VIEW")),Some(0));assert_eq!(e.peek32(prompt+field("assign","SKIPPED")),Some(1));
+  assert_eq!(e.peek(kit,16*0x450).unwrap(),before,"NO must not change any track");
+  assert_eq!(e.peek32(view+field("s","VIEW")),Some(0),"NO must return to original SRC page");
+ }
+ tap(&mut e,&mut trace,&shared,24,"show-manual-ready");frame(&mut e,out,"manual-ready");if managed{sketch_frame(&mut e,&mut trace,out,"manual-ready",panel_draw);}
  // Freeze through the existing held-SONG event. The first snapshot is H123.
  let arena=|name:&str|meta["arenas"].as_array().unwrap().iter().find(|a|a["name"]==name).unwrap()["destination"].as_u64().unwrap() as u32;
  let generations=arena("generations");let snaps=generations+0x1800;let jobs=arena("freeze_queue");let pool=e.peek32(w+68).unwrap();
@@ -127,7 +198,7 @@ fn main(){
  for _ in 0..400 {if e.peek32(jobs+32)==Some(1){break;}advance(&mut e,&mut trace,&shared,250_000,"wait-FREEZE-A");}
  save(out.join("freeze-A-checkpoint.json"),&json!({"result":e.peek32(jobs+12),"count":e.peek32(generations+4),"snapshot":e.peek(snaps,64),"action":e.peek32(view+field("s","ACTION")),"pool_ref":e.peek(pool+1019*16,16)}));
  assert_eq!(e.peek32(jobs+12),Some(1019));assert_eq!(e.peek32(generations+4),Some(1));assert_eq!(e.peek32(snaps+36),Some(1019));assert_eq!(e.peek(kit,16*0x450).unwrap(),assignments_before,"FREEZE must not assign a track");
- advance(&mut e,&mut trace,&shared,26_400_000,"settle-FREEZE-A");frame(&mut e,out,"01-frozen-to-H123");assert_eq!(dslot(1019),source_a);
+ advance(&mut e,&mut trace,&shared,26_400_000,"settle-FREEZE-A");frame(&mut e,out,"01-frozen-to-H123");if managed{sketch_frame(&mut e,&mut trace,out,"01-frozen-to-H123",panel_draw);}assert_eq!(dslot(1019),source_a);
  let frozen_a=e.peek(snaps,64).unwrap();let key_a=e.peek(pool+1019*16,16).unwrap();let hdr_a=dslot(1019);
  let sample_bytes=|hdr:&[u32]|->Vec<u8>{assert!(hdr[2]>0&&hdr[2]<=1_920_000);let mut b=vec![];for off in (0..hdr[2]).step_by(4){let v=dsp.0.borrow().peek((0x8422b9c8u64+hdr[0] as u64+off as u64),4).unwrap().unwrap();b.extend(v.to_le_bytes());}b.truncate(hdr[2] as usize);b};
  let pcm_a=sample_bytes(&hdr_a);assert!(pcm_a.iter().any(|&b|b!=0));fs::write(out.join("frozen-A-DSP-PCM.bin"),&pcm_a).unwrap();
@@ -138,6 +209,24 @@ fn main(){
  advance(&mut e,&mut trace,&shared,66_000_000,"replacement-B-input");chord(&mut e,&mut trace,24,"finish-replacement-B");
  for _ in 0..1800 {if e.peek32(nb)==Some(0)&&e.peek32(nb+field("nb","USES"))==Some(before+1){break;}advance(&mut e,&mut trace,&shared,250_000,"B-publish");}
  assert_eq!(e.peek32(nb+field("nb","USES")),Some(before+1));assert_eq!(e.peek(snaps,64).unwrap(),frozen_a);assert_eq!(e.peek(pool+1019*16,16).unwrap(),key_a);assert_eq!(dslot(1019),hdr_a);assert_eq!(sample_bytes(&hdr_a),pcm_a,"frozen A PCM must remain exact after B");assert_ne!(sample_bytes(&dslot(1021)),pcm_a,"replacement B PCM must differ");
+ if assign_popup{
+  let prompt=field("assign","STATE");
+  for _ in 0..80{if e.peek32(prompt+field("assign","SHOWN"))==Some(2){break;}advance(&mut e,&mut trace,&shared,250_000,"wait-assignment-prompt-B");}
+  assert_ne!(e.peek32(prompt+field("assign","VIEW")),Some(0));assert_eq!(e.peek32(prompt+field("assign","SHOWN")),Some(2));
+  let sketch=e.peek32(view+field("s","VIEW")).unwrap();assert_ne!(sketch,0);
+  sketch_frame(&mut e,&mut trace,out,"assign-B-stock-prompt",field("assign","STOCK_DRAW"));
+  let before=e.peek(kit,16*0x450).unwrap();
+  e.button(40,true).unwrap();advance(&mut e,&mut trace,&shared,2_640_000,"assign-B-T16-press");
+  assert_eq!(e.peek(kit,16*0x450).unwrap(),before,"Assignment waits for release");
+  e.button(40,false).unwrap();advance(&mut e,&mut trace,&shared,5_280_000,"assign-B-T16-release");
+  save(out.join("assign-B-checkpoint.json"),&json!({"state":e.peek(prompt,256),"before":before,"after":e.peek(kit,16*0x450)}));
+  assert_eq!(e.peek32(prompt+field("assign","VIEW")),Some(0));assert_eq!(e.peek32(prompt+field("assign","RESULT")),Some(1));
+  assert_eq!(e.peek32(prompt+field("assign","ASSIGNED")),Some(1));assert_eq!(e.peek32(prompt+field("assign","TARGET")),Some(16));
+  assert_eq!(e.peek(kit,15*0x450).unwrap(),before[..15*0x450],"Other fifteen tracks unchanged");
+  assert_eq!(e.peek(kit+15*0x450+0x80,2).unwrap(),1021u16.to_be_bytes());
+  assert_eq!(e.peek32(view+field("s","VIEW")),Some(sketch),"Track choice release must not close underlying Sketch");
+  advance(&mut e,&mut trace,&shared,5_280_000,"assignment-once");assert_eq!(e.peek32(prompt+field("assign","SHOWN")),Some(2));
+ }
 
  let book=field("book","STATE");let meta_base=field("book","META");
  save(out.join("metadata-before-save.json"),&json!({"meta":e.peek(meta_base,1024),"generations":e.peek(generations+0x1000,512),"key_A":e.peek(0x405b1368+1019*16,16),"key_B":e.peek(0x405b1368+1021*16,16),"worker":e.peek(w,256)}));
@@ -157,7 +246,7 @@ fn main(){
  tap(&mut e,&mut trace,&shared,key("LEFT"),"LEFT-Samples-root");advance(&mut e,&mut trace,&shared,13_200_000,"Samples-root-settle");
  assert_eq!(e.peek32(ui+ui_field("VIEW")),Some(0));frame(&mut e,out,"10-stock-Samples-root");
  tap(&mut e,&mut trace,&shared,key("NO"),"NO-close-Samples-root");
- tap(&mut e,&mut trace,&shared,24,"SONG-open-Sketch");frame(&mut e,out,"10b-Sketch-save-entry");
+ tap(&mut e,&mut trace,&shared,24,"SONG-open-Sketch");frame(&mut e,out,"10b-Sketch-save-entry");if managed{sketch_frame(&mut e,&mut trace,out,"10b-Sketch-save-entry",panel_draw);}
  assert_ne!(e.peek32(view+field("s","VIEW")),Some(0));
  tap(&mut e,&mut trace,&shared,key("LEFT"),"LEFT-must-not-open-Sketchbook");assert_eq!(e.peek32(ui+ui_field("MODE")),Some(0));
  tap(&mut e,&mut trace,&shared,key("DOWN"),"DOWN-open-Sketchbook");assert_eq!(e.peek32(ui+ui_field("MODE")),Some(1));frame(&mut e,out,"11-Sketchbook-buffers");
@@ -223,7 +312,16 @@ fn main(){
   assert_eq!(e.peek(pool,16384).unwrap(),protected_pool);assert_eq!(e.peek(kit,16*0x450).unwrap(),protected_tracks);assert_eq!(e.peek(snaps,512).unwrap(),protected_snap);
   assert_eq!(e.peek32(w+12),Some(0));assert_eq!(e.peek32(book+field("book","CLOSED")),Some(1));frame(&mut e,out,&format!("save-result-{}",results.len()));tap(&mut e,&mut trace,&shared,12,"close-save-result");
  }
+ for guard in meta["guards"].as_array().unwrap(){
+  let at=guard[0].as_u64().unwrap() as u32;let n=guard[1].as_u64().unwrap() as usize;
+  assert_eq!(e.peek(at,n).unwrap(),[0xc0,0x57,0xa1,0x1c,0x5a,0xfe,0x11,0x60].repeat(n/8),"CPU arena canary changed");
+ }
+ for write in meta["writes"].as_array().unwrap().iter().chain(meta["hooks"].as_array().unwrap()){
+  if write["kind"]!="code" && write["kind"]!="stock-trampoline"{continue;}
+  let h=write["after"].as_str().unwrap();let b:Vec<_>=(0..h.len()).step_by(2).map(|i|u8::from_str_radix(&h[i..i+2],16).unwrap()).collect();
+  assert_eq!(e.peek(write["address"].as_u64().unwrap() as u32,b.len()).unwrap(),b,"CPU code changed");
+ }
  trace.checkpoint(&mut e,out,true);
- save(out.join("flow.json"),&json!({"status":"passed","saves":results,"source_CPU_PCM_released":true,"native_menu_preview_filename_flow":true,"STOP_cancels_pending_preview":true,"preview_nonzero_modeled_output":true,"preview_temporary_CPU_snapshot_freed":true,"audition_makes_no_disk_writes":true,"disabled_data_emitter_fails_and_retry_succeeds":true,"associations_unchanged":true,"scope":"Target CPU/SHARC instructions and original LP0/DSPI2 modeled peripherals. Host supplies selection/name commands and comparison observations only; no host readback completion or PCM supply.","hardware":false,"elapsed_seconds":start.elapsed().as_secs_f64()}));
+ save(out.join("flow.json"),&json!({"status":"passed","CPU_arena_canaries_intact":true,"CPU_code_intact":true,"managed_per_BUF_settings_and_normal_restore":managed,"managed_complete_native_draws":managed,"assignment_popup_NO_and_T16":assign_popup,"early_BUF_setup_before_project_samples":early_setup,"assignment_popup_stock_pixels":assign_popup,"saves":results,"source_CPU_PCM_released":true,"native_menu_preview_filename_flow":true,"STOP_cancels_pending_preview":true,"preview_nonzero_modeled_output":true,"preview_temporary_CPU_snapshot_freed":true,"audition_makes_no_disk_writes":true,"disabled_data_emitter_fails_and_retry_succeeds":true,"associations_unchanged":true,"scope":"Target CPU/SHARC instructions and original LP0/DSPI2 modeled peripherals. Host supplies selection/name commands and comparison observations only; no host readback completion or PCM supply.","hardware":false,"elapsed_seconds":start.elapsed().as_secs_f64()}));
  eprintln!("Sketchbook backend flow passed in {:.1}s",start.elapsed().as_secs_f64());
 }

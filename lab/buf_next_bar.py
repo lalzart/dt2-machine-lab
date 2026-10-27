@@ -1066,7 +1066,7 @@ def worker(*, startup_capture=False):
     return c.finish(WORKER)
 
 
-def done(*, release_recorder=False):
+def done(*, release_recorder=False, publication_notify=None):
     c = Code()
     c.emit("4fefffd0 48d77cfc 242f0038")  # Completion status, original SP+8.
     store(c, JOB_RESULT, 2)
@@ -1109,6 +1109,8 @@ def done(*, release_recorder=False):
     controller(c, DISCARD if release_recorder else READY)
     inc(c, USES)
     setv(c, RESULT, 1)
+    if publication_notify is not None:
+        n.call(c, publication_notify)
     c.branch(0, "release")
     c.label("abort")
     c.imm("2f39", w.STATE + 20)

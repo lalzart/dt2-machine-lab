@@ -12,6 +12,17 @@ The accepted build recipe and binary hashes live in
 are committed; firmware images, captures, local dependencies and private inputs
 remain ignored. No device operation runs automatically.
 
+The new opt-in [managed Sketch profile](docs/SKETCH-MANAGED-RESULTS.md) builds on
+committed R14: per-BUF recording preferences, safe admission and visible buffer
+status. Buffers remain volatile; explicit Sketchbook +Drive export is available,
+and project persistence is excluded. Its local validation is separate from the
+accepted hardware checkpoint below.
+
+An optional [post-recording assignment popup](docs/SKETCH-ASSIGN-POPUP.md) is
+available with `--assign-popup` on the managed builder. After recording, choose
+TRG 1–16 to link the live BUF to a sample track, or NO to skip. Omitting the
+switch retains the previous managed build exactly.
+
 ## Everyday work
 
 ```sh

@@ -39,11 +39,12 @@ HOOKS = {
 }
 
 
-def qualified(c, bad):
+def qualified(c, bad, *, buf_loading=False):
     c.imm("2239", VIEW_ENABLED)
     c.imm("0c81", 1)
     c.branch(6, bad)
-    ready_mapping(c, bad)
+    if not buf_loading:
+        ready_mapping(c, bad)
 
 
 def ready_mapping(c, bad):
@@ -59,7 +60,7 @@ def ready_mapping(c, bad):
         c.branch(2, bad)
 
 
-def inverse():
+def inverse(*, buf_loading=False):
     """(view*, actual slot) -> menu rank; writes only view's current bank cell.
 
     Original slot at view+0xa0 is kept for stock NO restoration. D0/D1/A0/A1
@@ -69,11 +70,15 @@ def inverse():
     c.emit("4feffff0 48d7040c 246f0014 242f0018")
     c.imm("0c82", 1023)
     c.branch(2, "invalid")
-    qualified(c, "ordinary")
+    qualified(c, "ordinary", buf_loading=buf_loading)
+    if buf_loading:
+        ready_mapping(c, "pending")
     for i in range(4):
         c.imm("2239", n.STATE + 32 + i * 4)
         c.emit("b481")
         c.branch(7, "buf" + str(i))
+    if buf_loading:
+        c.label("pending")
     c.imm("0c82", 128)
     c.branch(4, "ordinary")
     c.emit("354200a2 2002")
@@ -94,7 +99,7 @@ def inverse():
     return c.finish(INVERSE)
 
 
-def forward():
+def forward(*, buf_loading=False):
     """(bank representative, menu rank) -> actual sample slot, or OFF on bad rank."""
     c = Code()
     c.emit("4feffff0 48d7040c 242f0014 262f0018")
@@ -102,11 +107,13 @@ def forward():
     c.branch(2, "bad")
     c.imm("0c82", 128)
     c.branch(4, "ordinary")
-    qualified(c, "ordinary")
+    qualified(c, "ordinary", buf_loading=buf_loading)
     c.imm("0c83", 132)
     c.branch(4, "bad")
     c.imm("0c83", 4)
     c.branch(4, "normal_a")
+    if buf_loading:
+        ready_mapping(c, "bad")  # Placeholder rows never resolve to an unowned slot.
     for rank in range(4):
         c.imm("0c83", rank)
         c.branch(7, "buf" + str(rank))
@@ -132,7 +139,7 @@ def forward():
     return c.finish(FORWARD)
 
 
-def build_rows(*, navigation_fixes=False):
+def build_rows(*, navigation_fixes=False, buf_loading=False):
     c = Code()
     c.emit("4feffff0 48d7040c 246f0014 7400 342a00a2")
     n.call(c, nb.INIT_BODY)
@@ -148,7 +155,8 @@ def build_rows(*, navigation_fixes=False):
     c.label("scaler_ready")
     c.emit("7000")
     c.imm("23c0", VIEW_ENABLED)
-    ready_mapping(c, "built_mode")
+    if not buf_loading:
+        ready_mapping(c, "built_mode")
     c.emit("7001")
     c.imm("23c0", VIEW_ENABLED)
     c.label("built_mode")
@@ -163,12 +171,12 @@ def build_rows(*, navigation_fixes=False):
     return c.finish(BUILD)
 
 
-def count():
+def count(*, buf_loading=False):
     c = Code()
     c.emit("7000 302b00a2")
     c.imm("0c80", 128)
     c.branch(4, "stock")
-    qualified(c, "stock")
+    qualified(c, "stock", buf_loading=buf_loading)
     c.imm("b9fc", 132)
     c.branch(6, "loop")
     c.branch(0, "done")
@@ -182,7 +190,7 @@ def count():
     return c.finish(COUNT)
 
 
-def cursor(*, navigation_fixes=False):
+def cursor(*, navigation_fixes=False, buf_loading=False):
     c = Code()
     c.emit("4feffff0 48d7041c 246f0014 7400 342f001a 7600 7000 302a00a2")
     c.imm("0c80", 128)
@@ -214,7 +222,7 @@ def cursor(*, navigation_fixes=False):
         c.imm("0c82", 128)
         c.branch(4, "ordinary_rank")
         c.emit("2800")
-        qualified(c, "ordinary_unshifted")
+        qualified(c, "ordinary_unshifted", buf_loading=buf_loading)
         c.imm("0684", 4)
         c.label("ordinary_unshifted")
         c.emit("2004")
@@ -273,8 +281,25 @@ def initial(*, navigation_fixes=False):
     return c.finish(INITIAL)
 
 
-def resolve():
+def resolve(*, buf_loading=False):
     c = Code()
+    if buf_loading:
+        c.emit("2202")
+        c.imm("0281", 0xFFFF)
+        c.imm("0c81", 128)
+        c.branch(4, "normal")
+        c.imm("0c80", 4)
+        c.branch(4, "normal")
+        ready_mapping(c, "pending")
+        c.branch(0, "normal")
+        c.label("pending")
+        # A pending row can be highlighted, but has no sample assignment:
+        # keep the current actual A-bank sample, never invent a BUF assignment.
+        c.emit("2002")
+        c.imm("0280", 0xFFFF)
+        c.emit("2400")
+        c.imm("4ef9", 0x4001E1E6)
+        c.label("normal")
     c.emit("2f00 2202")
     c.imm("0281", 0xFFFF)
     c.emit("2f01")
@@ -284,17 +309,29 @@ def resolve():
     return c.finish(RESOLVE)
 
 
-def format_row():
+def format_row(*, buf_loading=False):
     c = Code()
     c.emit("4fefffe0 48d7041c 2408 206f0024 2450 2452 7000 302a00a2")
     c.imm("0c80", 128)
     c.branch(4, "stock")
-    qualified(c, "stock")
+    qualified(c, "stock", buf_loading=buf_loading)
     c.emit("2f2f0028")
     n.call(c, 0x401154E0, 4)
     c.imm("0c80", 4)
     c.branch(4, "stock")
-    c.emit("2200 7003 9081 2600 d080 d080")
+    c.emit("2200 7003 9081 2600")
+    if buf_loading:
+        from lab import buf_loading as loading
+
+        n.call(c, loading.AVAILABILITY)
+        c.emit("4a80")
+        c.branch(7, "owned")
+        c.emit("5380 e588 e588 e588 2200 2003 e588 e588 d081")
+        c.imm("0680", loading.NAMES)
+        c.branch(0, "construct")
+        c.label("owned")
+        c.emit("2003")
+    c.emit("d080 d080")
     c.imm("41f9", n.STATE + 32)
     c.emit("d1c0 2010 d080 d080 d080 d080")
     c.imm("43f9", 0x405B1368)
@@ -316,13 +353,13 @@ def format_row():
     return c.finish(FORMAT)
 
 
-def normal_row():
+def normal_row(*, buf_loading=False):
     c = Code()
     c.emit("2052 7200 322800a2")
     c.imm("0c81", 128)
     c.branch(4, "done")
     c.emit("2f00")
-    qualified(c, "unchanged")
+    qualified(c, "unchanged", buf_loading=buf_loading)
     c.emit("201f")
     c.imm("0680", -4)
     c.branch(0, "restore")
@@ -335,11 +372,11 @@ def normal_row():
     return c.finish(NORMAL)
 
 
-def navigate(*, navigation_fixes=False):
+def navigate(*, navigation_fixes=False, buf_loading=False):
     """(view, signed row delta): use the stock bound sample-change callback."""
     c = Code()
     c.emit("4fefffe0 48d70c1c 246f0024 242f0028")
-    qualified(c, "stock")
+    qualified(c, "stock", buf_loading=buf_loading)
     if navigation_fixes:
         c.emit("7000 302a00a2")
         c.imm("0c80", 128)
@@ -376,6 +413,18 @@ def navigate(*, navigation_fixes=False):
     c.branch(15, "bounded")
     c.imm("203c", 131)
     c.label("bounded")
+    if buf_loading:
+        ready_mapping(c, "pending_bound")
+        c.branch(0, "available_bound")
+        c.label("pending_bound")
+        c.imm("0c80", 4)
+        c.branch(12, "available_bound")
+        # Scroll into the pending rows without changing the current sample.
+        c.emit("2f00 2f0a")
+        n.call(c, MOVE_RANK, 8)
+        c.emit("7001")
+        c.branch(0, "done")
+        c.label("available_bound")
     if navigation_fixes:
         c.emit("2600")
     c.emit("2f00 7200 2f01")
@@ -403,9 +452,12 @@ def navigate(*, navigation_fixes=False):
     return c.finish(NAVIGATE)
 
 
-def key():
+def key(*, buf_loading=False):
     c = Code()
     c.emit("4fefffe0 48d70c1c 246f0024 266f0028 202b000c")
+    if buf_loading:
+        c.imm("0c80", 10)
+        c.branch(7, "confirm_buffer")
     for code in (11, 14):
         c.imm("0c80", code)
         c.branch(7, "arrow")
@@ -413,6 +465,25 @@ def key():
         c.imm("0c80", code)
         c.branch(7, "bank")
     c.branch(0, "stock")
+    if buf_loading:
+        c.label("confirm_buffer")
+        qualified(c, "stock", buf_loading=True)
+        c.emit("7000 302a00a2")
+        c.imm("0c80", 128)
+        c.branch(4, "stock")
+        c.emit("41ea004c 2f08 2050 20680024 4e90 588f")
+        c.imm("0c80", 4)
+        c.branch(4, "stock")
+        ready_mapping(c, "consumed")
+        # A highlighted placeholder can become ready while the list is open.
+        # Apply its now-owned slot on YES press before native confirmation.
+        c.emit("202b0010")
+        c.imm("0280", 1)
+        c.emit("4a80")
+        c.branch(7, "stock")
+        c.emit("7000 2f00 2f0a")
+        n.call(c, NAVIGATE, 8)
+        c.branch(0, "stock")
     c.label("bank")
     c.emit("2400")
     c.imm("4879", 17)
@@ -455,7 +526,7 @@ def key():
     return c.finish(KEY)
 
 
-def rotation():
+def rotation(*, buf_loading=False):
     c = Code()
     c.emit("4fefffe0 48d70c1c 246f0024 266f0028")
     c.imm("d5fc", -4)  # IEncoder receiver is the secondary base at view+4.
@@ -464,7 +535,17 @@ def rotation():
     c.branch(6, "stock")
     c.emit("7000 302a00a2")
     c.emit("4a80")
-    c.branch(6, "stock")  # Only A00 and normalized BUF rows belong to this handler.
+    if buf_loading:
+        c.branch(7, "extended_row")
+        c.imm("0c80", 128)
+        c.branch(4, "stock")
+        # A pending BUF highlight retains the previous A-bank sample cell.
+        c.emit("41ea004c 2f08 2050 20680024 4e90 588f")
+        c.imm("0c80", 4)
+        c.branch(4, "stock")
+        c.label("extended_row")
+    else:
+        c.branch(6, "stock")  # Only A00 and normalized BUF rows belong to this handler.
     c.imm("2039", VIEW_ENABLED)
     c.imm("0c80", 1)
     c.branch(6, "stock")
@@ -497,11 +578,13 @@ def rotation():
     return c.finish(ROTATE)
 
 
-def bank(*, navigation_fixes=False):
+def bank(*, navigation_fixes=False, buf_loading=False):
     """A logical BUF belongs before A00, irrespective of its backing bank."""
     c = Code()
     c.emit("4fefffe0 48d70c1c 246f0024 242f0028")
-    qualified(c, "stock")
+    qualified(c, "stock", buf_loading=buf_loading)
+    if buf_loading:
+        ready_mapping(c, "stock")
     if navigation_fixes:
         c.emit("7000 302a00a2 4a80")
         c.branch(6, "stock")
@@ -545,7 +628,7 @@ def move_rank():
     return c.finish(MOVE_RANK)
 
 
-def payload(stock, *, navigation_fixes=False):
+def payload(stock, *, navigation_fixes=False, buf_loading=False):
     import hashlib
 
     require(hashlib.sha256(stock).hexdigest() == STOCK_SHA, "BUF selector needs OS1.16")
@@ -556,19 +639,19 @@ def payload(stock, *, navigation_fixes=False):
             f"BUF selector hook drift {pc:#x}",
         )
     result = {
-        INVERSE: inverse(),
-        FORWARD: forward(),
-        BUILD: build_rows(navigation_fixes=navigation_fixes),
-        COUNT: count(),
-        CURSOR: cursor(navigation_fixes=navigation_fixes),
+        INVERSE: inverse(buf_loading=buf_loading),
+        FORWARD: forward(buf_loading=buf_loading),
+        BUILD: build_rows(navigation_fixes=navigation_fixes, buf_loading=buf_loading),
+        COUNT: count(buf_loading=buf_loading),
+        CURSOR: cursor(navigation_fixes=navigation_fixes, buf_loading=buf_loading),
         INITIAL: initial(navigation_fixes=navigation_fixes),
-        RESOLVE: resolve(),
-        FORMAT: format_row(),
-        NORMAL: normal_row(),
-        KEY: key(),
-        NAVIGATE: navigate(navigation_fixes=navigation_fixes),
-        ROTATE: rotation(),
-        BANK: bank(navigation_fixes=navigation_fixes),
+        RESOLVE: resolve(buf_loading=buf_loading),
+        FORMAT: format_row(buf_loading=buf_loading),
+        NORMAL: normal_row(buf_loading=buf_loading),
+        KEY: key(buf_loading=buf_loading),
+        NAVIGATE: navigate(navigation_fixes=navigation_fixes, buf_loading=buf_loading),
+        ROTATE: rotation(buf_loading=buf_loading),
+        BANK: bank(navigation_fixes=navigation_fixes, buf_loading=buf_loading),
     }
     if navigation_fixes:
         result[MOVE_RANK] = move_rank()

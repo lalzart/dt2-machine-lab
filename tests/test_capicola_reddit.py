@@ -1,6 +1,8 @@
 """Release-source identity and relocation bounds must fail closed."""
 
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from lab.capicola_layout import CODE_BASE, STATE_BASE, relocate_assembly
 from lab.capicola_memory import BANK_END
@@ -13,6 +15,7 @@ from lab.capicola_reddit import (
     RING_BYTES,
     VOICE_BASE,
     VOICE_BYTES,
+    prepare,
     replace_exact,
     validate_sources,
     widen_adds,
@@ -20,6 +23,37 @@ from lab.capicola_reddit import (
 
 
 class AuthorPortTests(unittest.TestCase):
+    def test_sketch_relocation_changes_only_generated_linker_placement(self):
+        with TemporaryDirectory() as folder:
+            root = Path(folder)
+            default = prepare(root / "default").parent
+            moved = prepare(
+                root / "moved", cold_base=0x200B0000, cold_end=0x200C0000
+            ).parent
+            differences = [
+                str(p.relative_to(default))
+                for p in default.rglob("*")
+                if p.is_file()
+                and p.read_bytes() != (moved / p.relative_to(default)).read_bytes()
+            ]
+            self.assertEqual(differences, ["sharc/l1l2.ldf"])
+            self.assertIn(
+                "START(0x200b0000) END(0x200bffff)",
+                (moved / "sharc/l1l2.ldf").read_text(),
+            )
+
+    def test_generated_cold_placement_refuses_unaligned_or_foreign_regions(self):
+        cases = (
+            (COLD_BASE - 4, COLD_END),
+            (COLD_BASE, COLD_END + 4),
+            (COLD_BASE + 1, COLD_END),
+            (COLD_BASE, COLD_BASE),
+        )
+        with TemporaryDirectory() as folder:
+            for i, (start, end) in enumerate(cases):
+                with self.subTest(start=start, end=end), self.assertRaises(ValueError):
+                    prepare(Path(folder) / str(i), cold_base=start, cold_end=end)
+
     def test_exact_source_and_separate_static_regions(self):
         lock = validate_sources()
         self.assertEqual(

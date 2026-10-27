@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "status": "ready",
+  "work_type": "source-reimplementation",
+  "approval": "User authorized uninterrupted implementation, then explicitly excluded project persistence; unsaved buffers may disappear at power off.",
+  "proposal": "docs/SKETCH-MANAGED-BUFFERS.md",
+  "proposal_sha256": "1a7725e0aa55dc601ec692e379f2f4ad8f9864aff0915351a7e27fcbfadcb816",
+  "target": "Digitakt II OS1.16",
+  "working_artifact": "scripts/check-sketch-managed.py",
+  "evidence_level": "Native instructions and coupled CPU/SHARC with modeled peripherals; physical hardware separate",
+  "dependencies": {
+    "digikit": {
+      "patches": [],
+      "revision": "277760aad51b036a4756db051409d4d3b1eeccbc",
+      "url": "https://github.com/m-dwyer/digikit.git"
+    },
+    "native": {
+      "optimized_blocks": false,
+      "profile": "release",
+      "runtime_decode": true,
+      "source_revision": "277760aad51b036a4756db051409d4d3b1eeccbc"
+    },
+    "python": {
+      "major_minor": "3.12",
+      "packages": {
+        "capstone": "5.0.7",
+        "networkx": "3.4.2",
+        "pypcode": "4.0.0",
+        "unicorn": "2.1.4"
+      },
+      "requirements": "DigiKit uv.lock",
+      "uv_lock_sha256": "b693fa89efb8cc826f4a414a555f5e243cdcc0c616cdc48127b7f67226f80450"
+    },
+    "references": {
+      "elekloader": {
+        "reviewed_revision": "793b2e473dc0f0fa1a6d6f14e69a8cc166ce9300",
+        "role": "optional future packaging and UI/control integration; not a build dependency",
+        "url": "https://github.com/irpina/elekloader"
+      }
+    },
+    "schema": 1,
+    "selache": {
+      "build": [
+        "cargo",
+        "build",
+        "--release",
+        "--locked"
+      ],
+      "revision": "2b26d3b75c53063575bc5c820fa0d38879335187",
+      "url": "https://github.com/js216/selache.git"
+    },
+    "unicorn": {
+      "installer": "tools/install-patched-unicorn.sh",
+      "installer_sha256": "124ad9c12264be1eda9853d473856b3782dec69649744884008bb1aa61e5c872",
+      "patches": {
+        "unicorn-2.1.4-count-hook-fast-path.patch": "5f7523267ed0a6324496c7ea665d6ea22d84f30d82199218f66594291adc3e17",
+        "unicorn-2.1.4-m68k-emac-fractional.patch": "8f497c939b7b772a0a00a7d16ad85e8a1a6865b772191ca5ca131fb477824603",
+        "unicorn-2.1.4-m68k-emac-mac-load.patch": "ac128dd6836997de55e0d2ad70d7a2978639168090f552c5634da50fddc70bfe",
+        "unicorn-2.1.4-m68k-flush-flags-sync.patch": "9f76167940573e1e33582f6e4fbef10d95528dfa26090406a9b40a4b45712807",
+        "unicorn-2.1.4-m68k-hook-ccr-sync.patch": "56de71acf2adbd5ca2f448095478e65e49fd79d378aeb5b5e4217d2c90f52f4e"
+      },
+      "revision": "8028ec436f2d9376525352dd38ed9ed6b9f6be10",
+      "url": "https://github.com/unicorn-engine/unicorn.git",
+      "version": "2.1.4"
+    }
+  },
+  "source_equivalence": {
+    "revision": "34284b55e9df8be4eaee8a841b4f9033f74c54f8",
+    "authority": "User-owned local adapters; private firmware derivatives remain local",
+    "files": {
+      "lab/sketch.py": "934c2368bd539bad91ff493f132f7046c44060499348ce11dbe530dff7e2f216",
+      "lab/sketch_device.py": "39e6cb188e01dbeb3f3b21161ba3c4db69f902a7216f238e057eaa89d0ca324e",
+      "lab/sketchbook_save.py": "c2160ffc303bea4bcc562bdc0b35a073838b234e6d670cf1ee823adb920dadb8",
+      "lab/recorder_worker_code.py": "4f31038f4ae457f5fca0f73abf179452d3e410164ab2708ab3347037b59a8536",
+      "lab/recorder_native_retirement.py": "676f7ae7637a9786b1421a7ff791fc41fbc8c7455583890c49a297b59646fa73",
+      "lab/project_save.py": "df19c38442f34b134404c8101f6055da161c607e18411a5ab3cf6617f2244ca3"
+    },
+    "fidelity": "Unchanged audio signal path and original profile bytes",
+    "deviations": [
+      "Per-buffer volatile settings and native status",
+      "Guarded capacity handling"
+    ]
+  },
+  "controls": "Proposal behavior and control contract",
+  "state_matrix": "idle/edit/capture/publish/freeze/explicit save/failure; stale context fails closed; power off discards volatile state",
+  "experiment": {
+    "seed": 0,
+    "tolerance": "Exact state and PCM except explicitly documented physical timing gaps",
+    "negative_controls": [
+      "busy",
+      "stale",
+      "full",
+      "failed replacement",
+      "failed save",
+      "disabled readback"
+    ]
+  },
+  "validation": "Proposal experiment and validation",
+  "results": "docs/SKETCH-MANAGED-RESULTS.md",
+  "gaps": "No physical timing or hardware evidence; see results for open implementation gates",
+  "decisions": "Preserve pinned dependencies, original profiles, recorder ownership, immutable snapshots and existing project guards; no project persistence."
+}

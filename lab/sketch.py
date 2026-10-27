@@ -508,9 +508,15 @@ def dispose():
     return c.finish(DISPOSE)
 
 
-def rotation(*, performance_controls=False, sketchbook_save=False):
+def rotation(
+    *, performance_controls=False, sketchbook_save=False, managed_buffers=False
+):
     c = Code()
     c.emit(abi.PRESAVE + " 246f0028 266f002c")
+    if managed_buffers:
+        from lab import sketch_managed as managed
+    getters = managed.GETTERS if managed_buffers else GETTERS
+    setters = managed.SETTERS if managed_buffers else SETTERS
     if sketchbook_save:
         from lab import sketchbook_ui as book
 
@@ -563,14 +569,26 @@ def rotation(*, performance_controls=False, sketchbook_save=False):
             call(c, 0x40015F6C, 4)
             c.emit("4a80")
             c.branch(6, "done")
-            load(c, START_MODE)
+            if managed_buffers:
+                call(c, managed.GETTERS[4])
+            else:
+                load(c, START_MODE)
             c.emit("d082")
             clamp(c, 0, 1, "start_mode")
             if sketchbook_save:
-                load(c, START_MODE, 1)
+                if managed_buffers:
+                    c.emit("2600")
+                    call(c, managed.GETTERS[4])
+                    c.emit("2200 2003")
+                else:
+                    load(c, START_MODE, 1)
                 c.emit("b081")
                 c.branch(7, "done")
-            store(c, START_MODE)
+            if managed_buffers:
+                c.emit("2f00 2f2a014c")
+                call(c, managed.SETTERS[4], 8)
+            else:
+                store(c, START_MODE)
         else:
             # Keep the recorder's existing edit gate; active capture owns settings.
             call(c, 0x4019988A)
@@ -580,20 +598,25 @@ def rotation(*, performance_controls=False, sketchbook_save=False):
             c.branch(14, "done")
             if i == 4:
                 c.emit("2f2a014c")
-                call(c, GETTERS[0], 4)
+                call(c, getters[0], 4)
                 c.imm("0c80", 18)
                 c.branch(6, "done")
             c.emit("2f2a014c")
-            call(c, GETTERS[i - 1], 4)
+            call(c, getters[i - 1], 4)
             if sketchbook_save:
                 c.emit("2600")  # Keep the old enum value across the clamp.
             c.emit("d082")
-            clamp(c, 0, (18, 3, 8, 1)[i - 1], f"setting{i}")
+            clamp(
+                c,
+                4 if managed_buffers and i == 3 else 0,
+                (18, 3, 6 if managed_buffers else 8, 1)[i - 1],
+                f"setting{i}",
+            )
             if sketchbook_save:
                 c.emit("b083")
                 c.branch(7, "done")
             c.emit("2f00 2f2a014c")
-            call(c, SETTERS[i - 1], 8)
+            call(c, setters[i - 1], 8)
         setv(c, ACTION, 0)
         c.emit("2f0a")
         call(c, 0x4011AE46, 4)
@@ -1372,6 +1395,7 @@ def payload(
     monitor_labels=False,
     freeze_h_slots=False,
     sketchbook_save=False,
+    managed_buffers=False,
 ):
     """All feature behavior is emitted ColdFire; installation only is Python."""
     require(
@@ -1425,7 +1449,9 @@ def payload(
         # string and executable address stays fixed; only MON's table changes.
         labels.update(monitor_post="POST", monitor_pre="PRE")
     if freeze_h_slots:
-        require(clock_fix and freeze_enabled, "FREEZE H feedback needs the clock profile")
+        require(
+            clock_fix and freeze_enabled, "FREEZE H feedback needs the clock profile"
+        )
         labels.update(
             freeze_slot_conflict="FREEZE: H%03u IN USE",
             freeze_slot_ready="FROZEN TO H%03u",
@@ -1441,7 +1467,7 @@ def payload(
     require(cursor < LINE, "Sketch strings overflow")
     if sketchbook_save:
         require(cursor <= panel.DRAW, "Sketch strings reach recorder-style panel")
-        data[panel.DRAW] = panel.draw(strings)
+        data[panel.DRAW] = panel.draw(strings, managed_buffers=managed_buffers)
     words = [strings[f"len{i}"] for i in range(9)]
     monitor_names = ("monitor_post", "monitor_pre") if monitor_labels else ("off", "on")
     words += [
@@ -1523,7 +1549,9 @@ def payload(
     prefix = main[ROUTE_SITE - 0x40000400 : ROUTE_SITE - 0x40000400 + 8]
     require(prefix == bytes.fromhex("4fefffa048d77cfc"), "Sketch route prologue drift")
     r, rs = route(
-        prefix, navigation_fixes=navigation_fixes, copy_shortcuts=copy_shortcuts,
+        prefix,
+        navigation_fixes=navigation_fixes,
+        copy_shortcuts=copy_shortcuts,
         trig_exits=stopped_recording,
     )
     data.update(
@@ -1544,7 +1572,9 @@ def payload(
             DISPOSE: dispose(),
             DTOR: destructor(sketchbook_save=sketchbook_save),
             ROTATE: rotation(
-                performance_controls=performance_controls, sketchbook_save=sketchbook_save
+                performance_controls=performance_controls,
+                sketchbook_save=sketchbook_save,
+                managed_buffers=managed_buffers,
             ),
             DRAW: draw(
                 strings,

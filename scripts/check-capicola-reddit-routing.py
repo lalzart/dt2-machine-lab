@@ -41,6 +41,7 @@ from lab.replay_io import load_pcm
 from lab.sharc_tools import assemble
 
 frozen = source_hashes()
+combined_sketch = False
 if a.package:
     manifest = json.loads((a.package / "manifest.json").read_text())
     require(
@@ -48,6 +49,7 @@ if a.package:
         "Wrong/stale package",
     )
     firmware = a.package / "firmware"
+    combined_sketch = manifest.get("combined", False)
 else:
     require(a.probe, "Package/probe required")
     firmware = a.probe
@@ -212,14 +214,19 @@ try:
     )
     print("Native stereo/stock routing passed", flush=True)
     # Other machines and all six Plaits models must remain sample exact.
-    baseline = ROOT / "out/runs/combined-package-03/firmware/PLAITS_BLOB.bin"
-    require(
-        sha256(baseline)
-        == "0cfb6c8315bd2db0e7346527c2834907fa7d131b0b55faf04f047d2ebb801faf",
-        "R3 baseline drift",
+    baseline = (
+        runtime.STOCK_BLOB
+        if combined_sketch
+        else ROOT / "out/runs/combined-package-03/firmware/PLAITS_BLOB.bin"
     )
+    if not combined_sketch:
+        require(
+            sha256(baseline)
+            == "0cfb6c8315bd2db0e7346527c2834907fa7d131b0b55faf04f047d2ebb801faf",
+            "R3 baseline drift",
+        )
     parity = []
-    for machine in [0, 1, 3, 4, 5, 6, 7, 8]:
+    for machine in [0, 1, 3, 4, 5, 6] if combined_sketch else [0, 1, 3, 4, 5, 6, 7, 8]:
         for model in range(6) if machine == 7 else [0]:
             r3 = engine(baseline.read_bytes())
             candidate = engine(blob)

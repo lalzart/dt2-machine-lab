@@ -13,7 +13,15 @@ from pathlib import Path
 from lab.cpu_extension import GUARD, Segment, segment_chain
 from lab.dt2_116 import BASE
 from lab.project import ROOT, require, sha256
-from lab.sketch_device import ARENAS, END, START, build, relocate
+from lab.sketch_device import (
+    ARENAS,
+    ASSIGN_END,
+    END,
+    MANAGED_END,
+    START,
+    build,
+    relocate,
+)
 
 
 def address(value):
@@ -55,9 +63,12 @@ def read_segments(image, meta):
         )
         result.append(Segment(destination, data, bss))
         cursor += size
-    require(meta["reservation"] == [START, END], "Unknown device reservation")
+    end = MANAGED_END if meta.get("managed_buffers", False) else END
+    if meta.get("assign_popup", False):
+        end = ASSIGN_END
+    require(meta["reservation"] == [START, end], "Unknown device reservation")
     require(
-        image[start:] == segment_chain(result, reservation=(START, END)),
+        image[start:] == segment_chain(result, reservation=(START, end)),
         "Invalid segment chain",
     )
     return tuple(result)
@@ -101,6 +112,10 @@ class DeviceBuild:
                 monitor_labels=self.meta.get("monitor_labels", False),
                 freeze_h_slots=self.meta.get("freeze_h_slots", False),
                 sketchbook_save=self.meta.get("sketchbook_save", False),
+                managed_buffers=self.meta.get("managed_buffers", False),
+                assign_popup=self.meta.get("assign_popup", False),
+                buf_loading=self.meta.get("buf_loading", False),
+                early_buf_setup=self.meta.get("early_buf_setup", False),
                 arm_diagnostics=self.meta.get("arm_diagnostics", False),
                 clock_fix=self.meta.get("clock_fix", False),
                 operation_diagnostics=self.meta.get("operation_diagnostics", False),

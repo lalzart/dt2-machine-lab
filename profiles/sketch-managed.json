@@ -1,0 +1,20 @@
+{
+  "name": "sketch-managed",
+  "firmware": "Digitakt II OS1.16",
+  "status": "experimental-local-validation",
+  "build_flags": [
+    "arm-diagnostics", "clock-fix", "buf-selector", "performance-controls",
+    "navigation-fixes", "fixed-buf-slots", "startup-capture", "copy-shortcuts",
+    "stopped-recording", "recording-led", "monitor-labels", "freeze-h-slots",
+    "sketchbook-save", "managed-buffers"
+  ],
+  "buffers": 4,
+  "recorders": 1,
+  "per_buffer_settings": ["source", "channel", "length", "monitor", "start"],
+  "length_steps": [16, 32, 64],
+  "capture_ceiling_frames": 480000,
+  "project_persistence": false,
+  "power_off": "Unsaved buffers, FREEZE takes and recording settings are discarded",
+  "durable_audio": "Explicit Sketchbook export through the existing native +Drive writer",
+  "hardware_ready": false
+}

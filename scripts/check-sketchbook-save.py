@@ -37,6 +37,16 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("output", type=Path)
     p.add_argument(
+        "--assign-popup",
+        action="store_true",
+        help="exercise post-recording NO and explicit T16 assignment; requires managed buffers",
+    )
+    p.add_argument(
+        "--managed-buffers",
+        action="store_true",
+        help="also exercise volatile per-BUF preferences and normal-settings isolation",
+    )
+    p.add_argument(
         "--reference-spec",
         type=Path,
         required=True,
@@ -60,6 +70,13 @@ def main():
         type=Path,
         required=True,
         help="existing prepared native recorder/boot adapter",
+    )
+    p.add_argument("--buf-loading", action="store_true")
+    p.add_argument("--early-buf-setup", action="store_true")
+    p.add_argument(
+        "--combined",
+        action="store_true",
+        help="include author Capicola R2 and selected-track ARP",
     )
     a = p.parse_args()
     out = a.output.resolve()
@@ -111,12 +128,22 @@ def main():
             monitor_labels=True,
             freeze_h_slots=True,
             sketchbook_save=True,
+            managed_buffers=a.managed_buffers,
+            assign_popup=a.assign_popup,
+            buf_loading=a.buf_loading,
+            early_buf_setup=a.early_buf_setup,
         )
         image, meta = build(STOCK_MAIN.read_bytes(), **flags)
         require(
             build(STOCK_MAIN.read_bytes(), **flags) == (image, meta),
             "CPU repeat differs",
         )
+        if a.combined:
+            from lab.sketch_combined import build_cpu
+
+            image, meta = build_cpu(
+                STOCK_MAIN.read_bytes(), image, meta, out / "combined-cpu"
+            )
         (out / "SKETCH_MAIN.bin").write_bytes(image)
         write_json(out / "native-patches.json", meta)
         dsp_build = a.dsp_build.resolve()
@@ -182,6 +209,51 @@ def main():
             n: address(getattr(ui, n)) for n in ["STATE", "MODE", "ROW", "VIEW", "LINE"]
         }
         spec["symbols"]["preview"] = {"STATE": address(preview.STATE)}
+        spec["managed_buffers"] = a.managed_buffers
+        spec["assign_popup"] = a.assign_popup
+        spec["buf_loading"] = a.buf_loading
+        spec["early_buf_setup"] = a.early_buf_setup
+        spec["combined"] = a.combined
+        if a.buf_loading:
+            from lab import buf_loading as loading
+
+            spec["symbols"]["loading"] = {
+                n: address(getattr(loading, n))
+                for n in ("AVAILABILITY", "EARLY", "ATTEMPTS", "RESULT")
+            }
+        if a.assign_popup:
+            from lab import sketch_assign as prompt
+
+            spec["symbols"]["assign"] = {
+                n: address(getattr(prompt, n))
+                for n in (
+                    "STATE",
+                    "VIEW",
+                    "PENDING",
+                    "BUF",
+                    "SLOT",
+                    "RESULT",
+                    "TARGET",
+                    "SHOWN",
+                    "ASSIGNED",
+                    "SKIPPED",
+                    "STOCK_DRAW",
+                )
+            }
+        if a.managed_buffers:
+            from lab import sketch_managed as managed
+
+            spec["symbols"]["managed"] = {
+                n: address(getattr(managed, n))
+                for n in (
+                    "STATE",
+                    "SETTINGS",
+                    "BACKUP",
+                    "BORROWED",
+                    "FAILURE",
+                    "CAPTURE_BUF",
+                )
+            }
         write_json(out / "spec.json", spec)
         (out / "src").mkdir()
         shutil.copy(ROOT / "lab/native/sketchbook_save_probe.rs", out / "src/main.rs")

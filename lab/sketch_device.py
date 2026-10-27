@@ -62,15 +62,20 @@ for _name, _source, _size in _SPECS:
     _cursor += _size + 0x200
 ARENAS = tuple(_arenas)
 END = (_cursor + 4095) & ~4095
+# Append only in the managed profile; inherited reservations and offsets stay exact.
+MANAGED_ARENA = Arena("managed", 0x11300000, 0x4000, END + 0x100)
+MANAGED_END = (MANAGED_ARENA.destination + MANAGED_ARENA.size + 0x100 + 4095) & ~4095
+ASSIGN_ARENA = Arena("assign_popup", 0x11400000, 0x4000, MANAGED_END + 0x100)
+ASSIGN_END = (ASSIGN_ARENA.destination + ASSIGN_ARENA.size + 0x100 + 4095) & ~4095
 
 
 def relocate(value):
-    for arena in ARENAS:
+    for arena in (*ARENAS, MANAGED_ARENA, ASSIGN_ARENA):
         if arena.source <= value < arena.source + arena.size:
             return arena.destination + value - arena.source
     # All known synthetic CPU addresses must have an explicit arena owner.
     require(
-        not 0x10000000 <= value < 0x11300000, f"Unowned synthetic address {value:#x}"
+        not 0x10000000 <= value < 0x11500000, f"Unowned synthetic address {value:#x}"
     )
     return value
 
@@ -170,6 +175,10 @@ def compose(
     monitor_labels=False,
     freeze_h_slots=False,
     sketchbook_save=False,
+    managed_buffers=False,
+    assign_popup=False,
+    buf_loading=False,
+    early_buf_setup=False,
 ):
     """Final native install graph of SketchUI; no Machine or host job execution."""
     from lab import buf_auto_retirement as auto
@@ -188,6 +197,10 @@ def compose(
     from lab import sketch as s
 
     normal = dest
+    require(
+        not buf_loading or managed_buffers, "BUF loading UI requires managed buffers"
+    )
+    require(not early_buf_setup or buf_loading, "Early BUF setup requires loading UI")
     require(
         not freeze_h_slots or (fixed_buf_slots and copy_shortcuts and clock_fix),
         "FREEZE H slots require fixed BUF slots, COPY and the clock profile",
@@ -391,6 +404,7 @@ def compose(
         monitor_labels=monitor_labels,
         freeze_h_slots=freeze_h_slots,
         sketchbook_save=sketchbook_save,
+        managed_buffers=managed_buffers,
     ).items():
         kind = (
             "pointers"
@@ -412,7 +426,7 @@ def compose(
         from lab import buf_selector as selector
 
         for at, raw in selector.payload(
-            stock, navigation_fixes=navigation_fixes
+            stock, navigation_fixes=navigation_fixes, buf_loading=buf_loading
         ).items():
             kind = "data" if selector.NAMES <= at < selector.NAMES + 128 else "code"
             o.put(at, raw, f"buf-selector/{at:#x}", kind)
@@ -591,6 +605,62 @@ def compose(
         )
         o.put(book.LABEL, b"SKETCHBOOK SAVE\0", "sketchbook-save/label", "data")
         o.put(book.DIRECTORY, b"/Sketchbook\0", "sketchbook-save/directory", "data")
+    if managed_buffers:
+        from lab import sketch_managed as managed
+
+        require(
+            sketchbook_save and stopped_recording,
+            "Managed buffers require the full Sketchbook profile",
+        )
+        o.group(managed.payload(), "managed")
+        o.put(
+            managed.TEXTS,
+            b"".join(x.encode().ljust(16, b"\0") for x in (*managed.LABELS, "BUFFER")),
+            "managed/status-text",
+            "data",
+        )
+        o.put(managed.OLD_ARM, o.parts[s.ARM_SUBMIT][0], "managed/original-arm")
+        o.put(s.ARM_SUBMIT, b"\x4e\xf9" + struct.pack(">I", managed.ARM), "managed/arm")
+        before, _, label = o.hooks[q.GUI]
+        o.hooks[q.GUI] = (before, b"\x4e\xf9" + struct.pack(">I", managed.POLL), label)
+    if buf_loading:
+        from lab import buf_loading as loading
+
+        code, data = loading.payload(early_setup=early_buf_setup)
+        o.group(code, "buf-loading")
+        for at, raw in data.items():
+            o.put(at, raw, "buf-loading/labels", "data")
+        o.put(
+            managed.STATUS_TEXT,
+            managed.status_text(buf_loading=True),
+            "buf-loading/status",
+        )
+        o.put(managed.POLL, managed.poll(buf_loading=True), "buf-loading/retry")
+        if early_buf_setup:
+            o.put(
+                pending.BATCH_ENTER,
+                pending.batch_enter(early_setup=loading.EARLY),
+                "buf-loading/early-setup",
+            )
+    if assign_popup:
+        from lab import sketch_assign as prompt
+
+        require(managed_buffers, "Assignment popup requires managed buffers")
+        code, pointers, data = prompt.payload(stock)
+        o.group(code, "assign-popup")
+        for parts, kind in ((pointers, "pointers"), (data, "data")):
+            for at, raw in parts.items():
+                o.put(at, raw, f"assign-popup/{at:#x}", kind)
+        o.put(
+            nb.DONE,
+            nb.done(release_recorder=True, publication_notify=prompt.QUEUE),
+            "assign-popup/publication-notify",
+        )
+        o.put(
+            s.ROUTE, b"\x4e\xf9" + struct.pack(">I", prompt.ROUTE), "assign-popup/route"
+        )
+        before, _, label = o.hooks[q.GUI]
+        o.hooks[q.GUI] = (before, b"\x4e\xf9" + struct.pack(">I", prompt.POLL), label)
     return o
 
 
@@ -611,6 +681,10 @@ def build(
     monitor_labels=False,
     freeze_h_slots=False,
     sketchbook_save=False,
+    managed_buffers=False,
+    assign_popup=False,
+    buf_loading=False,
+    early_buf_setup=False,
 ):
     overlay = compose(
         stock,
@@ -628,11 +702,20 @@ def build(
         monitor_labels=monitor_labels,
         freeze_h_slots=freeze_h_slots,
         sketchbook_save=sketchbook_save,
+        managed_buffers=managed_buffers,
+        assign_popup=assign_popup,
+        buf_loading=buf_loading,
+        early_buf_setup=early_buf_setup,
     )
-    images = {a.name: bytearray(a.size) for a in ARENAS}
+    arenas = (*ARENAS, MANAGED_ARENA) if managed_buffers else ARENAS
+    reservation_end = MANAGED_END if managed_buffers else END
+    if assign_popup:
+        arenas = (*arenas, ASSIGN_ARENA)
+        reservation_end = ASSIGN_END
+    images = {a.name: bytearray(a.size) for a in arenas}
     writes, fixes = [], []
     for at, (raw, label, kind) in sorted(overlay.parts.items()):
-        arena = next((a for a in ARENAS if a.source <= at < a.source + a.size), None)
+        arena = next((a for a in arenas if a.source <= at < a.source + a.size), None)
         require(
             arena is not None and at + len(raw) <= arena.source + arena.size,
             "Arena overflow " + label,
@@ -672,7 +755,7 @@ def build(
             for r in relocations
         )
     segments, guards = [], []
-    for arena in ARENAS:
+    for arena in arenas:
         data = bytes(images[arena.name])
         used = (len(data.rstrip(b"\0")) + 3) & ~3
         segments.extend(
@@ -688,7 +771,7 @@ def build(
                 [arena.destination + arena.size, len(GUARD)],
             )
         )
-    chain = segment_chain(segments, reservation=(START, END))
+    chain = segment_chain(segments, reservation=(START, reservation_end))
     image = bytearray(stock)
     hooks = []
     for at, (expected, raw, label) in sorted(overlay.hooks.items()):
@@ -758,9 +841,9 @@ def build(
         hardware_ready=False,
         stock_sha256=STOCK_SHA,
         sha256=hashlib.sha256(image).hexdigest(),
-        reservation=[START, END],
-        reservation_bytes=END - START,
-        arenas=[vars(a) for a in ARENAS],
+        reservation=[START, reservation_end],
+        reservation_bytes=reservation_end - START,
+        arenas=[vars(a) for a in arenas],
         guards=guards,
         relocations=fixes,
         payload_bytes=sum(len(bytes.fromhex(w["after"])) for w in writes),
@@ -787,6 +870,14 @@ def build(
             "NORMAL ready label retains stock SAVE; BUF ready label is not dynamically changed",
         ],
     )
+    if managed_buffers:
+        metadata["managed_buffers"] = True
+    if assign_popup:
+        metadata["assign_popup"] = True
+    if buf_loading:
+        metadata["buf_loading"] = True
+    if early_buf_setup:
+        metadata["early_buf_setup"] = True
     if recording_led:
         metadata["recording_led"] = True
     if sketchbook_save:

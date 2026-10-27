@@ -19,7 +19,10 @@ LABELS = {
 }
 
 
-def draw(t):
+def draw(t, *, managed_buffers=False):
+    if managed_buffers:
+        from lab import sketch_managed as managed
+    getters = managed.GETTERS if managed_buffers else s.GETTERS
     c = Code()
     # Native Font is an eight-byte temporary at SP+0x30, outside saved registers.
     c.emit("4fefffc0 48d77cfc 246f0044 266f0048 49ef0030")
@@ -84,7 +87,7 @@ def draw(t):
     text(t["panel_buf_label"], 16, 33, LABEL_FACE)
 
     c.emit("2f2a014c")
-    s.call(c, s.GETTERS[0], 4)
+    s.call(c, getters[0], 4)
     c.emit("2400 2f00 2f0a")
     s.call(c, 0x4001FD88, 8)
     c.emit("2600 2f02 2f0a")
@@ -94,25 +97,28 @@ def draw(t):
     text(t["panel_source_label"], 48, 33, LABEL_FACE)
 
     c.emit("2f2a014c")
-    s.call(c, s.GETTERS[1], 4)
+    s.call(c, getters[1], 4)
     c.emit("2f00 2f0a")
     s.call(c, 0x4001FDF4, 8)
     value(80, 43)
     text(t["panel_channel_label"], 80, 33, LABEL_FACE)
 
     c.emit("2f2a014c")
-    s.call(c, s.GETTERS[2], 4)
+    s.call(c, getters[2], 4)
     table(s.TEXTS, 8, "length")
     value(112, 43)
     text(t["panel_length_label"], 112, 33, LABEL_FACE)
 
     c.emit("2f2a014c")
-    s.call(c, s.GETTERS[3], 4)
+    s.call(c, getters[3], 4)
     table(s.TEXTS + 36, 1, "monitor")
     value(16, 20)
     text(t["panel_monitor_label"], 16, 10, LABEL_FACE)
 
-    s.load(c, s.START_MODE)
+    if managed_buffers:
+        s.call(c, managed.GETTERS[4])
+    else:
+        s.load(c, s.START_MODE)
     c.emit("4a80")
     c.branch(7, "bar")
     c.imm("203c", t["start_now"])
@@ -123,8 +129,12 @@ def draw(t):
     value(48, 20)
     text(t["panel_start_label"], 48, 10, LABEL_FACE)
 
+    if managed_buffers:
+        s.call(c, managed.STATUS_TEXT)
+        value(96, 20)
+        text(managed.TEXTS + 7 * 16, 96, 10, LABEL_FACE)
+
     c.emit("4cd77cfc 4fef0040 4e75")
     raw = c.finish(DRAW)
     require(DRAW + len(raw) <= END, "Sketch recorder-style panel overlap")
     return raw
-

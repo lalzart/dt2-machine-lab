@@ -54,11 +54,20 @@ def replace_exact(text, before, after, count=1):
     return text.replace(before, after)
 
 
-def prepare(output):
+def prepare(output, *, cold_base=COLD_BASE, cold_end=COLD_END):
     validate_sources()
     target = output / "source"
     shutil.copytree(SOURCE / "capicola_c99", target / "capicola_c99")
     sharc = target / "capicola_c99/sharc"
+    require(COLD_BASE <= cold_base < cold_end <= COLD_END, "Cold code placement bounds")
+    require(not (cold_base | cold_end) & 3, "Cold code placement alignment")
+    if (cold_base, cold_end) != (COLD_BASE, COLD_END):
+        linker = sharc / "l1l2.ldf"
+        linker.write_text(replace_exact(
+            linker.read_text(),
+            "START(0x200A0000) END(0x200DFFFF)",
+            f"START({cold_base:#x}) END({cold_end - 1:#x})",
+        ))
     p = sharc / "dt2gen.c"
     c = replace_exact(
         p.read_text(),
@@ -163,14 +172,14 @@ def widen_adds(source):
     )
 
 
-def compile_author(output):
+def compile_author(output, *, cold_base=COLD_BASE, cold_end=COLD_END):
     from sharc_selache import compare_listing, find_elf_section, swap_parcels
 
     from lab.dsp_build import COMPILER, TOOLS
     from lab.runtime import SELACHE
 
     output.mkdir(parents=True, exist_ok=True)
-    c = prepare(output)
+    c = prepare(output, cold_base=cold_base, cold_end=cold_end)
     common = [
         "-proc",
         "ADSP-21569",
@@ -312,11 +321,14 @@ def compile_author(output):
     loaded = [s for s in segments if s[0] == 1 and s[5]]
     require(
         len(loaded) == 2
-        and all(s[2] in (HOT_BASE // 2, 0xBD0000) and s[4] == s[5] for s in loaded),
+        and all(
+            s[2] in (HOT_BASE // 2, 0xBD0000 + (cold_base - COLD_BASE) // 2)
+            and s[4] == s[5] for s in loaded
+        ),
         "Unexpected author ELF segment",
     )
     require(len(hot) <= 0x2DE9B0 - HOT_BASE, "Hot code overlaps author scratch")
-    require(len(cold) <= COLD_END - COLD_BASE, "Cold code overflow")
+    require(len(cold) <= cold_end - cold_base, "Cold code overflow")
     return hot, cold, symbols
 
 

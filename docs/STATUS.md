@@ -1,5 +1,47 @@
 # Current status
 
+## Combined Sketch, Capicola R2 and ARP — 2026-10-27
+
+The requested optional [combined build](SKETCH-CAPICOLA-ARP.md) includes current
+managed Sketch, assignment popup and early/loading behavior, the latest retained
+author Capicola R2 port, and selected-track/stopped keyboard ARP. Buffers remain
+volatile. The package is in `out/runs/sketch-capi-arp-os-package-20261027-01/`,
+SHA-256 `23854a7193cdbb09edcf9d6562f64a8a9ec76e06d54f78603a68dbe1598c3222`.
+386 tests, exact rebuilds, audio oracle/routing, native decompression, SINE replay,
+coupled Sketch capture/save/retry and native ARP panel checks pass. Existing
+ONESHOT-only BUF cleanup qualification is retained. No hardware upload or
+physical validation; the accepted checkpoint below is unchanged.
+
+## BUF startup refinement — 2026-10-27
+
+Optional managed-profile switches add visible LOADING rows/status and try safe
+slot reservation before the ordinary project sample-load loop. The original
+loader order, publication fence, DSP and RAM reservation are preserved. See
+[behavior and build recipe](SKETCH-MANAGED-RESULTS.md#startup-visibility-and-early-reservation--2026-10-27).
+265 scoped tests, the source-matched native capture/FREEZE/save workflow and
+pending-to-ready panel checks passed. The local package is in
+`out/runs/buf-loading-os-package-20261027-01/`. This remains separate from the
+accepted hardware checkpoint.
+
+## Optional Sketch assignment popup — 2026-10-27
+
+The managed builder accepts `--assign-popup` for a stock-style assignment dialog
+after successful BUF recording. TRG 1–16 chooses a sample track; NO leaves track
+assignments unchanged. It assigns the recorded live BUF and does not save or
+freeze it. The default managed build remains byte-exact. See
+[implementation, reproduction and validation](SKETCH-ASSIGN-POPUP.md). This is
+an optional local experiment, not a new hardware-qualified checkpoint.
+
+## Managed Sketch — local successor to R14, 2026-10-26
+
+The opt-in [managed buffer profile](SKETCH-MANAGED-RESULTS.md) adds independent
+per-BUF preferences, normal-recorder setting restoration, capacity admission and
+compact status feedback. It retains the committed recorder, generation/FREEZE,
+reader protection and explicit Sketchbook export paths. Project persistence is
+explicitly excluded; unsaved takes and preferences are volatile. See the linked
+result for exact tests, reproduction and hardware limitations. R8 remains the
+accepted hardware checkpoint below; this profile does not change that claim.
+
 ## Sketch/BUF R8 — accepted experimental checkpoint, 2026-10-25
 
 The user reports the R8 SONG recording indicator works on hardware, following
