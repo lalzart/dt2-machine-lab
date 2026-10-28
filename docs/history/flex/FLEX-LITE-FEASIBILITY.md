@@ -77,9 +77,9 @@ no dependency or firmware bytes were changed.
 
 **EVIDENCE, existing notes read rather than experiments rerun:**
 
-- [Integration](INTEGRATION.md) establishes the prepared custom source hook,
+- [Integration](../../INTEGRATION.md) establishes the prepared custom source hook,
   two channel lanes for track 1 and a 64-sample/96 kHz source-buffer contract.
-  [Macro controls](PLAITS-CONTROLS.md) documents real CPU locks, continuous
+  [Macro controls](../../PLAITS-CONTROLS.md) documents real CPU locks, continuous
   macro transport and compiled SHARC voice output. Final output, normal PLAY,
   persistence, all-track operation and physical timing remain open.
 - DigiKit `docs/findings/15-sharc-sample-path.md` documents OS 1.16 sample-page
@@ -126,7 +126,7 @@ Prefer preserving the stock renderer and transport format.
 The Plaits adapter repurposes the sample-slot field for TIMB, so it is not a
 suitable transport mapping for this work.
 
-Firmware identity is recorded in [the 1.16 profile](../profiles/dt2-1.16/profile.json):
+Firmware identity is recorded in [the 1.16 profile](../../../profiles/dt2-1.16/profile.json):
 stock MAIN SHA-256 `57bb4dfa8df07d846adc72fdb4fb0d3cd3c5680c524bf498338460207e008e7d`,
 stock BLOB `0f514a12a2255f5c081e292c47f1f29462003177658da4bbae0a22fd737fffa2`.
 The follow-up rehashed MAIN and passed `./labctl doctor`, including fixture

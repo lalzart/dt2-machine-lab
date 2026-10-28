@@ -22,7 +22,8 @@ protocol. Only the stock STRETCH call is patched. Existing Plaits code is built
 separately with its working state relocated into the same reservation as before.
 
 `--all-features` now selects this backend and the binary switch by default.
-`--capicola-source`, `--capicola-quality`, and `--capicola-legacy` retain prior
-experiments explicitly. No dependency is upgraded. Approved scope and evidence
+The packager no longer offers the superseded analyzed-keyframe, quality or
+source-playback backends. Their low-level research fixtures remain separate.
+See [the current Capicola guide](../../docs/CAPICOLA.md). No dependency is upgraded. Approved scope and evidence
 requirements are in contract/. Final outcomes, hashes, commands and any gaps live
 in docs/CAPICOLA-REDDIT-RESULTS.md, outside the frozen implementation source set.

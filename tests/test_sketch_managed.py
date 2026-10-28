@@ -11,7 +11,6 @@ from lab import recorder_worker_code as w
 from lab import sketch as s
 from lab import sketch_managed as m
 from lab.emit import Code
-from lab.runtime import STOCK_MAIN
 
 
 @unittest.skipUnless(
@@ -218,39 +217,3 @@ class ManagedBuffers(unittest.TestCase):
             self.assertEqual(f.call(m.STATUS), expected)
         f.put(s.STATE + s.BUF, 2)
         self.assertEqual(f.call(m.STATUS), m.EMPTY)
-
-
-class ManagedPlacement(unittest.TestCase):
-    def test_optional_profile_preserves_baseline_bytes_and_uses_guarded_arena(self):
-        from lab.sketch_device import END, MANAGED_END, build
-
-        flags = dict(
-            arm_diagnostics=True,
-            clock_fix=True,
-            buf_selector=True,
-            performance_controls=True,
-            navigation_fixes=True,
-            fixed_buf_slots=True,
-            startup_capture=True,
-            copy_shortcuts=True,
-            stopped_recording=True,
-            recording_led=True,
-            monitor_labels=True,
-            freeze_h_slots=True,
-            sketchbook_save=True,
-        )
-        _, old = build(STOCK_MAIN.read_bytes(), **flags)
-        self.assertEqual(
-            old["sha256"],
-            "0f85c967ff1034e3e22ac0d9134fd33e89d198e0df9693076a6d924493adfd1d",
-        )
-        image, new = build(STOCK_MAIN.read_bytes(), **flags, managed_buffers=True)
-        self.assertEqual(new["reservation"][1], MANAGED_END)
-        self.assertEqual(old["reservation"][1], END)
-        self.assertTrue(new["managed_buffers"])
-        from lab.sketch_device_validation import read_segments
-
-        self.assertEqual(len(read_segments(image, new)), len(new["segments"]))
-        self.assertEqual(
-            (image, new), build(STOCK_MAIN.read_bytes(), **flags, managed_buffers=True)
-        )

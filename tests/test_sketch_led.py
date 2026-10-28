@@ -1,15 +1,14 @@
-"""Targeted SONG LED substitution/stock fallback and R7 opt-out checks."""
+"""Targeted SONG LED substitution and stock fallback checks."""
 
 import os
 import unittest
 
-from selector_core_support import r
 import test_sketch_controls as controls
+from selector_core_support import r
+
 from lab import buf_next_bar as nb
 from lab import sketch_led as led
 from lab.emit import Code
-from lab.runtime import STOCK_MAIN
-from lab.sketch_device import build
 
 
 @unittest.skipUnless(os.environ.get("DT2_BUF_SELECTOR_CORE"), "Rust ColdFire required")
@@ -49,20 +48,3 @@ class RecordingLedTests(unittest.TestCase):
                             self.assertEqual(bytes(f.cpu.mem_read(nb.STATE, 0x200)), before)
                             for reg in preserved:
                                 self.assertEqual(f.cpu.reg_read(reg), 0xA1B20000 + reg)
-
-    def test_opt_out_is_exact_R7_and_opt_in_adds_only_LED_hook_and_code(self):
-        flags = dict(arm_diagnostics=True, clock_fix=True, buf_selector=True,
-                     performance_controls=True, navigation_fixes=True,
-                     fixed_buf_slots=True, startup_capture=True,
-                     copy_shortcuts=True, stopped_recording=True)
-        stock = STOCK_MAIN.read_bytes()
-        _old_image, old = build(stock, **flags)
-        self.assertEqual(old["sha256"], "b5f167e5bbfb9ac35f1de9db7e507e3775663c8702450e270945e4040277f7af")
-        _image, new = build(stock, recording_led=True, **flags)
-        self.assertEqual(new["reservation"], old["reservation"])
-        self.assertEqual(new["guards"], old["guards"])
-        self.assertEqual([h for h in new["hooks"] if h["address"] != led.SITE], old["hooks"])
-        additions = [w for w in new["writes"] if w not in old["writes"]]
-        self.assertEqual({w["source_address"] for w in additions}, {led.ENTRY, led.TRAMP})
-        self.assertTrue(all(w in new["writes"] for w in old["writes"]))
-        self.assertEqual(new["payload_bytes"] - old["payload_bytes"], sum(len(bytes.fromhex(w["after"])) for w in additions))

@@ -72,13 +72,13 @@ responses use signed integer extrema, scaled by the native display code.
 
 | Run | Observed result |
 | --- | --- |
-| [`flex-ui-stereo-01`](../out/runs/flex-ui-stereo-01/report.json) | PASS: real track-1 record/stop/trim/use; 3120 recorded frames trimmed to [86, 3034); discard, destination retention, fresh replacement, injected capacity failure and successful retry. |
-| [`flex-ui-mono-t3-02`](../out/runs/flex-ui-mono-t3-02/report.json) | PASS: mono on track 3, both trim boundaries, the same replacement/cancel/retry checks, unsupported-machine preservation, actual pad-slot transport and exact-repeat original DSP voice audio. |
-| [`flex-ui-preservation-01`](../out/runs/flex-ui-preservation-01/report.json) | PASS: all 17664 bytes of the 16 native track records remain identical while a replacement is a candidate and after it is discarded. The standalone check is retained beside its report. |
-| [`flex-ui-stock-save-02`](../out/runs/flex-ui-stock-save-02/report.json) | PASS: disabling USE reaches the original Y:SAVE / PLEASE WAIT stage and assigns no temporary sample. Naming/completed storage are not claimed. |
-| [`flex-ui-window-01`](../out/runs/flex-ui-window-01/report.json) | The native Tk window initialized, ran for its 10-second bound and closed without CPU faults. Mac was locked, so desktop mouse click-through and visual layout inspection were unavailable. |
-| [`source tests`](../out/flex-ui-source-tests.log) | 17 tests pass, including chunk boundaries, immutable accepted PCM, invalid requests, clock wrap, EOF, WAV format and signed channel extrema. |
-| [`SINE regression`](../out/runs/20261006T081256Z-test-92b0a30b/manifest.json) | PASS: required prepared-fixture replay, including stock isolation, exact repeat and negative controls. |
+| [`flex-ui-stereo-01`](../../../out/runs/flex-ui-stereo-01/report.json) | PASS: real track-1 record/stop/trim/use; 3120 recorded frames trimmed to [86, 3034); discard, destination retention, fresh replacement, injected capacity failure and successful retry. |
+| [`flex-ui-mono-t3-02`](../../../out/runs/flex-ui-mono-t3-02/report.json) | PASS: mono on track 3, both trim boundaries, the same replacement/cancel/retry checks, unsupported-machine preservation, actual pad-slot transport and exact-repeat original DSP voice audio. |
+| [`flex-ui-preservation-01`](../../../out/runs/flex-ui-preservation-01/report.json) | PASS: all 17664 bytes of the 16 native track records remain identical while a replacement is a candidate and after it is discarded. The standalone check is retained beside its report. |
+| [`flex-ui-stock-save-02`](../../../out/runs/flex-ui-stock-save-02/report.json) | PASS: disabling USE reaches the original Y:SAVE / PLEASE WAIT stage and assigns no temporary sample. Naming/completed storage are not claimed. |
+| [`flex-ui-window-01`](../../../out/runs/flex-ui-window-01/report.json) | The native Tk window initialized, ran for its 10-second bound and closed without CPU faults. Mac was locked, so desktop mouse click-through and visual layout inspection were unavailable. |
+| [`source tests`](../../../out/flex-ui-source-tests.log) | 17 tests pass, including chunk boundaries, immutable accepted PCM, invalid requests, clock wrap, EOF, WAV format and signed channel extrema. |
+| [`SINE regression`](../../../out/runs/20261006T081256Z-test-92b0a30b/manifest.json) | PASS: required prepared-fixture replay, including stock isolation, exact repeat and negative controls. |
 
 The stereo run retains zero CPU fault pages, zero storage reads/writes in the
 bounded temporary handoff, closed loader source handles, and 20 poisoned
@@ -89,10 +89,10 @@ finite, nonzero and byte-identical on repeat; the replacement changes its hash.
 The earlier take is replayed with all later pages present, exercising retained
 sample data after replacement.
 
-Native OLED evidence: [trim / USE](../out/runs/flex-ui-stereo-01/01-trim-use.png),
-[accepted SRC](../out/runs/flex-ui-stereo-01/02-temp-assigned.png),
-[discard](../out/runs/flex-ui-stereo-01/04-discarded.png),
-[capacity retry](../out/runs/flex-ui-stereo-01/07-capacity-retry.png).
+Native OLED evidence: [trim / USE](../../../out/runs/flex-ui-stereo-01/01-trim-use.png),
+[accepted SRC](../../../out/runs/flex-ui-stereo-01/02-temp-assigned.png),
+[discard](../../../out/runs/flex-ui-stereo-01/04-discarded.png),
+[capacity retry](../../../out/runs/flex-ui-stereo-01/07-capacity-retry.png).
 
 Run reports include exact dependency, firmware, snapshot, card, sample-feed,
 native-library and source fingerprints. Each run retains frozen adapter source,

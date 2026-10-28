@@ -65,11 +65,11 @@ New-candidate hardware confirmation remains pending.
 
 The [author-release CAPI R2 replacement](CAPICOLA-REDDIT-BOOT-FIX-RESULTS.md) is now the default `--all-features` backend. It directly integrates the shared Digitakt port with its release WSOLA/search/stereo assembly paths, preserves the binary switch and exact Arp/Flex/Plaits CPU image, and retains old engines through explicit build flags. Validation and the experimental OS artifact are linked in the results.
 
-The [CAPI switch UI update](CAPICOLA-SWITCH-RESULTS.md) uses the stock AMP RSET binary switch for CAPI and packages the same source-playback DSP with Plaits, Arp and Flex. Native emulator OFF/ON checks pass; build with `--capicola-switch` to include the graphic change.
+The [CAPI switch UI update](history/capicola/CAPICOLA-SWITCH-RESULTS.md) uses the stock AMP RSET binary switch for CAPI and packages the same source-playback DSP with Plaits, Arp and Flex. Native emulator OFF/ON checks pass; build with `--capicola-switch` to include the graphic change.
 
-The [Capicola source-playback candidate](CAPICOLA-SOURCE-RESULTS.md) replaces the sample reader/grain handoff layer, removes independent read-head edge dips, and supports native mono/stereo with32channel banks. Full-start upstream-source/packaged SHARC, stereo loading/routing, final-output, startup and regression checks pass. Includes Plaits, Arp and Flex. Physical sound and timing remain unverified.
+The [Capicola source-playback candidate](history/capicola/CAPICOLA-SOURCE-RESULTS.md) replaces the sample reader/grain handoff layer, removes independent read-head edge dips, and supports native mono/stereo with32channel banks. Full-start upstream-source/packaged SHARC, stereo loading/routing, final-output, startup and regression checks pass. Includes Plaits, Arp and Flex. Physical sound and timing remain unverified.
 
-The separate [CAPI quality candidate](CAPICOLA-QUALITY-RESULTS.md) restores
+The separate [CAPI quality candidate](history/capicola/CAPICOLA-QUALITY-RESULTS.md) restores
 content-adaptive stretch fades and includes all four features. Original-source
 and packaged SHARC comparisons, routing, startup and regression checks pass;
 physical listening and timing remain unverified. This older candidate remains available with `--capicola-quality`.
@@ -135,7 +135,7 @@ sampler and Plaits. It captures the actual performance for buffered WAV replay.
 [Upload preparation](UPLOAD-PREFLIGHT.md) records the stock 1.16 upgrade
 and recovery route, the checked custom container, and remaining hardware gates.
 
-The [Flex sampling prototype](FLEX-LITE-UI-RESULTS.md) adds a remembered
+The [Flex sampling prototype](history/flex/FLEX-LITE-UI-RESULTS.md) adds a remembered
 destination to the original recorder: record, stop, trim, then USE a temporary
 RAM sample. It supports modeled WAV input and buffered ONESHOT audition through
 `python3 scripts/try-flex-lite.py` (legacy command name). This is a host-side
@@ -155,7 +155,7 @@ current limitations.
 
 The active [Capicola direction](CAPICOLA-STRETCH-REPLACEMENT.md) replaces
 the DSP behind the existing **STRETCH** machine, retaining its selector,
-controls and locks. The [R3 playback implementation](CAPICOLA-STRETCH-R3-RESULTS.md)
+controls and locks. The [R3 playback implementation](history/capicola/CAPICOLA-STRETCH-R3-RESULTS.md)
 adds live PLAY and STRT/LEN edits with short crossfades, native completion,
 and modeled master/DAC-ring checks. Sixteen distinct mono banks and thirty-two
 reader lanes retain the existing 8 MiB budget and stock fallback under pressure.
@@ -166,16 +166,16 @@ The [combined firmware build](COMBINED-FIRMWARE-RESULTS.md) packages this
 STRETCH replacement with Plaits R3 and the latest managed streaming Flex.
 It is a local experimental OS 1.16 SYX, with build/container, separate emulator
 startup and regression checks; it has not been sent to hardware.
-An [optional CAPI comparison build](CAPICOLA-TOGGLE-RESULTS.md) adds
+An [optional CAPI comparison build](history/capicola/CAPICOLA-TOGGLE-RESULTS.md) adds
 per-track OFF/ON on STRETCH encoder C, latched at the next native trigger.
 Its second SRC page shows the received engine state. Native panel/locks, stock
 and R3 audio comparisons pass; omitting the option reproduces the previous
 combined firmware exactly. Physical-device validation remains separate.
-The [R2 multiple-bank work](CAPICOLA-STRETCH-R2-RESULTS.md) and
-[R1 replacement](CAPICOLA-STRETCH-R1-RESULTS.md) are preserved.
+The [R2 multiple-bank work](history/capicola/CAPICOLA-STRETCH-R2-RESULTS.md) and
+[R1 replacement](history/capicola/CAPICOLA-STRETCH-R1-RESULTS.md) are preserved.
 Separate CAPICOLA selector/RATE work is superseded.
 
-The preserved [Capicola integration prototype](CAPICOLA-CONTROLS-RESULTS.md) has a
+The preserved [Capicola integration prototype](history/capicola/CAPICOLA-CONTROLS-RESULTS.md) has a
 track-1 selector, pitch/rate/level controls and automatic mono sample preparation
 in the OS1.16 emulator. Captured CPU sample transfers and triggers produce
 native DSP voice output matching the host reference. Input remains capped at
@@ -183,14 +183,14 @@ native DSP voice output matching the host reference. Input remains capped at
 currently takes about twice the sample duration and needs a later trigger to
 start playback. Automatic readiness refresh, project persistence, full memory ownership and
 physical timing remain open; there is no hardware-ready Capicola package.
-The optional [reserved-state build](CAPICOLA-RESIDENT-STATE-RESULTS.md) now
+The optional [reserved-state build](history/capicola/CAPICOLA-RESIDENT-STATE-RESULTS.md) now
 places working data and stacks inside that existing reservation, with native
 startup, reload and compatibility checks. Instruction-code ownership in L2
 and physical memory latency still need validation.
-The new [selection-preparation candidate](CAPICOLA-SELECTION-PREP-RESULTS.md)
+The new [selection-preparation candidate](history/capicola/CAPICOLA-SELECTION-PREP-RESULTS.md)
 starts work when an eligible sample is selected, before the first trigger, and
 exposes native progress and rejection status. The optional
-[feedback build](CAPICOLA-FEEDBACK-RESULTS.md) now shows preparation ranges
+[feedback build](history/capicola/CAPICOLA-FEEDBACK-RESULTS.md) now shows preparation ranges
 and READY when SRC opens, using the existing DSP reply. Native SPI return and
 buffered CPU display checks pass; automatic caption refresh remains pending.
 

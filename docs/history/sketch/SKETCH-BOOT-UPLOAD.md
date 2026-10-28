@@ -57,7 +57,7 @@ intentionally replaced by Sketch's polling hook (`mainloop signature ambiguous`)
 The later migration audit establishes zero matches, rather than duplicates;
 the earlier duplicate-code explanation was incorrect. This is an emulator
 constructor limitation, not an observed CPU boot fault. The opt-in reference
-constructor described in [native migration](NATIVE-BUF-MIGRATION.md) addresses it.
+constructor described in [native migration](../../NATIVE-BUF-MIGRATION.md) addresses it.
 
 The bounded native sender probe therefore constructs the CPU from a separate
 stock-MAIN container carrying the exact candidate DSP section, then installs
@@ -92,14 +92,14 @@ BUF pages for backend controls; no new recordings are needed for this change.
 
 The old `-07` and `-09` artifacts remain evidence for their recorded application
 or prepared-state layers. They must not be used as boot-qualified candidates.
-The separate [coupled application startup](SKETCH-COLD-STARTUP.md) results retain
+The separate [coupled application startup](../../SKETCH-COLD-STARTUP.md) results retain
 their original scope and image hashes.
 
 ## Results — 2026-10-23 JST
 
 Current sealed build: `out/runs/sketch-device-build-20261023-13/`.
-The [evidence index](../out/runs/sketch-rom-upload-20261023-07/verification.json)
-and [upload report](../out/runs/sketch-rom-upload-20261023-07/report.json)
+The [evidence index](../../../out/runs/sketch-rom-upload-20261023-07/verification.json)
+and [upload report](../../../out/runs/sketch-rom-upload-20261023-07/report.json)
 pass with the explicit limits above.
 
 | Image | SHA-256 |

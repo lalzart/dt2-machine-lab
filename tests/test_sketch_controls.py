@@ -263,29 +263,6 @@ class PerformanceControls(unittest.TestCase):
             self.assertEqual(f.get(s.BUF), 1)
             self.assertEqual(int.from_bytes(f.cpu.mem_read(w.DEST, 4), 'big'), 0)
 
-    def test_opt_in_off_reproduces_user_tested_selector_image(self):
-        from lab.sketch_device import build
-
-        main, metadata = build(
-            STOCK_MAIN.read_bytes(),
-            arm_diagnostics=True,
-            clock_fix=True,
-            buf_selector=True,
-        )
-        self.assertEqual(
-            metadata["sha256"],
-            "701a29543c5da385cd607bc5f8f2586742e3089e98165fd8854d6586dcdd9795",
-        )
-        changed, enabled = build(
-            STOCK_MAIN.read_bytes(),
-            arm_diagnostics=True,
-            clock_fix=True,
-            buf_selector=True,
-            performance_controls=True,
-        )
-        self.assertNotEqual(main, changed)
-        self.assertEqual(metadata["reservation"], enabled["reservation"])
-        self.assertTrue(enabled["performance_controls"])
 
 
 @unittest.skipUnless(

@@ -15,7 +15,7 @@ The user authorized this diagnostic package during the voice session.
 
 ## Delivery and use
 
-[Diagnostic firmware and notes](../out/runs/sketch-arm-diagnostic-20261023-01/package/README.md).
+[Diagnostic firmware and notes](../../../out/runs/sketch-arm-diagnostic-20261023-01/package/README.md).
 The file is `EXPERIMENTAL_SKETCH_BUF_ARM_DIAG_OS1.16.syx` with SHA-256
 `57a6713d24a6d689b097588c36d922667b90adbb57f85737d4c31b1bb7147091`.
 The assistant has not transferred this diagnostic package to hardware.
@@ -73,9 +73,9 @@ to the ordinary feedback path rather than indexing outside the table.
 - SINE replay and focused Ruff/format checks pass. No recording or stress
   experiment is repeated.
 
-[Worker screenshot](../out/runs/sketch-arm-diag-startup-20261023-01/diagnostic-worker.png),
-[loader screenshot](../out/runs/sketch-arm-diag-startup-20261023-01/diagnostic-loader.png),
-[package manifest](../out/runs/sketch-arm-diagnostic-20261023-01/package/manifest.json).
+[Worker screenshot](../../../out/runs/sketch-arm-diag-startup-20261023-01/diagnostic-worker.png),
+[loader screenshot](../../../out/runs/sketch-arm-diag-startup-20261023-01/diagnostic-loader.png),
+[package manifest](../../../out/runs/sketch-arm-diagnostic-20261023-01/package/manifest.json).
 
 The first guard-matrix test left one of the two transport flags set; it was
 corrected to exercise stopped transport. That failed log and the intermediate

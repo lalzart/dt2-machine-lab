@@ -58,7 +58,7 @@ The final container ends at flash address `0x234960`, below the existing
 conservative `0x380000` ceiling. MAIN in-place decoding retains a 2,307,826-byte
 minimum gap. These are guarded container/staging checks, not hardware flashing.
 The full native R3 playback results remain in
-[CAPICOLA-STRETCH-R3-RESULTS.md](CAPICOLA-STRETCH-R3-RESULTS.md); this packaging
+[CAPICOLA-STRETCH-R3-RESULTS.md](history/capicola/CAPICOLA-STRETCH-R3-RESULTS.md); this packaging
 work does not change its DSP instructions or make a new real-time claim.
 
 The initial source-suite invocation used system Python 3.10 and failed importing

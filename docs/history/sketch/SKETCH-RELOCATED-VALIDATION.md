@@ -5,7 +5,7 @@ This records the exact original `-07` prepared-emulator result. Subsequent
 overlap in that image. Its emulator results remain valid at the stated layer;
 the corrected `-09` DSP has separate startup/seal evidence and no new recordings.
 
-Continue the [device placement experiment](SKETCH-DEVICE-PLACEMENT.md) using
+Continue the [device placement experiment](../../SKETCH-DEVICE-PLACEMENT.md) using
 its exact sealed MAIN and DSP, without changing firmware emitters, the memory
 layout, allocator policy or existing Flex builds.
 
@@ -38,7 +38,7 @@ and intact code/canaries. Capture/publication latency remains a model result.
 The `--setup-only` option stops before the first recording and uses modeled
 control replies to make a short setup gate. It qualifies neither coupled voice
 execution nor recording. The normal run uses the same native SPI/SEC DSP
-engine and stock-file PCM comparators as [combined validation](SKETCH-VALIDATION.md).
+engine and stock-file PCM comparators as [combined validation](../../SKETCH-VALIDATION.md).
 Saved pages can be replayed without recording again.
 
 ```sh
@@ -114,10 +114,10 @@ The first setup invocation used system Python and was refused before runtime
 initialization. Its empty output directory/log is retained. The configured
 Python 3.12 setup then passed; neither setup attempt consumed a capture.
 
-See the [coupled report](../out/runs/sketch-relocated-coupled-20261023-01/report.json),
-[stock-file PCM report](../out/runs/sketch-relocated-audio-20261023-01/report.json),
-[prior-layout byte comparison](../out/runs/sketch-relocated-validation-20261023-01/prior-layout-parity.json)
-and [native screenshot gallery](../out/runs/sketch-relocated-validation-20261023-01/screenshots.html).
+See the [coupled report](../../../out/runs/sketch-relocated-coupled-20261023-01/report.json),
+[stock-file PCM report](../../../out/runs/sketch-relocated-audio-20261023-01/report.json),
+[prior-layout byte comparison](../../../out/runs/sketch-relocated-validation-20261023-01/prior-layout-parity.json)
+and [native screenshot gallery](../../../out/runs/sketch-relocated-validation-20261023-01/screenshots.html).
 
 The next preparation work is paired CPU/SHARC cold startup and SHARC/device
 memory ownership qualification. No further recording is needed to repeat the

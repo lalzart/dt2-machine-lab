@@ -3,7 +3,7 @@
 **Superseded DSP placement:** the initial `-07` DSP layout below overlaps ADI's
 boot-kernel workspace. It is preserved as emulator evidence. The device recipe
 now moves the gate state and rejects that overlap; use the `-09` build and
-[boot-memory correction/results](SKETCH-DSP-BOOT-MEMORY.md) for current preparation.
+[boot-memory correction/results](history/sketch/SKETCH-DSP-BOOT-MEMORY.md) for current preparation.
 The historical unchanged-DSP results below apply to the initial build only.
 
 Local preparation for the existing Sketch ARM/FREEZE workflow. The new
@@ -85,7 +85,7 @@ startup remain qualification work.
 The native boot check is CPU-only with modeled peripherals and an authenticated
 stock container replaced by MAIN before its first reset instruction. It is
 distinct from booting the paired CPU/DSP image, decoding a full candidate SYX,
-or installing firmware. The subsequent [device-address validation](SKETCH-RELOCATED-VALIDATION.md)
+or installing firmware. The subsequent [device-address validation](history/sketch/SKETCH-RELOCATED-VALIDATION.md)
 passes the prepared coupled recording/FREEZE workflow with code/canaries intact
 and no old-arena accesses. Paired cold startup and physical ownership remain open.
 

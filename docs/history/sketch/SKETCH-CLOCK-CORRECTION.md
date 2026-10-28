@@ -4,7 +4,7 @@
 "it works now." The previously refused recording workflow therefore has a
 positive user-reported device result. Which individual correction resolved it,
 the installed-image hash and physical timing were not independently measured.
-The next [selector/startup investigation](BUF-SELECTOR-AND-STARTUP.md) preserves
+The next [selector/startup investigation](../../BUF-SELECTOR-AND-STARTUP.md) preserves
 this working package. The candidate-stage limits below are the earlier evidence.
 
 The user reports that the advancing `BUSY LOAD 259/261/262` refusal clears
@@ -13,7 +13,7 @@ then reaches `REF CLOCK 0`. The loading block is transient in that device
 report. `REF CLOCK 0` is the BUF bar-clock validity flag failing admission;
 the exact physical prerequisite behind it has not been identified.
 
-[Experimental clock candidate and use notes](../out/runs/sketch-clock-experimental-20261023-01/package/README.md).
+[Experimental clock candidate and use notes](../../../out/runs/sketch-clock-experimental-20261023-01/package/README.md).
 File: `EXPERIMENTAL_SKETCH_BUF_CLOCK_OS1.16.syx`, 2,235,808 bytes, SHA-256
 `7fcf8653b0aeb81204b7d0bc3b10d1419dac90f677fc097dfe11d5165988693d`.
 The assistant has not transferred it to hardware. This is a correction
@@ -103,11 +103,11 @@ did not change. Two total modeled captures were performed across those runs.
 The initial UI unit failure also used a relative test getter for an absolute
 guard address; its corrected assertions retain the original expectations.
 
-[Screenshots](../out/runs/sketch-clock-resume-audit-20261023-01/screenshots.png),
-[native clock/recording report](../out/runs/sketch-clock-recording-20261023-02/report.json),
-[startup report](../out/runs/sketch-clock-startup-20261023-02/report.json),
-[package manifest](../out/runs/sketch-clock-experimental-20261023-01/package/manifest.json),
-[audit](../out/runs/sketch-clock-resume-audit-20261023-01/verification.json).
+[Screenshots](../../../out/runs/sketch-clock-resume-audit-20261023-01/screenshots.png),
+[native clock/recording report](../../../out/runs/sketch-clock-recording-20261023-02/report.json),
+[startup report](../../../out/runs/sketch-clock-startup-20261023-02/report.json),
+[package manifest](../../../out/runs/sketch-clock-experimental-20261023-01/package/manifest.json),
+[audit](../../../out/runs/sketch-clock-resume-audit-20261023-01/verification.json).
 
 Physical clock qualification, DSP ROM/SPI, input/normalization, cache/DMA,
 memory placement, timing, persistence and listening remain unverified. No

@@ -57,7 +57,7 @@ the detailed per-profile traces.
 See [STOCK-RESOURCE-BASELINE.md](STOCK-RESOURCE-BASELINE.md) for the workload
 capture, firmware verification, results and reproduction command.
 
-The [Capicola STRETCH comparison](CAPICOLA-RESOURCE-COMPARISON.md) measures
+The [Capicola STRETCH comparison](history/capicola/CAPICOLA-RESOURCE-COMPARISON.md) measures
 preparation, unready stock fallback and one/four/sixteen-track playback with
 identical sample-loading and warmup metadata. Its bank arrays and reader
 records are shown inside the declared total reservation, separately from CPU

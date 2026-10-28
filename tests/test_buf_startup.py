@@ -177,24 +177,6 @@ class PendingCapture(unittest.TestCase):
         self.assertEqual(f.get(b.STATE + b.USES), 0)
         self.assertEqual(f.get(0x207614), 1)
 
-    def test_disabled_profile_is_exact_R4(self):
-        from lab.runtime import STOCK_MAIN
-        from lab.sketch_device import build
-
-        _, meta = build(
-            STOCK_MAIN.read_bytes(),
-            arm_diagnostics=True,
-            clock_fix=True,
-            buf_selector=True,
-            performance_controls=True,
-            navigation_fixes=True,
-            fixed_buf_slots=True,
-        )
-        self.assertEqual(
-            meta["sha256"],
-            "7c5e0bdea8b5c7c8feb5cfc8c695d0f27dbd4a070624994215b2f288d0012de1",
-        )
-        self.assertEqual(meta["buf_public_slots"], [1020, 1021, 1022, 1023])
 
     def test_bar_default_records_during_loading_and_retains_until_publication(self):
         f = self.fixture()

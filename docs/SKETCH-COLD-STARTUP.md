@@ -1,7 +1,7 @@
 # Sketch coupled application startup — Digitakt II OS 1.16
 
 This is historical application-startup evidence. The later
-[boot-stream/upload audit](SKETCH-BOOT-UPLOAD.md) found that `-09` still had
+[boot-stream/upload audit](history/sketch/SKETCH-BOOT-UPLOAD.md) found that `-09` still had
 invalid FINAL ordering and an unaligned append. Keep its measured results at
 the application layer; use a fresh current device build for reproductions.
 
@@ -12,7 +12,7 @@ It uses no prepared CPU/DSP ready snapshot and performs no recordings.
 
 **This does not execute the DSP boot ROM or its boot-upload handshake.** The
 emulator starts the DSP from decoded loader memory. The earlier
-[boot-workspace exclusion and actual MAIN depacker checks](SKETCH-DSP-BOOT-MEMORY.md)
+[boot-workspace exclusion and actual MAIN depacker checks](history/sketch/SKETCH-DSP-BOOT-MEMORY.md)
 remain separate requirements; this result cannot replace them or establish
 physical startup, caches, aliases, DMA ownership or worst-case stack bounds.
 

@@ -43,69 +43,20 @@ parser.add_argument(
     help="Author release-default WSOLA backend (default for --all-features)",
 )
 parser.add_argument(
-    "--capicola-legacy",
-    action="store_true",
-    help="Reproduce the previous default analyzed-keyframe backend",
-)
-parser.add_argument(
-    "--capicola-source",
-    action="store_true",
-    help="Full source playback and grain handoffs; requires --all-features",
-)
-parser.add_argument(
     "--capicola-switch",
     action="store_true",
     help="Use the stock binary switch graphic for CAPI; requires --all-features",
-)
-parser.add_argument(
-    "--capicola-quality",
-    action="store_true",
-    help="Optional adaptive-fade correction; requires --all-features",
 )
 args = parser.parse_args()
 require(not args.any_track or args.all_features, 'Any-track requires --all-features')
 if args.any_track:
     args.arp_stopped = True
-require(
-    sum(
-        (
-            args.capicola_reddit,
-            args.capicola_legacy,
-            args.capicola_source,
-            args.capicola_quality,
-        )
-    )
-    <= 1,
-    "Choose one CAPI runtime",
-)
-require(
-    not (args.capicola_reddit or args.capicola_legacy) or args.all_features,
-    "CAPI runtime requires all features",
-)
-args.capicola_reddit = args.all_features and not (
-    args.capicola_legacy or args.capicola_source or args.capicola_quality
-)
-require(not args.any_track or args.capicola_reddit, "Any-track is scoped to the author Capicola backend")
-if args.capicola_reddit:
-    args.capicola_switch = True
-require(
-    not args.capicola_quality or args.all_features,
-    "Quality profile requires all features",
-)
-require(
-    not args.capicola_source or args.all_features, "Source port requires all features"
-)
-require(not (args.capicola_source and args.capicola_quality), "Choose one CAPI runtime")
-require(
-    not args.capicola_switch or args.all_features, "CAPI switch requires all features"
-)
-runtime_variant = (
-    "source"
-    if args.capicola_source
-    else "quality"
-    if args.capicola_quality
-    else "reference"
-)
+require(not args.capicola_reddit or args.all_features, "CAPI requires all features")
+require(not args.capicola_switch or args.all_features, "CAPI switch requires all features")
+# The author port is the only packaged CAPI backend. Earlier analyzed-keyframe,
+# quality and source-playback experiments remain research fixtures only.
+args.capicola_reddit = args.all_features
+args.capicola_switch = args.all_features
 provenance = doctor()
 out = args.output.resolve()
 require(out.is_relative_to(ROOT / "out/runs"), "Use a fresh ignored run")
@@ -180,30 +131,12 @@ try:
     images = {3: image}
     dsp_report = None
     if args.all_features:
-        from lab.dsp_build import build_blob
+        from lab.capicola_reddit import build_blob
 
         def build_dsp(output):
-            if args.capicola_reddit:
-                from lab.capicola_reddit import build_blob as reddit_blob
-
-                return reddit_blob(output, all_tracks=args.any_track)
-            return build_blob(
-                True,
-                family="capicola-stretch-toggle",
-                layout="reserved-state",
-                output=output,
-                runtime_variant=runtime_variant,
-            )
+            return build_blob(output, all_tracks=args.any_track)
 
         blob = build_dsp(out / "firmware")
-        require(
-            args.capicola_reddit
-            or args.capicola_quality
-            or args.capicola_source
-            or hashlib.sha256(blob).hexdigest()
-            == "cee93f5173313dabba145c9c0869f4133a700d1f09d8657305c1f3f593faf8d7",
-            "Reviewed Plaits/CAPI DSP drift",
-        )
         require(
             build_dsp(out / "dsp-repeat") == blob,
             "DSP repeat mismatch",
@@ -223,17 +156,9 @@ try:
     require(source_hashes() == provenance["source_hashes"], "Source drift")
     candidate = (
         "EXPERIMENTAL_ALL_FEATURES_CAPI_REDDIT_R2_OS1.16.syx"
-        if args.capicola_reddit
-        else "EXPERIMENTAL_ALL_FEATURES_CAPI_SOURCE_OS1.16.syx"
-        if args.capicola_source
-        else "EXPERIMENTAL_ALL_FEATURES_CAPI_QUALITY_OS1.16.syx"
-        if args.capicola_quality
-        else "EXPERIMENTAL_ALL_FEATURES_PLAITS_CAPI_ARP_FLEX_OS1.16.syx"
         if args.all_features
         else "EXPERIMENTAL_CPU_EXTENSION_ARP_FLEX_OS1.16.syx"
     )
-    if args.capicola_switch and not args.capicola_reddit:
-        candidate = candidate.replace("_OS1.16.syx", "_SWITCH_OS1.16.syx")
     if args.any_track:
         candidate = candidate.replace("_OS1.16.syx", "_ANY_TRACK_R1_OS1.16.syx")
     elif args.arp_stopped:
@@ -263,8 +188,8 @@ try:
         flex_discard=args.flex_save_screen,
         flex_bank_choice=args.flex_save_screen,
         capi_toggle=args.all_features,
-        capicola_quality=args.capicola_quality,
-        capicola_source=args.capicola_source,
+        capicola_quality=False,
+        capicola_source=False,
         capicola_reddit=args.capicola_reddit,
         capicola_switch=args.capicola_switch,
         arp_stopped=args.arp_stopped,

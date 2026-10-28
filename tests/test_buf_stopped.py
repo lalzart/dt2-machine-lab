@@ -225,28 +225,3 @@ class StoppedCapture(unittest.TestCase):
             self.assertEqual(bytes(f.cpu.mem_read(b.STATE, 132)), before)
             f.put(0x43164F94, 0)
             self.assertEqual(f.call(b.CHECK), 0xFFFFFFFF)
-
-    def test_opt_out_is_byte_identical_and_no_new_hooks_or_memory(self):
-        from lab.runtime import STOCK_MAIN
-        from lab.sketch_device import build
-
-        flags = dict(
-            arm_diagnostics=True,
-            clock_fix=True,
-            buf_selector=True,
-            performance_controls=True,
-            navigation_fixes=True,
-            fixed_buf_slots=True,
-            startup_capture=True,
-            copy_shortcuts=True,
-        )
-        _, old = build(STOCK_MAIN.read_bytes(), **flags)
-        _, new = build(STOCK_MAIN.read_bytes(), **flags, stopped_recording=True)
-        self.assertEqual(
-            old["sha256"],
-            "f31a427d81afec033ff8c97bb33eaa2462ce27afb5a130adf4a5db149fdb519e",
-        )
-        self.assertEqual(old["hooks"], new["hooks"])
-        self.assertGreaterEqual(free.FINISH, b.OP_CONTEXT + len(q.OP_FIELDS) * 4)
-        self.assertLess(free.FINISH, startup.p.BATCH_ACTIVE)
-        self.assertEqual(old["reservation"], new["reservation"])

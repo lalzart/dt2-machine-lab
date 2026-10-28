@@ -78,12 +78,12 @@ These checks perform **zero new recordings**.
   Focused Ruff and final-source SINE replay pass. SINE evidence is
   `out/runs/20261023T015816Z-test-7e802725/manifest.json`.
 
-The [evidence index](../out/runs/sketch-memory-startup-20261023-01/verification.json)
-links the [startup comparison](../out/runs/sketch-dsp-startup-20261023-01/report.json),
-[native seal controls](../out/runs/sketch-device-seal-20261023-01/report.json),
-[voice parity](../out/runs/sketch-memory-startup-20261023-01/voice-parity.json),
-[staging check](../out/runs/sketch-memory-startup-20261023-01/streams.json)
-and [default-build compatibility](../out/runs/sketch-memory-startup-20261023-01/compatibility.json).
+The [evidence index](../../../out/runs/sketch-memory-startup-20261023-01/verification.json)
+links the [startup comparison](../../../out/runs/sketch-dsp-startup-20261023-01/report.json),
+[native seal controls](../../../out/runs/sketch-device-seal-20261023-01/report.json),
+[voice parity](../../../out/runs/sketch-memory-startup-20261023-01/voice-parity.json),
+[staging check](../../../out/runs/sketch-memory-startup-20261023-01/streams.json)
+and [default-build compatibility](../../../out/runs/sketch-memory-startup-20261023-01/compatibility.json).
 Ignored reproduction helpers are retained alongside the reports. Only six
 executable source files change or are added relative to this turn's initial
 source snapshot; all other inherited executable files remain exact. The two
@@ -112,7 +112,7 @@ are retained; `-09` contains the final source manifest for this correction.
 
 ## Remaining qualification
 
-Subsequent [coupled application startup](SKETCH-COLD-STARTUP.md) passes CPU reset
+Subsequent [coupled application startup](../../SKETCH-COLD-STARTUP.md) passes CPU reset
 and live DSP initialization/control/sample loading with the corrected image.
 It does not execute the DSP ROM or boot-upload handshake; those boundaries and
 physical ownership remain unqualified. The earlier milestone's scope follows.

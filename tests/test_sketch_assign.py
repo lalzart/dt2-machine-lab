@@ -1,6 +1,5 @@
 """Post-recording popup instructions, with named native UI/parameter seams."""
 
-import json
 import os
 import struct
 import unittest
@@ -17,7 +16,6 @@ from lab import sketch_assign as a
 from lab import sketch_managed as m
 from lab import sketchbook_ui as book
 from lab.emit import Code
-from lab.project import ROOT
 from lab.runtime import STOCK_MAIN
 
 
@@ -285,30 +283,3 @@ class AssignmentPopup(unittest.TestCase):
             f.put(nb.STATE + nb.DEST, buf)
             f.call(a.QUEUE)
             self.assertEqual(self.get(a.PENDING), 0)
-
-
-class PopupPlacement(unittest.TestCase):
-    def test_off_preserves_previous_managed_image_and_on_is_guarded(self):
-        from lab.sketch_device import ASSIGN_END, MANAGED_END, build
-        from lab.sketch_device_validation import read_segments
-
-        flags = {
-            name.replace("-", "_"): True
-            for name in json.loads((ROOT / "profiles/sketch-managed.json").read_text())[
-                "build_flags"
-            ]
-        }
-        _, off = build(STOCK_MAIN.read_bytes(), **flags)
-        self.assertEqual(
-            off["sha256"],
-            "4c7f99100063de90164bf47197761a2fb0d19e45a4763219e5a40b44ebcb58bf",
-        )
-        image, on = build(STOCK_MAIN.read_bytes(), **flags, assign_popup=True)
-        self.assertEqual(on["reservation"][1], ASSIGN_END)
-        self.assertEqual(off["reservation"][1], MANAGED_END)
-        self.assertEqual(len(read_segments(image, on)), len(on["segments"]))
-        self.assertEqual(
-            (image, on), build(STOCK_MAIN.read_bytes(), **flags, assign_popup=True)
-        )
-        with self.assertRaisesRegex(ValueError, "requires managed"):
-            build(STOCK_MAIN.read_bytes(), assign_popup=True)

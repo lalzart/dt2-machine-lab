@@ -16,7 +16,7 @@ The candidate includes the six-model Plaits controls experiment only.
 
 The user selected Plaits before Flex Lite for the first device experiment.
 Flex Lite remains preserved in `lab/flex_*.py`, `scripts/try-flex-lite.py`,
-its probe scripts and the [Flex Lite reports](FLEX-LITE-UI-RESULTS.md).
+its probe scripts and the [Flex Lite reports](history/flex/FLEX-LITE-UI-RESULTS.md).
 Its tested record/stop/trim/USE flow assigns a temporary RAM sample to a
 remembered track without the normal +Drive save dialog.
 

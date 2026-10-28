@@ -1,6 +1,6 @@
 # Capicola live STRETCH controls R3 results
 
-2026-10-08. Local OS1.16 source/emulator continuation of the [frozen R3 proposal](CAPICOLA-STRETCH-R3.md). The final source and native emulator checks pass; no hardware or installation claim.
+2026-10-08. Local OS1.16 source/emulator continuation of the [frozen R3 proposal](../../CAPICOLA-STRETCH-R3.md). The final source and native emulator checks pass; no hardware or installation claim.
 
 ## Behavior
 
@@ -10,7 +10,7 @@ R1 reader/analyzer and R2 cache are unchanged. Both reader states share the same
 
 ## Verification
 
-The [fresh frozen native report](../out/runs/capicola-live-frozen-02/source/out/runs/native/report.json) passes with `source_fresh=true`:
+The [fresh frozen native report](../../../out/runs/capicola-live-frozen-02/source/out/runs/native/report.json) passes with `source_fresh=true`:
 
 - Sixteen distinct 512-frame synthetic mono sources and thirty-two independent reader lanes; exact host/native prepared keys; 21,984 bank bytes after 557 additional preparation blocks.
 - Forty-eight PLAY-pair/region cases without retrigger, eight continuous rate-update blocks, and thirty-two blocks of simultaneous edits on all sixteen tracks. Live PCM maximum error 1.38e-7 and worst block RMS 5.70e-8, within unchanged 1e-4/1e-5 limits.
@@ -18,9 +18,9 @@ The [fresh frozen native report](../out/runs/capicola-live-frozen-02/source/out/
 - Forty-eight stock/Plaits parity blocks and four pressure-fallback PCM comparisons; deterministic candidate bytes and exact preserved R1, R2 and MAIN hashes.
 - Sixteen nonzero master/ring output blocks, peak 0.489. Ring conversion with the independently verified native polarity matches at zero LSB error. This checks passage through the modeled output stage; it does not prove the entire effects/mix against an independent oracle.
 
-The [host report](../out/runs/capicola-live-frozen-01/source/out/runs/host/report.json) passes 576 independent live-control comparisons: max 1.92e-7, RMS 5.66e-8. Rapid seven/thirty-two-sample edits, exact partitioning, invalid controls, bank retirement and a deliberately latched-control negative comparator pass. The latter differs by 0.977 and falsifies an implementation that ignores live edits. Five focused C-state tests include bit-exact unchanged-control PCM against the preserved C reader.
+The [host report](../../../out/runs/capicola-live-frozen-01/source/out/runs/host/report.json) passes 576 independent live-control comparisons: max 1.92e-7, RMS 5.66e-8. Rapid seven/thirty-two-sample edits, exact partitioning, invalid controls, bank retirement and a deliberately latched-control negative comparator pass. The latter differs by 0.977 and falsifies an implementation that ignores live edits. Five focused C-state tests include bit-exact unchanged-control PCM against the preserved C reader.
 
-All 138 source tests pass in [the final snapshot log](../out/runs/capicola-live-frozen-02/units.log). The first snapshot's new layout test used the wrong region name; that test typo was fixed without changing DSP code. The [SINE replay](../out/runs/capicola-live-frozen-01/source/out/runs/20261008T120501Z-test-f46d833c/manifest.json) passes repeatability, stock isolation, trigger lifecycle and its signal checks. [Source comparison](../out/runs/capicola-live-frozen-02/sine-source-comparison.json) confirms unchanged lab/machine executable inputs between the SINE snapshot and final snapshot. Final source is retained with [snapshot hashes](../out/runs/capicola-live-frozen-02/snapshot.json) and a [checkout comparison](../out/runs/capicola-live-frozen-02/checkout-comparison.json).
+All 138 source tests pass in [the final snapshot log](../../../out/runs/capicola-live-frozen-02/units.log). The first snapshot's new layout test used the wrong region name; that test typo was fixed without changing DSP code. The [SINE replay](../../../out/runs/capicola-live-frozen-01/source/out/runs/20261008T120501Z-test-f46d833c/manifest.json) passes repeatability, stock isolation, trigger lifecycle and its signal checks. [Source comparison](../../../out/runs/capicola-live-frozen-02/sine-source-comparison.json) confirms unchanged lab/machine executable inputs between the SINE snapshot and final snapshot. Final source is retained with [snapshot hashes](../../../out/runs/capicola-live-frozen-02/snapshot.json) and a [checkout comparison](../../../out/runs/capicola-live-frozen-02/checkout-comparison.json).
 
 Candidate BLOB SHA256: `0cfb6c8315bd2db0e7346527c2834907fa7d131b0b55faf04f047d2ebb801faf`. MAIN SHA256: `7f19553cc4bbdf170378ba67c85bedcf4a57a1d10a4a9751080e249547bd8ff3`. Code 90,244 bytes; constants 12,496 bytes. Dependency revisions and original firmware hashes remain pinned.
 

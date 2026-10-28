@@ -2,20 +2,20 @@
 
 2026-10-07. **The standalone compiled SHARC reader passes the numerical comparisons.** Splitting timestamps into whole samples and Q24 fractions removes the previous absolute-position drift. Target analysis is still incomplete: a short two-tone fixture exposes small host/SHARC arithmetic differences. This remains an isolated finite mono experiment, not a firmware machine or a demonstrated improvement over stock STRETCH.
 
-The [frozen split-time proposal](CAPICOLA-SPLIT-TIME.md) and [ready contract](../machines/capicola/split-contract/implementation-contract.json) extend the [original experiment](CAPICOLA-PROTOTYPE-RESULTS.md). The original double C core and upstream-header oracle remain unchanged and hash-checked.
+The [frozen split-time proposal](../../CAPICOLA-SPLIT-TIME.md) and [ready contract](../../../machines/capicola/split-contract/implementation-contract.json) extend the [original experiment](CAPICOLA-PROTOTYPE-RESULTS.md). The original double C core and upstream-header oracle remain unchanged and hash-checked.
 
 ## Implementation
 
-[split.c](../machines/capicola/split.c) retains the original finite transport and stores timestamps in separate whole-sample and fractional arrays. Binary32 pitch/source-advance controls from 0.5 through 2 have exact Q24 increments. Integer carry prevents accumulated drift; only local time differences become float during interpolation. Duration uses bounded integer multiplication and binary search, avoiding rounded floating division at stop boundaries.
+[split.c](../../../machines/capicola/split.c) retains the original finite transport and stores timestamps in separate whole-sample and fractional arrays. Binary32 pitch/source-advance controls from 0.5 through 2 have exact Q24 increments. Integer carry prevents accumulated drift; only local time differences become float during interpolation. Duration uses bounded integer multiplication and binary search, avoiding rounded floating division at stop boundaries.
 
 Limits remain 48,000 mono input frames at 48 kHz and 4,096 keyframes, with explicit rejection on capacity overflow. State uses 49,232 bytes on both tested ABIs. No heap allocation occurs in the core. Reset, stop, splice policy and 48-frame edge ramps retain their prior behavior. This does not add stereo, loops, reverse or longer-sample support.
 
-[split-target.c](../machines/capicola/split-target.c) is a standalone test entry, with no voice or loader hook. The private arena holds code, state, stack and test buffers; the runner rejects overlaps with the exact stock OS 1.16 loader. The linked code is 9,502 bytes. Those are experimental reservations, not validated production memory placements.
+[split-target.c](../../../machines/capicola/split-target.c) is a standalone test entry, with no voice or loader hook. The private arena holds code, state, stack and test buffers; the runner rejects overlaps with the exact stock OS 1.16 loader. The linked code is 9,502 bytes. Those are experimental reservations, not validated production memory placements.
 
 ## Evidence
 
-Host report: [capicola-split-host-final-01](../out/runs/capicola-split-host-final-01/report.json).
-Target report: [capicola-split-target-final-01](../out/runs/capicola-split-target-final-01/report.json).
+Host report: [capicola-split-host-final-01](../../../out/runs/capicola-split-host-final-01/report.json).
+Target report: [capicola-split-target-final-01](../../../out/runs/capicola-split-target-final-01/report.json).
 
 | Check | Result |
 |---|---|
@@ -31,7 +31,7 @@ Target report: [capicola-split-target-final-01](../out/runs/capicola-split-targe
 | Source/native CPU regression suite | 54 tests pass, no skips |
 | Existing SINE replay | Pass: exact repeat/baseline, stock isolation, lifecycle and disabled-hook negative control |
 
-SINE regression: [20261007T121950Z-test-de118cf8](../out/runs/20261007T121950Z-test-de118cf8/manifest.json). Ready-contract validation, focused lint and source-freshness checks also pass.
+SINE regression: [20261007T121950Z-test-de118cf8](../../../out/runs/20261007T121950Z-test-de118cf8/manifest.json). Ready-contract validation, focused lint and source-freshness checks also pass.
 
 The compiled reader's worst sample error is 2.38419e-7, compared with errors up to 0.432483 in the earlier host-only narrowing diagnostic. This supports the timestamp design for the tested bounds; it does not establish sound quality or physical deadline margin. Generated target WAVs are retained beside the report and were not auditioned.
 

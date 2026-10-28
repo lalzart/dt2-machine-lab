@@ -2,7 +2,7 @@
 
 This document describes the preserved earlier backend. Add `--capicola-legacy` to its all-feature build command to reproduce that backend. The current default uses the [shared author release engine](CAPICOLA-REDDIT-RESULTS.md).
 
-A later [CAPI quality candidate](CAPICOLA-QUALITY-RESULTS.md) adds the optional
+A later [CAPI quality candidate](history/capicola/CAPICOLA-QUALITY-RESULTS.md) adds the optional
 `--capicola-quality` profile. The package documented below remains the exact
 default/reference build; the quality candidate has its own artifact and checks.
 
@@ -156,4 +156,4 @@ Physical timing, boot/install behavior and hardware readiness remain open.
 
 ## Source-playback CAPI candidate
 
-The separate `out/runs/capicola-source-package-20261017-03/EXPERIMENTAL_ALL_FEATURES_CAPI_SOURCE_OS1.16.syx` includes the same Plaits/Arp/Flex CPU with a new source-oriented CAPI reader, source grain handoffs and native mono/stereo. [Exact identity, validation and limits](CAPICOLA-SOURCE-RESULTS.md). Earlier reference and quality packages remain preserved.
+The separate `out/runs/capicola-source-package-20261017-03/EXPERIMENTAL_ALL_FEATURES_CAPI_SOURCE_OS1.16.syx` includes the same Plaits/Arp/Flex CPU with a new source-oriented CAPI reader, source grain handoffs and native mono/stereo. [Exact identity, validation and limits](history/capicola/CAPICOLA-SOURCE-RESULTS.md). Earlier reference and quality packages remain preserved.

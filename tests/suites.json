@@ -1,22 +1,43 @@
 {
   "groups": {
-    "sketch": {
-      "description": "Accepted Sketch/BUF workflow with explicit Rust ColdFire instruction fixtures",
+    "buf-selector": {
+      "description": "Sample aliases, navigation, fixed backing slots and FREEZE slots",
       "modules": [
         "test_buf_selector",
         "test_buf_navigation",
         "test_buf_fixed_slots",
-        "test_buf_freeze_slots",
+        "test_buf_freeze_slots"
+      ]
+    },
+    "buf-recording": {
+      "description": "Sketch controls, recording startup/stop, COPY/PASTE and LED",
+      "modules": [
         "test_sketch_controls",
-        "test_sketch_copy",
-        "test_sketch_device",
         "test_buf_startup",
         "test_buf_stopped",
-        "test_sketch_led",
-        "test_sketchbook_save",
+        "test_sketch_copy",
+        "test_sketch_led"
+      ]
+    },
+    "buf-save": {
+      "description": "Sketchbook audio export, preview and failure handling",
+      "modules": [
+        "test_sketchbook_save"
+      ]
+    },
+    "buf-managed": {
+      "description": "Per-BUF settings, assignment popup and loading feedback",
+      "modules": [
         "test_sketch_managed",
         "test_sketch_assign",
         "test_buf_loading"
+      ]
+    },
+    "sketch-build": {
+      "description": "Explicit historical profile identity, placement, relocation and boot-stream checks",
+      "modules": [
+        "test_sketch_device",
+        "test_sketch_builds"
       ]
     },
     "buf-native": {
@@ -73,19 +94,11 @@
       ]
     },
     "capicola": {
-      "description": "Capicola engine, layouts, memory, source and quality experiments",
+      "description": "Current author STRETCH port and shared layout, reservation and switch",
       "modules": [
-        "test_capicola",
-        "test_capicola_cache",
-        "test_capicola_capacity",
         "test_capicola_layout",
-        "test_capicola_live",
         "test_capicola_memory",
-        "test_capicola_quality",
         "test_capicola_reddit",
-        "test_capicola_source",
-        "test_capicola_split",
-        "test_capicola_stretch",
         "test_capicola_toggle"
       ]
     },
@@ -126,13 +139,29 @@
         "test_type7a_matrix",
         "test_type7a_runtime"
       ]
+    },
+    "capicola-history": {
+      "description": "Superseded analyzed-keyframe, preparation, quality and source-playback experiments",
+      "modules": [
+        "test_capicola",
+        "test_capicola_cache",
+        "test_capicola_capacity",
+        "test_capicola_live",
+        "test_capicola_quality",
+        "test_capicola_source",
+        "test_capicola_split",
+        "test_capicola_stretch"
+      ]
     }
   },
   "profiles": {
     "buf": {
-      "description": "Routine accepted Sketch/BUF workflow plus shared recorder checks (default)",
+      "description": "Current Sketch/BUF behavior and shared recorder checks (default)",
       "groups": [
-        "sketch",
+        "buf-selector",
+        "buf-recording",
+        "buf-save",
+        "buf-managed",
         "recorder"
       ]
     },
@@ -146,9 +175,22 @@
     "buf-full": {
       "description": "Current Sketch plus earlier Unicorn BUF/retirement fixtures; requires a working host Unicorn JIT",
       "groups": [
-        "sketch",
+        "buf-selector",
+        "buf-recording",
+        "buf-save",
+        "buf-managed",
+        "sketch-build",
         "buf-native",
         "recorder"
+      ]
+    },
+    "sketch": {
+      "description": "All current Sketch/BUF behavior checks, excluding explicit builds",
+      "groups": [
+        "buf-selector",
+        "buf-recording",
+        "buf-save",
+        "buf-managed"
       ]
     }
   }

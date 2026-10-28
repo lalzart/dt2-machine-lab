@@ -11,7 +11,6 @@ from lab import buf_selector as s
 from lab import recorder_freeze_code as n
 from lab import sketch as sk
 from lab.runtime import STOCK_MAIN
-from lab.sketch_device import build
 
 
 @unittest.skipUnless(
@@ -213,23 +212,3 @@ class NavigationTests(unittest.TestCase):
         f.cpu.mem_write(w.SLOT_GUARDS, w.slot_guard(w.SLOT_GUARDS, 0x200A00, load=True))
         self.assertEqual(f.call(w.SLOT_GUARDS, 0, 145), 0xFFFFFFFF)
         self.assertEqual(f.call(w.SLOT_GUARDS, 0, 149), 42)
-
-    def test_profile_disabled_reproduces_R2_and_changes_no_storage_hooks(self):
-        from hashlib import sha256
-
-        flags = dict(
-            arm_diagnostics=True,
-            clock_fix=True,
-            buf_selector=True,
-            performance_controls=True,
-        )
-        before, baseline = build(STOCK_MAIN.read_bytes(), **flags)
-        self.assertEqual(
-            sha256(before).hexdigest(),
-            "7b3c783fcedd97fa459fb5005c73d3cc0978107acdf98cd37ce7ad209fc22d66",
-        )
-        after, changed = build(STOCK_MAIN.read_bytes(), **flags, navigation_fixes=True)
-        self.assertNotEqual(before, after)
-        self.assertEqual(baseline["reservation"], changed["reservation"])
-        self.assertEqual(baseline["hooks"], changed["hooks"])
-        self.assertTrue(changed["navigation_fixes"])

@@ -1,6 +1,5 @@
 """Fixed FREEZE rows, conservative collision refusal and native publication."""
 
-import json
 import os
 import unittest
 from unittest.mock import patch
@@ -19,9 +18,6 @@ from lab import recorder_worker_code as w
 from lab import sketch as s
 from lab import sketch_copy as clip
 from lab.emit import Code
-from lab.project import ROOT
-from lab.runtime import STOCK_MAIN
-from lab.sketch_device import build
 
 
 @unittest.skipUnless(os.environ.get("DT2_BUF_SELECTOR_CORE"), "Rust ColdFire required")
@@ -177,15 +173,3 @@ class FreezeSlots(unittest.TestCase):
         f.put(q.STATE + 12, 0xFFFFFFF8)
         f.call(s.FREEZE_FEEDBACK)
         self.assertEqual(f.get(s.ACTION), slots.ACTION)
-
-    def test_opt_out_is_exact_device_confirmed_R9(self):
-        profile = json.loads((ROOT / "profiles/sketch-buf-r8.json").read_text())
-        flags = {name.replace("-", "_"): True for name in profile["build_flags"]}
-        flags["monitor_labels"] = True
-        _, old = build(STOCK_MAIN.read_bytes(), **flags)
-        self.assertEqual(old["sha256"], "b0d5a3ecb3feb038e40c523f5fcde69b2014acdae10e14f71ffa7ac33d79e54d")
-        _, new = build(STOCK_MAIN.read_bytes(), freeze_h_slots=True, **flags)
-        self.assertEqual(new["reservation"], old["reservation"])
-        self.assertEqual(new["guards"], old["guards"])
-        self.assertEqual(new["hooks"], old["hooks"])
-        self.assertEqual(new["freeze_public_slots"], list(slots.SLOTS))

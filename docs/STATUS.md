@@ -5,12 +5,25 @@
 The requested optional [combined build](SKETCH-CAPICOLA-ARP.md) includes current
 managed Sketch, assignment popup and early/loading behavior, the latest retained
 author Capicola R2 port, and selected-track/stopped keyboard ARP. Buffers remain
-volatile. The package is in `out/runs/sketch-capi-arp-os-package-20261027-01/`,
-SHA-256 `23854a7193cdbb09edcf9d6562f64a8a9ec76e06d54f78603a68dbe1598c3222`.
-386 tests, exact rebuilds, audio oracle/routing, native decompression, SINE replay,
-coupled Sketch capture/save/retry and native ARP panel checks pass. Existing
-ONESHOT-only BUF cleanup qualification is retained. No hardware upload or
-physical validation; the accepted checkpoint below is unchanged.
+volatile. The current package is the switch-corrected build at
+`out/runs/sketch-capi-arp-switchfix-package-20261027-01/`, SHA-256
+`8880c38aac968f24dc742cbb5e9ed398223214d465d127fba7f804ac5d5b5e8a`.
+The earlier combined package omitted the binary switch renderer. The correction
+changes only two CPU bytes; its DSP matches the earlier package exactly.
+
+The earlier package passed 386 tests, exact rebuilds, audio oracle/routing,
+native decompression, SINE replay, coupled Sketch capture/save/retry and native
+ARP panel checks. The switch correction separately passed 141 focused tests,
+exact repeat, CPU/depacker checks and native callback initialization with the
+old knob as a negative control. Full audio/workflow checks were not rerun for
+that two-byte correction. ONESHOT-only BUF cleanup qualification remains.
+No hardware upload or physical validation of this combined package; R8 below
+remains the accepted experimental checkpoint. [Capicola's guide](CAPICOLA.md)
+identifies the source and STRETCH-only scope.
+
+[Repository cleanup on 2026-10-28](REPO-CLEANUP-2026-10-28.md) separates historical
+reports and tests and removes obsolete OS packaging choices; it does not promote
+a new firmware or hardware checkpoint.
 
 ## BUF startup refinement — 2026-10-27
 
@@ -68,9 +81,12 @@ full-OS Flex replacement was included in this cleanup.
 
 ## Working policy
 
-Use `labctl doctor`, scoped `labctl unit buf` / `core` checks and a fresh
-checkpoint rebuild. Do not rerun long audio/capture suites for documentation or
-organization alone. A behavior change needs its own targeted validation.
+Start with the task/source/check map in [docs/README.md](README.md). For firmware
+work, use `labctl doctor` and the smallest relevant suite; add `sketch-build`
+when emitted code, placement, profiles or packaging change. Rebuild the affected
+package when firmware changes. Documentation or test organization alone needs
+no fresh OS or long audio/capture run. A behavior change needs its own targeted
+validation; do not repeat passing checks without a reason.
 Older Arp, Capicola, Plaits, Flex and native-emulator source work is checkpointed
 separately from the R8 integration; no new hardware claims are added for it.
 

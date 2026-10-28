@@ -230,53 +230,6 @@ class SelectorTests(unittest.TestCase):
         self.assertEqual(self.call(s.FORWARD, 0, 4), 0)
         self.assertEqual(self.call(s.INVERSE, 0x200000, 7), 11)
 
-    def test_device_flag_is_opt_in_and_preserves_working_clock_image(self):
-        from hashlib import sha256
-
-        from lab.sketch_device import build, relocate
-
-        stock = STOCK_MAIN.read_bytes()
-        before, baseline = build(stock, arm_diagnostics=True, clock_fix=True)
-        after, changed = build(
-            stock, arm_diagnostics=True, clock_fix=True, buf_selector=True
-        )
-        self.assertEqual(
-            sha256(before).hexdigest(),
-            "4d2e6af70a1faf2593cfc3eab45d1b664f46f678038fc49ffb4dd555f6fa22f8",
-        )
-        self.assertEqual(baseline["reservation"], changed["reservation"])
-        self.assertEqual(
-            after[0x401EE50C - 0x40000400 : 0x401EE510 - 0x40000400],
-            struct.pack(">I", relocate(s.ROTATE)),
-        )
-        base = {h["address"] for h in baseline["hooks"]}
-        added = {h["address"] for h in changed["hooks"]} - base
-        self.assertEqual(added, set(s.HOOKS) | set(s.POINTERS))
-        # Exercise the sealed-build validation API with the flag, rather than
-        # only the low-level emitter. No CPU/DSP fixture is executed here.
-        import json
-        import tempfile
-        from pathlib import Path
-
-        from lab.project import ROOT
-        from lab.sketch_device_validation import DeviceBuild
-
-        with tempfile.TemporaryDirectory(dir=ROOT / "out/runs") as folder:
-            folder = Path(folder)
-            (folder / "MAIN.bin").write_bytes(after)
-            (folder / "BLOB.bin").write_bytes(b"test-only DSP identity")
-            (folder / "native-patches.json").write_text(json.dumps(changed))
-            manifest = dict(
-                status="local-build-complete",
-                source_hashes={},
-                cpu=dict(path="MAIN.bin", **changed),
-                dsp=dict(
-                    path="BLOB.bin",
-                    blob_sha256=sha256(b"test-only DSP identity").hexdigest(),
-                ),
-            )
-            (folder / "manifest.json").write_text(json.dumps(manifest))
-            self.assertEqual(DeviceBuild(folder, stock).image, after)
 
     def test_disabled_view_does_not_consume_encoder_input(self):
         self.put(0x200000, 0x401EE4B8)

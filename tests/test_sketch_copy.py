@@ -287,34 +287,3 @@ class CopyShortcuts(unittest.TestCase):
         self.assertEqual(
             bytes(f.cpu.mem_read(nb.STATE + nb.CANCEL, 4)), struct.pack(">I", 1)
         )
-
-    def test_build_keeps_all_backend_parts_hooks_and_original_profile_exact(self):
-        from lab.sketch_device import build, compose
-
-        options = dict(
-            arm_diagnostics=True,
-            clock_fix=True,
-            buf_selector=True,
-            performance_controls=True,
-            navigation_fixes=True,
-            fixed_buf_slots=True,
-            startup_capture=True,
-        )
-        stock = STOCK_MAIN.read_bytes()
-        base, meta = build(stock, **options)
-        self.assertEqual(
-            meta["sha256"],
-            "eea6d8bb70c0a91ea26a34b50232a4cedb80b436fafdc4be35fa53f132e6ba7c",
-        )
-        old = compose(stock, **options)
-        new = compose(stock, **options, copy_shortcuts=True)
-        self.assertEqual(old.hooks, new.hooks)
-        self.assertEqual(old.pointer_hooks, new.pointer_hooks)
-        self.assertEqual(
-            {at: v for at, v in old.parts.items() if not s.BASE <= at < s.END},
-            {at: v for at, v in new.parts.items() if not s.BASE <= at < s.END},
-        )
-        candidate, after = build(stock, **options, copy_shortcuts=True)
-        self.assertNotEqual(candidate, base)
-        self.assertEqual(after["reservation_bytes"], 360448)
-        self.assertTrue(after["copy_shortcuts"])

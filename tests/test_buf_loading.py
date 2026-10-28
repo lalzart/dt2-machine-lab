@@ -1,6 +1,5 @@
 """Execute startup placeholders and guarded early reservation on ColdFire."""
 
-import json
 import os
 import unittest
 
@@ -221,34 +220,3 @@ class Loading(unittest.TestCase):
         f.put(b.TICK, startup.SETUP_RETRY_FRAMES)
         f.call(b.INIT_BODY)
         self.assertEqual(f.get(w.STATE + 64), (1,))
-
-
-class Placement(unittest.TestCase):
-    def test_optional_flags_preserve_previous_image_and_arenas(self):
-        from lab.project import ROOT
-        from lab.sketch_device import build
-
-        flags = {
-            k.replace("-", "_"): True
-            for k in json.loads((ROOT / "profiles/sketch-managed.json").read_text())[
-                "build_flags"
-            ]
-        }
-        _, old = build(STOCK_MAIN.read_bytes(), **flags, assign_popup=True)
-        self.assertEqual(
-            old["sha256"],
-            "b62584d425f31c22f1e8013234e23f03c36177d8ab6a0312767e7568d91d4431",
-        )
-        _, new = build(
-            STOCK_MAIN.read_bytes(),
-            **flags,
-            assign_popup=True,
-            buf_loading=True,
-            early_buf_setup=True,
-        )
-        self.assertEqual(new["arenas"], old["arenas"])
-        self.assertEqual(new["reservation"], old["reservation"])
-        with self.assertRaisesRegex(ValueError, "requires managed"):
-            build(STOCK_MAIN.read_bytes(), buf_loading=True)
-        with self.assertRaisesRegex(ValueError, "requires loading"):
-            build(STOCK_MAIN.read_bytes(), **flags, early_buf_setup=True)

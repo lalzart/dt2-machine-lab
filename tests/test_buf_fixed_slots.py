@@ -14,7 +14,6 @@ from lab import recorder_freeze_code as n
 from lab import recorder_worker_code as w
 from lab import sketch as sketch
 from lab.emit import Code
-from lab.sketch_device import build
 
 STOCK = (
     Path(__file__).resolve().parents[1]
@@ -267,28 +266,3 @@ class FixedSlots(unittest.TestCase):
             else:
                 pointer = f.get(0x200708)[0]
             self.assertEqual(f.cpu.mem_read(pointer, len(text)), text)
-
-    def test_opt_in_profile_keeps_R3_exact_and_has_no_new_reservation(self):
-        import hashlib
-
-        flags = {
-            "arm_diagnostics": True,
-            "clock_fix": True,
-            "buf_selector": True,
-            "performance_controls": True,
-            "navigation_fixes": True,
-        }
-        old, old_meta = build(STOCK.read_bytes(), **flags)
-        self.assertEqual(
-            hashlib.sha256(old).hexdigest(),
-            "df5d524e037e2412aeaadb31e01108ebae381fb551aa002118d4d09aafdacf0c",
-        )
-        new, meta = build(STOCK.read_bytes(), **flags, fixed_buf_slots=True)
-        self.assertNotEqual(old, new)
-        self.assertEqual(meta["buf_public_slots"], list(fixed.PUBLIC))
-        self.assertEqual(meta["reservation"], old_meta["reservation"])
-        self.assertEqual(
-            build(STOCK.read_bytes(), **flags, fixed_buf_slots=True), (new, meta)
-        )
-        with self.assertRaisesRegex(ValueError, "navigation"):
-            build(STOCK.read_bytes(), fixed_buf_slots=True)

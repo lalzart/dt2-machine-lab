@@ -5,8 +5,8 @@ STRETCH machine, ID 2**, using its native renderer destination and controls.
 The original CPU interface remains intact. No separate CAPICOLA machine,
 RATE overlay or preparation-caption overlay is included in this candidate.
 
-The [frozen R1 proposal](CAPICOLA-STRETCH-R1.md) and
-[implementation bundle](../machines/capicola/stretch-contract/) describe the
+The [frozen R1 proposal](../../CAPICOLA-STRETCH-R1.md) and
+[implementation bundle](../../../machines/capicola/stretch-contract) describe the
 equations, allowed adaptations and acceptance thresholds. This extends the
 existing Capicola-derived finite sample reader; it does not claim the source
 module's complete live circular-buffer/transient behavior or better sound.
@@ -37,7 +37,7 @@ separate integration work.
 
 ## Checks and artifacts
 
-- [Host report](../out/runs/capicola-stretch-host-03/report.json): **2,160**
+- [Host report](../../../out/runs/capicola-stretch-host-03/report.json): **2,160**
   independent numerical comparisons across six signals, four PLAY modes,
   five pitches, six timing rates and three regions. Maximum error
   `1.79e-6`, worst RMS `1.61e-7`, against frozen limits `1e-4` / `1e-5`.
@@ -45,7 +45,7 @@ separate integration work.
   Block partitions, tiny loops, lagging negative cursors, live changes,
   exact duration, generation invalidation, storage guards and wrong-pitch /
   one-frame-shift negative comparators pass.
-- [Final native report](../out/runs/capicola-stretch-frozen-01/source/out/runs/native/report.json):
+- [Final native report](../../../out/runs/capicola-stretch-frozen-01/source/out/runs/native/report.json):
   **240** original-STRETCH control cases, four additional 2,048-sample PLAY
   comparisons, 32 continuous-control blocks and all sixteen tracks / thirty-two
   readers pass. Matrix maximum error is `2.92e-7`; the longer reverse-loop
@@ -55,7 +55,7 @@ separate integration work.
   stock/Plaits comparisons and four prior image hashes remain exact.
 - The configured Python 3.12 source suite passes **117 tests**, without skips.
   Ruff checks/formatting and `git diff --check` pass for the modified sources.
-  [SINE replay passes](../out/runs/capicola-stretch-frozen-01/source/out/runs/20261008T101516Z-test-2890c200/manifest.json),
+  [SINE replay passes](../../../out/runs/capicola-stretch-frozen-01/source/out/runs/20261008T101516Z-test-2890c200/manifest.json),
   including its final source-freshness check.
 
 The native signal is captured **at the actual STRETCH renderer destination**,
@@ -121,7 +121,7 @@ unrelated resource-profiling files changed in the shared checkout; those failed
 manifests are retained. The old controls image hash also belongs to its legacy
 layout, while the later selection/feedback hashes belong to reserved-state
 builds; the final checker compares the correct recorded placements.
-The [checkout comparison](../out/runs/capicola-stretch-frozen-01/checkout-comparison.json)
+The [checkout comparison](../../../out/runs/capicola-stretch-frozen-01/checkout-comparison.json)
 also confirms the current Capicola and shared build inputs remain byte-identical
 to the successfully tested snapshot. Unrelated profiling work is preserved.
 

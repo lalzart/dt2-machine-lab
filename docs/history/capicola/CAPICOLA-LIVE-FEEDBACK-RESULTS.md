@@ -2,7 +2,7 @@
 
 2026-10-08. The user's correction redirects Capicola to the existing STRETCH
 backend. The type-8 automatic-caption work stops here. Its source and runs are
-preserved; the active direction is [STRETCH replacement](CAPICOLA-STRETCH-REPLACEMENT.md).
+preserved; the active direction is [STRETCH replacement](../../CAPICOLA-STRETCH-REPLACEMENT.md).
 
 Native quarter-progress/slot-correlated DSP replies and voice comparisons pass
 in `out/runs/capicola-live-wire-02/report.json`. Native CPU decoding, compatibility

@@ -1,12 +1,14 @@
 # Digitakt II machine lab
 
-The current checkpoint is **Sketch/BUF R8 for Digitakt II OS1.16**: four live
+The accepted experimental hardware checkpoint is **Sketch/BUF R8 for Digitakt II OS1.16**: four live
 performance buffers, next-bar or immediate capture, automatic publication,
 stopped recording, snapshot COPY/PASTE and a red SONG recording indicator.
 The user reports this experimental build works on their device. That report
 is separate from emulator tests and is not exhaustive hardware qualification.
 
-Start with [the working controls, architecture and limits](docs/SKETCH-BUF-CHECKPOINT.md).
+Start with [the task, source and check map](docs/README.md), then
+[current status](docs/STATUS.md). R8
+[controls, architecture and limits](docs/SKETCH-BUF-CHECKPOINT.md) remain the baseline.
 The accepted build recipe and binary hashes live in
 [profiles/sketch-buf-r8.json](profiles/sketch-buf-r8.json). Source and documents
 are committed; firmware images, captures, local dependencies and private inputs
@@ -23,14 +25,19 @@ available with `--assign-popup` on the managed builder. After recording, choose
 TRG 1–16 to link the live BUF to a sample track, or NO to skip. Omitting the
 switch retains the previous managed build exactly.
 
+The latest local OS combines [managed Sketch, Capicola and ARP](docs/SKETCH-CAPICOLA-ARP.md),
+including the corrected CAPI switch. See [current status](docs/STATUS.md) for its
+artifact and validation limits, [Capicola](docs/CAPICOLA.md) for engine identity,
+and the [documentation map](docs/README.md) for current versus historical notes.
+
 ## Everyday work
 
 ```sh
 ./labctl doctor
-./labctl unit buf --list
-./labctl unit buf
-./labctl unit core
-python3 -B scripts/build-sketch-checkpoint.py out/runs/r8-checkpoint-01
+./labctl unit buf-managed --list   # inspect the affected feature
+./labctl unit buf-managed          # settings, popup or loading edits
+./labctl unit buf                  # broader BUF behavior check
+# For profile/placement changes, also use: ./labctl unit sketch-build
 ```
 
 The configured Python 3.12 is selected by the launcher/build script. Unit tests
@@ -42,7 +49,8 @@ that differ from accepted R8. It does not create a distributable OS or flash it.
 
 BUF tests exclude the unrelated Arp, Capicola and old Flex suites. Use affected
 suites for shared changes; keep expensive capture/audio experiments explicit.
-The former broader Unicorn BUF fixtures remain under `buf-full`; the current
+Historical profile-build checks are explicit in `sketch-build`; `buf-full`
+adds those and the earlier Unicorn BUF fixtures. The current
 host's first-map SIGILL is documented in TESTING.md. No older tests are deleted.
 
 ## Current behavior
@@ -61,7 +69,8 @@ recorder DEST and ordinary sample defaults stay independent.
 
 See [the checkpoint guide](docs/SKETCH-BUF-CHECKPOINT.md) for cancellation,
 startup loading, retirement, session limits and current validation gaps.
-BUF and snapshots are volatile; project/audio persistence is future work.
+BUF and snapshots are volatile. Current managed builds support explicit audio
+export; automatic project persistence is excluded.
 
 ## Source layout
 
@@ -74,7 +83,7 @@ BUF and snapshots are volatile; project/audio persistence is future work.
 | `profiles/` | Reproducible feature/build recipes. |
 | `tests/`, `tests/suites.json` | Scoped unit tests and ownership catalogue. |
 | `machines/` | Contracts, DSP sources and preserved upstream sources/licenses. |
-| `docs/` | Current guides, checkpoint summaries and historical results. |
+| `docs/`, `docs/history/` | Current guides and frozen contracts; archived experiment reports. |
 | `.deps/`, `.local/`, `out/` | Ignored dependencies, configuration/private fixtures and generated runs. |
 
 [AGENTS.md](AGENTS.md) defines the working conventions. [FEATURES.md](docs/FEATURES.md)
@@ -102,8 +111,8 @@ silently overwrite changed inputs or configuration.
 
 R8 is the isolated Sketch/BUF profile. Legacy all-feature builds still contain
 Flex and their Arp/Plaits/Capicola adapters; this checkpoint does not change them.
-The direction for a future full OS is to replace the old Flex workflow with BUF.
-That integration is separate work. Historical sources and upstream licenses are
+The optional Sketch/CAPI/ARP package uses managed BUF and excludes legacy Flex
+and Plaits. Its local validation does not replace the accepted R8 checkpoint. Historical sources and upstream licenses are
 preserved; generated packages stay local.
 
 [The R8 checkpoint record](docs/checkpoints/SKETCH-BUF-R8.json) includes exact

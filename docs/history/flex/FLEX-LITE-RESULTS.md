@@ -10,8 +10,8 @@ loader, selects the allocated slot on a track, and runs the stock ONESHOT
 renderer. It exercises the playback half of **record, use immediately, save
 later**. Actual recorder input and the panel workflow remain separate work.
 
-Implementation: [RAM adapter](../lab/flex_lite.py),
-[bounded probe](../scripts/probe-flex-lite.py),
+Implementation: [RAM adapter](../../../lab/flex_lite.py),
+[bounded probe](../../../scripts/probe-flex-lite.py),
 [frozen experiment contract](FLEX-LITE-PROTOTYPE.md).
 
 ## What runs
@@ -45,8 +45,8 @@ It does not inject the sample pointers into the SHARC voice directly.
 
 ## Acceptance evidence
 
-Passing [report](../out/runs/flex-lite-06/report.json) and
-[artifact audit](../out/runs/flex-lite-06/artifact-audit.json).
+Passing [report](../../../out/runs/flex-lite-06/report.json) and
+[artifact audit](../../../out/runs/flex-lite-06/artifact-audit.json).
 The run retains source copies, source hashes, native state, CPU-generated
 pages, assignment frames and rendered audio under
 `out/runs/flex-lite-06/`. The binary fixtures remain ignored and local.
@@ -70,7 +70,7 @@ separately. The prototype checks channel PCM and interpolation guards too.
 | CPU integrity | No unexpected fault pages. Firmware files and pinned dependencies unchanged. |
 
 Scoped Ruff checks and formatting pass. All **10** source harness unit tests
-pass. The required [SINE replay regression](../out/runs/20261006T064307Z-test-c96bb1e6/manifest.json)
+pass. The required [SINE replay regression](../../../out/runs/20261006T064307Z-test-c96bb1e6/manifest.json)
 also passes, including its exact baseline, stock isolation, negative and
 lifecycle checks. Its shared `lab/dsp.py` hash matches this run. No hardware,
 commit, push or publication was performed.
@@ -125,7 +125,7 @@ DSP validation and reports a different result status.
 - The interpolation guard is five **16-bit samples**, or **10 bytes**, per
   channel. The initial 20-byte assumption failed. Original SHARC `0x1c400f`
   executes short-word copies at offsets 0 through 4; fresh publication agrees.
-  [Retained instruction evidence](../out/runs/flex-lite-06/guard-instructions.json).
+  [Retained instruction evidence](../../../out/runs/flex-lite-06/guard-instructions.json).
 
 These are corrections to test assumptions, not changes to expected output.
 Earlier failed runs remain under `out/runs/flex-lite-01` through `-05`.

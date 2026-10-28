@@ -16,7 +16,7 @@ caller, current project contents and elapsed time since power-on remain unknown.
 The refused ARM path checks this guard before setup/admission/queueing, so these
 attempts do not submit recording jobs. No firmware change or new capture is
 needed to establish this source/trace correspondence.
-[Matching slot evidence](../out/runs/sketch-load-slots-20261023-01/followup.json).
+[Matching slot evidence](../../../out/runs/sketch-load-slots-20261023-01/followup.json).
 
 The user subsequently waited and reached `REF CLOCK 0` with playback running,
 confirming that this loading block clears in that device trial. Clock work
@@ -47,12 +47,12 @@ this fixture does **not** reproduce the user's first post-boot refusal. Native
 instruction counts and modeled card/DSP transfers do not establish physical
 load duration. The user's current project/sample contents remain unknown.
 
-[Original-byte trace summary](../out/runs/sketch-startup-operations-audit-20261023-01/cold-trace-summary.json),
-[raw trace and startup report](../out/runs/sketch-startup-operations-native-20261023-01/report.json).
+[Original-byte trace summary](../../../out/runs/sketch-startup-operations-audit-20261023-01/cold-trace-summary.json),
+[raw trace and startup report](../../../out/runs/sketch-startup-operations-native-20261023-01/report.json).
 
 ## Focused device diagnostic
 
-[Firmware, hash and use notes](../out/runs/sketch-startup-operations-20261023-01/package/README.md).
+[Firmware, hash and use notes](../../../out/runs/sketch-startup-operations-20261023-01/package/README.md).
 The file is `EXPERIMENTAL_SKETCH_BUF_SAMPLE_DIAG_OS1.16.syx`, SHA-256
 `419cbac7fc08f7ce9e60774110010fb09b336f16f45d035519c197a08c2790c9`.
 The assistant has not transferred it to hardware.
@@ -112,10 +112,10 @@ still match their original hashes; both old packages are preserved.
   upstream edits. Physical DSP ROM/SPI, memory/cache/DMA, recorder, timing and
   listening remain separate unverified layers.
 
-[Enlarged native control screenshots](../out/runs/sketch-sample-diag-native-20261023-01/diagnostic-contact.png),
-[native report](../out/runs/sketch-sample-diag-native-20261023-01/report.json),
-[package manifest](../out/runs/sketch-startup-operations-20261023-01/package/manifest.json),
-[audit](../out/runs/sketch-startup-operations-audit-20261023-01/verification.json).
+[Enlarged native control screenshots](../../../out/runs/sketch-sample-diag-native-20261023-01/diagnostic-contact.png),
+[native report](../../../out/runs/sketch-sample-diag-native-20261023-01/report.json),
+[package manifest](../../../out/runs/sketch-startup-operations-20261023-01/package/manifest.json),
+[audit](../../../out/runs/sketch-startup-operations-audit-20261023-01/verification.json).
 
 Earlier failed unit runs are retained: one rejected the unaudited inline OR
 opcode in the held clock experiment; another exposed stale Unicorn translated

@@ -23,7 +23,17 @@ class UnitSuiteTests(unittest.TestCase):
         full = set(unit.select_modules(catalog, ["buf-full"]))
         self.assertIn("test_buf_next_bar", full)
         self.assertNotIn("test_buf_next_bar", buf)
-        self.assertEqual(full, buf | set(unit.select_modules(catalog, ["buf-native"])))
+        builds = set(unit.select_modules(catalog, ["sketch-build"]))
+        self.assertEqual(
+            full, buf | builds | set(unit.select_modules(catalog, ["buf-native"]))
+        )
+        self.assertTrue(buf.isdisjoint(builds))
+        self.assertIn("test_sketch_builds", builds)
+        self.assertIn("test_sketch_device", builds)
+        for name in ("buf-selector", "buf-recording", "buf-save", "buf-managed"):
+            selected = set(unit.select_modules(catalog, [name]))
+            self.assertTrue(selected < buf)
+            self.assertTrue(selected.isdisjoint(builds))
         self.assertIn("test_flex_bank", flex)
         self.assertNotIn("test_flex_bank", buf)
         self.assertNotIn("test_buf_next_bar", flex)

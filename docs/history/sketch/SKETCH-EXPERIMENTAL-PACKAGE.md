@@ -9,7 +9,7 @@ transfer, flash, commit or publication is part of this task.
 ## Build and validation
 
 The delivery folder is
-[`out/runs/sketch-experimental-20261023-01/package/`](../out/runs/sketch-experimental-20261023-01/package/README.md).
+[`out/runs/sketch-experimental-20261023-01/package/`](../../../out/runs/sketch-experimental-20261023-01/package/README.md).
 Its manifest records `local-experimental-package-validated`. The
 standalone profile starts from exact Digitakt II OS 1.16; it does not include
 Arp, Plaits, Capicola, the previous Flex implementation or DigiKit's OS1.17 runtime.
@@ -20,11 +20,11 @@ SHA-256: `c1d7c3bf2119537c23b4b74e4ba6f09b81a8ed835d2d79d9e42bda85378d47b3`.
 
 | Result | Exact evidence |
 | --- | --- |
-| Reproducible current MAIN/DSP; identical to validated recorder package | [Build](../out/runs/sketch-candidate-build-20261023-02/manifest.json) |
-| Container/seal/checksums, protected sections and depack/staging bounds pass; native sender transmits 339,073 exact bytes plus terminal, with both busy holds | [Upload](../out/runs/sketch-candidate-upload-20261023-03/report.json) |
-| Full-container CPU application reset and independent DSP application startup pass; Sketch renders, CPU code/canaries intact, 1,620 LP0 units, 6,878 DSP frames, zero missing blocks | [Startup](../out/runs/sketch-candidate-startup-20261023-02/report.json) |
-| Wrong-container and stale-source evidence are refused without creating a delivery folder | [Two controls](../out/runs/sketch-experimental-20261023-01/negative-controls.json) |
-| Exact delivered bytes, sources, proofs and remaining limits | [Package manifest](../out/runs/sketch-experimental-20261023-01/package/manifest.json) |
+| Reproducible current MAIN/DSP; identical to validated recorder package | [Build](../../../out/runs/sketch-candidate-build-20261023-02/manifest.json) |
+| Container/seal/checksums, protected sections and depack/staging bounds pass; native sender transmits 339,073 exact bytes plus terminal, with both busy holds | [Upload](../../../out/runs/sketch-candidate-upload-20261023-03/report.json) |
+| Full-container CPU application reset and independent DSP application startup pass; Sketch renders, CPU code/canaries intact, 1,620 LP0 units, 6,878 DSP frames, zero missing blocks | [Startup](../../../out/runs/sketch-candidate-startup-20261023-02/report.json) |
+| Wrong-container and stale-source evidence are refused without creating a delivery folder | [Two controls](../../../out/runs/sketch-experimental-20261023-01/negative-controls.json) |
+| Exact delivered bytes, sources, proofs and remaining limits | [Package manifest](../../../out/runs/sketch-experimental-20261023-01/package/manifest.json) |
 
 Scoped BUF/core/integration units: 238 pass. Focused Ruff and format checks pass.
 The last startup-launcher correction resolves the upload path and clarifies
@@ -43,7 +43,7 @@ four retained reader lanes, shared selectors, stock-file PCM oracle and saved
 voice/master/DAC-ring/reply comparisons. Packaging runs no new recordings.
 The earlier outer flow report retains its original comparator failure; its
 passing standalone flow and corrected saved replay are authenticated by the
-[connection evidence index](../out/runs/native-buf-connect-20261023-01/verification.json).
+[connection evidence index](../../../out/runs/native-buf-connect-20261023-01/verification.json).
 
 `check-sketch-boot-upload.py` now accepts a reproducible current CPU build,
 rather than requiring equality to the historical CPU from the DSP-format fix.
@@ -89,7 +89,7 @@ contract was refused and restored byte-exact; the future Flex decision is kept
 in the README and this note. The first startup-only launcher attempt failed on
 a relative upload path before CPU execution; its absolute-path correction is
 included in the final source freeze. Earlier runs and logs remain intact in
-the [development notes](../out/runs/sketch-experimental-20261023-01/development-notes.json).
+the [development notes](../../../out/runs/sketch-experimental-20261023-01/development-notes.json).
 
 ## Remaining device limits
 

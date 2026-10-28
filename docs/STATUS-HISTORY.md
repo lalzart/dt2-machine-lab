@@ -107,7 +107,7 @@ that report failed; the corrected fresh run passes. Two total model captures.
 Firmware bytes stayed exact across that fix; same-firmware SINE is reused.
 Original/ARM/sample profiles, DSP, pins and upstream stay exact. No hardware
 transfer; exact device clock cause, physical recording and timing remain open.
-[Candidate, use notes, screenshots and evidence](SKETCH-CLOCK-CORRECTION.md).
+[Candidate, use notes, screenshots and evidence](history/sketch/SKETCH-CLOCK-CORRECTION.md).
 
 2026-10-23 startup sample-operation diagnostic: user identifies `BUSY FREEZE 1`
 as the first refusal after power-on and PLAY, before later `REF CLOCK 0`.
@@ -121,7 +121,7 @@ upload/backpressure, package integrity, two missing-proof refusals, Ruff and SIN
 pass. Zero new recordings; no guard clearing or automatic retry. Default and
 first diagnostic MAIN/DSP/packages stay exact. Pending clock work is held and
 excluded. No hardware transfer; physical cause and timing remain unconfirmed.
-[Diagnostic, screenshots and evidence](SKETCH-STARTUP-SAMPLE-DIAGNOSTIC.md).
+[Diagnostic, screenshots and evidence](history/sketch/SKETCH-STARTUP-SAMPLE-DIAGNOSTIC.md).
 
 2026-10-23 Sketch ARM diagnostic package: user reports the original experimental
 firmware reaches the device UI but ARM returns BUSY/REFUSED with REC READY and
@@ -132,7 +132,7 @@ bytes remain exact. 212 BUF/core plus 30 integration tests pass; native complete
 container application startup, two injected guard/UI cases, upload/backpressure,
 package integrity, two packager refusal controls, Ruff and SINE pass. Zero new
 recordings. Original package, feature profiles, pins and upstream are preserved;
-the assistant has not transferred the diagnostic image. [Package, labels and evidence](SKETCH-ARM-DIAGNOSTIC.md).
+the assistant has not transferred the diagnostic image. [Package, labels and evidence](history/sketch/SKETCH-ARM-DIAGNOSTIC.md).
 
 2026-10-23 local Sketch-only OS1.16 experimental package: fresh MAIN/DSP and
 the complete SYX match the successful native recorder workflow byte-for-byte.
@@ -147,7 +147,7 @@ with zero new recordings. Firmware emitters, dependencies and upstream stay
 unchanged. No hardware transfer or trial. Physical ROM/SPI, placement, recorder,
 normalization and timing remain unverified. User direction: BUF/Sketch replaces
 the previous Flex implementation in a future combined OS; old profiles remain
-preserved as reference. [Package, evidence and reproduction](SKETCH-EXPERIMENTAL-PACKAGE.md).
+preserved as reference. [Package, evidence and reproduction](history/sketch/SKETCH-EXPERIMENTAL-PACKAGE.md).
 
 2026-10-23 native BUF recorder connection: opt-in DigiKit `38dfbe4` now runs the
 original ARM/STOP/worker/loader/FREEZE jobs against the existing nonzero recorder
@@ -225,7 +225,7 @@ scope. Current sealed build is `-13`, with final upload evidence at
 `sketch-rom-upload-20261023-07`. SINE compatibility and focused Ruff also pass;
 all firmware/runtime sources remain exact after SINE, with only final
 standalone upload validators subsequently adjusted for the constructor limit.
-[Correction, exact inputs and limitations](SKETCH-BOOT-UPLOAD.md).
+[Correction, exact inputs and limitations](history/sketch/SKETCH-BOOT-UPLOAD.md).
 
 2026-10-23 Sketch coupled application startup: stock and corrected `-09` BUF
 both reach ready from CPU reset and DSP loader application entry, with the
@@ -251,7 +251,7 @@ Twenty-four saved-page native blocks have exact voice PCM/reply parity; actual
 DSP depacking/staging, focused Ruff and final-source SINE also pass.
 The old `-07` image remains emulator evidence, unsuitable for hardware packaging.
 Paired CPU/SHARC cold boot and physical memory/cache/DMA/stack ownership remain
-open. [Correction, evidence and next gates](SKETCH-DSP-BOOT-MEMORY.md).
+open. [Correction, evidence and next gates](history/sketch/SKETCH-DSP-BOOT-MEMORY.md).
 
 2026-10-23 Sketch at device addresses: the exact sealed MAIN/DSP now pass the
 prepared coupled workflow at the new DDR addresses. Two captures, one native
@@ -264,7 +264,7 @@ and final-source SINE pass. Fresh stock-file voice PCM matches exactly over
 recordings. Firmware/DSP/build sources remain unchanged.
 Paired cold startup, physical memory/cache/DMA/stack behavior, timing and hardware
 remain open; obsolete-generation retirement at the new addresses was not exercised.
-[Workflow, evidence and remaining gates](SKETCH-RELOCATED-VALIDATION.md).
+[Workflow, evidence and remaining gates](history/sketch/SKETCH-RELOCATED-VALIDATION.md).
 
 2026-10-23 Sketch device placement: separate stock-only build relocates the
 current native Sketch/BUF install graph into a guarded 352 KiB experimental DDR
@@ -412,9 +412,9 @@ full coupled startup remain unverified; resource monitor is not included.
 
 2026-10-17 author-release CAPI replacement: the shared dt2-capicola release-default engine now replaces the old backend in `--all-features`. The pinned source, SHARC stereo/search paths, memory relocation, binary switch, unchanged CPU image and exact validation results are documented in [results](CAPICOLA-REDDIT-RESULTS.md). Earlier entries below describe preserved historical candidates.
 
-2026-10-17 CAPI UI: [stock binary switch](CAPICOLA-SWITCH-RESULTS.md) replaces the encoder dial in the new all-feature source-playback package. Native OFF→ON→OFF UI/storage/transport checks and 230 source tests pass. Two MAIN bytes change; DSP is identical. No hardware transfer.
+2026-10-17 CAPI UI: [stock binary switch](history/capicola/CAPICOLA-SWITCH-RESULTS.md) replaces the encoder dial in the new all-feature source-playback package. Native OFF→ON→OFF UI/storage/transport checks and 230 source tests pass. Two MAIN bytes change; DSP is identical. No hardware transfer.
 
-2026-10-17 Capicola source playback: new source-first reader/dual-grain handoffs and native stereo,32channel banks within existing8MiB.504full-start upstream comparisons, actual KeyframeRecorder pair,36packaged reader cases, native stereo/trigger/routing/final-ring checks, repeated DSP reset/depacker,230source tests and SINE pass. MAIN/default exact. Fidelity prioritized over emulator instruction allowance; physical listening/deadlines remain open. [Results](CAPICOLA-SOURCE-RESULTS.md), [verification](CAPICOLA-SOURCE-VERIFICATION.json).
+2026-10-17 Capicola source playback: new source-first reader/dual-grain handoffs and native stereo,32channel banks within existing8MiB.504full-start upstream comparisons, actual KeyframeRecorder pair,36packaged reader cases, native stereo/trigger/routing/final-ring checks, repeated DSP reset/depacker,230source tests and SINE pass. MAIN/default exact. Fidelity prioritized over emulator instruction allowance; physical listening/deadlines remain open. [Results](history/capicola/CAPICOLA-SOURCE-RESULTS.md), [verification](history/capicola/CAPICOLA-SOURCE-VERIFICATION.json).
 
 2026-10-17 CAPI quality candidate: a guarded optional source overlay replaces
 the prototype's 20 ms adaptive-fade cap with content-dependent spans, selected-
@@ -428,7 +428,7 @@ byte-identical. No lane/bank storage grows; longer two-head fades cost more
 DSP work in the measured fixtures. Physical A/B, timing and headroom remain
 open. No hardware transfer, commit or publication occurred. [Results and
 reproduction](CAPICOLA-QUALITY-RESULTS.md),
-[verification](CAPICOLA-QUALITY-VERIFICATION.json).
+[verification](history/capicola/CAPICOLA-QUALITY-VERIFICATION.json).
 
 2026-10-17 all-feature OS: an actual local OS 1.16 `.syx` now combines
 Plaits R3, CAPI time stretch OFF/ON, native Arp tempo/rates and managed Flex.
@@ -496,35 +496,35 @@ to the keyboard-fix build. See [D1 diagnostics](ARP-STOCK-FIRMWARE-RESULTS.md#d1
 
 2026-10-08 combined build: [Plaits R3 + managed streaming Flex + Capicola live STRETCH R3](COMBINED-FIRMWARE-RESULTS.md) is now packaged as one private experimental OS 1.16 SYX. Exact builds, protected-section/decoder/container checks, actual bootstrap depacking, native pool boundaries, separate CPU/DSP startup, 141 source tests and SINE replay pass. The CPU checkpoint retains all 102 patch writes; two fresh DSP runs preserve code/constants/selector. Capacity remains 12-second eligible mono Capicola sources in a shared 8 MiB reservation and 20-second Flex recording. Coupled startup, physical timing, permanent L2 ownership, full STRETCH progress bookkeeping and the broader Flex lifecycle remain open. Nothing was uploaded or flashed.
 
-2026-10-08 playback R3: [Capicola live STRETCH controls](CAPICOLA-STRETCH-R3-RESULTS.md) now follow PLAY and STRT/LEN edits without retrigger, with bounded 64-sample crossfades, native active completion and modeled master/DAC-ring verification. Sixteen simultaneous tracks on thirty-two lanes, 576 host cases, forty-eight native mode/region cases, pressure/reload/parity checks, 138 source tests and SINE pass. State adds 4.5 KiB within the unchanged 8 MiB reservation. The rapid-edit stress peaks at 4.46 million emulated instructions per block; physical timing, full phase/progress bookkeeping, ownership and packaging remain open. Earlier entries below are historical milestones.
+2026-10-08 playback R3: [Capicola live STRETCH controls](history/capicola/CAPICOLA-STRETCH-R3-RESULTS.md) now follow PLAY and STRT/LEN edits without retrigger, with bounded 64-sample crossfades, native active completion and modeled master/DAC-ring verification. Sixteen simultaneous tracks on thirty-two lanes, 576 host cases, forty-eight native mode/region cases, pressure/reload/parity checks, 138 source tests and SINE pass. State adds 4.5 KiB within the unchanged 8 MiB reservation. The rapid-edit stress peaks at 4.46 million emulated instructions per block; physical timing, full phase/progress bookkeeping, ownership and packaging remain open. Earlier entries below are historical milestones.
 
-2026-10-08 playback R2: [Capicola multiple sample banks](CAPICOLA-STRETCH-R2-RESULTS.md) now supports sixteen distinct mono sources through existing STRETCH, with thirty-two independent lanes, sharing, pin-safe retention, selective LP0 reload, pressure fallback and retry. Final fresh native comparisons, 132 source tests and frozen SINE replay pass. Host capacity tests fit sixteen twelve-second tones in 2.09 MiB, while dense seeded noise admits two banks in the unchanged 8 MiB reservation. Hardware timing, final mix, live trim/mode, full runtime ownership and packaging remain open. SINE results are in the R2 results note.
+2026-10-08 playback R2: [Capicola multiple sample banks](history/capicola/CAPICOLA-STRETCH-R2-RESULTS.md) now supports sixteen distinct mono sources through existing STRETCH, with thirty-two independent lanes, sharing, pin-safe retention, selective LP0 reload, pressure fallback and retry. Final fresh native comparisons, 132 source tests and frozen SINE replay pass. Host capacity tests fit sixteen twelve-second tones in 2.09 MiB, while dense seeded noise admits two banks in the unchanged 8 MiB reservation. Hardware timing, final mix, live trim/mode, full runtime ownership and packaging remain open. SINE results are in the R2 results note.
 
-2026-10-08 replacement R1: [Capicola now runs behind original STRETCH](CAPICOLA-STRETCH-R1-RESULTS.md), retaining type 2 and native controls/locks. The extended reader passes 2,160 host comparisons; native STRETCH passes 240 control cases, longer PLAY comparisons, continuous pitch/timing, reload cancellation, 16-track shared-bank playback, fallback and stock/Plaits parity. Playback search caching cuts the representative 16-track instruction count by about 40.5%; hardware timing is still unverified. Capacity remains 12 seconds and the total reservation 8 MiB. This is one eligible mono source at a time, with stock fallback for other sources; live trim/mode changes, multiple banks, final output, complete ownership and installable integration remain open. Separate CAPICOLA selector, RATE and automatic-caption work are superseded. The earlier entries below are historical milestones.
+2026-10-08 replacement R1: [Capicola now runs behind original STRETCH](history/capicola/CAPICOLA-STRETCH-R1-RESULTS.md), retaining type 2 and native controls/locks. The extended reader passes 2,160 host comparisons; native STRETCH passes 240 control cases, longer PLAY comparisons, continuous pitch/timing, reload cancellation, 16-track shared-bank playback, fallback and stock/Plaits parity. Playback search caching cuts the representative 16-track instruction count by about 40.5%; hardware timing is still unverified. Capacity remains 12 seconds and the total reservation 8 MiB. This is one eligible mono source at a time, with stock fallback for other sources; live trim/mode changes, multiple banks, final output, complete ownership and installable integration remain open. Separate CAPICOLA selector, RATE and automatic-caption work are superseded. The earlier entries below are historical milestones.
 
-2026-10-08 feedback continuation: [Capicola preparation feedback](CAPICOLA-FEEDBACK-RESULTS.md) sends native status through an unused reply halfword and shows preparation ranges/READY when SRC opens in the CPU emulator. Captured preparation/audio,299 reply/voice compatibility comparisons, actual native SPI2 return transmission,65536 native caption cases,12 buffered UI cases,95 source tests and SINE pass. Caption refresh is currently on page open; automatic refresh, selected-sample coupled timing, project lifecycle, complete ownership and hardware remain open. Capacity and the8MiB reservation are unchanged.
+2026-10-08 feedback continuation: [Capicola preparation feedback](history/capicola/CAPICOLA-FEEDBACK-RESULTS.md) sends native status through an unused reply halfword and shows preparation ranges/READY when SRC opens in the CPU emulator. Captured preparation/audio,299 reply/voice compatibility comparisons, actual native SPI2 return transmission,65536 native caption cases,12 buffered UI cases,95 source tests and SINE pass. Caption refresh is currently on page open; automatic refresh, selected-sample coupled timing, project lifecycle, complete ownership and hardware remain open. Capacity and the8MiB reservation are unchanged.
 
 2026-10-08 Flex capacity continuation: [native streaming Save As](FLEX-CAPACITY-RESULTS.md) replaces the optional managed path's whole-take scratch copy with one 32 KiB buffer. Actual allocator pressure, cleanup/retry, retained old-handle PCM, 20-second mono/stereo, UI/project reload, 32 bounded source-reuse cycles, 94 source tests, legacy parity, combined CPU boot and frozen-source SINE replay pass. The stock CPU heap is measured at 32 MiB with power-of-two allocation classes; a 20-second stereo source occupies four MiB. The 32-identity limit remains; protected stock headroom, project-epoch GC, physical timing and hardware remain open. Default legacy output and Plaits DSP bytes are unchanged.
 
-2026-10-08 loading workflow: [Capicola selection preparation](CAPICOLA-SELECTION-PREP-RESULTS.md) now prepares eligible track-one mono samples before a trigger or voice assignment in the optional `capicola-selection` build. Native progress/readiness, cancellation, invalid-input rejection, same-address reload and first-trigger voice output pass. The 12-second limit and 8 MiB reservation are unchanged. Prior image bytes, 184 stock/Plaits comparisons, two fresh DSP startup runs, 63 unit tests and SINE replay pass. Screen feedback and its return transport, complete runtime ownership, project lifecycle and physical timing remain open.
+2026-10-08 loading workflow: [Capicola selection preparation](history/capicola/CAPICOLA-SELECTION-PREP-RESULTS.md) now prepares eligible track-one mono samples before a trigger or voice assignment in the optional `capicola-selection` build. Native progress/readiness, cancellation, invalid-input rejection, same-address reload and first-trigger voice output pass. The 12-second limit and 8 MiB reservation are unchanged. Prior image bytes, 184 stock/Plaits comparisons, two fresh DSP startup runs, 63 unit tests and SINE replay pass. Screen feedback and its return transport, complete runtime ownership, project lifecycle and physical timing remain open.
 
-2026-10-08 working-memory continuation: [Capicola reserved state](CAPICOLA-RESIDENT-STATE-RESULTS.md) moves constants, working state, private stacks and tables into the existing 8 MiB reservation in an optional build. L2 payload drops to 64,588 code bytes. Exact builds, 184 stock/Plaits comparisons, captured sample loading/reloading, two identical fresh DSP startup runs, 63 unit tests and SINE replay pass. Twelve-second capacity is unchanged. The observed RTOS heap is in L1; permanent L2 code ownership and physical DDR timing remain unresolved.
+2026-10-08 working-memory continuation: [Capicola reserved state](history/capicola/CAPICOLA-RESIDENT-STATE-RESULTS.md) moves constants, working state, private stacks and tables into the existing 8 MiB reservation in an optional build. L2 payload drops to 64,588 code bytes. Exact builds, 184 stock/Plaits comparisons, captured sample loading/reloading, two identical fresh DSP startup runs, 63 unit tests and SINE replay pass. Twelve-second capacity is unchanged. The observed RTOS heap is in L1; permanent L2 code ownership and physical DDR timing remain unresolved.
 
-2026-10-08 panel-to-voice integration: [Capicola controls and automatic loading](CAPICOLA-CONTROLS-RESULTS.md) pass native CPU checks, emulator panel selection/RATE editing, captured stock LP0 sample loading, automatic bank preparation and complete triggered voice comparison (maximum error 1.49e-8). The selector allocation is corrected to 36 bytes. Twelve-second capacity and the 8 MiB pool reservation remain. Sixty unit tests and SINE regression pass. This is a track-1 mono emulator prototype; preparation is approximately twice the sample duration and playback requires a later trigger. Readiness UI, persistence, full runtime arena ownership, final-mix validation and physical timing remain open. Entries below are historical milestones.
+2026-10-08 panel-to-voice integration: [Capicola controls and automatic loading](history/capicola/CAPICOLA-CONTROLS-RESULTS.md) pass native CPU checks, emulator panel selection/RATE editing, captured stock LP0 sample loading, automatic bank preparation and complete triggered voice comparison (maximum error 1.49e-8). The selector allocation is corrected to 36 bytes. Twelve-second capacity and the 8 MiB pool reservation remain. Sixty unit tests and SINE regression pass. This is a track-1 mono emulator prototype; preparation is approximately twice the sample duration and playback requires a later trigger. Readiness UI, persistence, full runtime arena ownership, final-mix validation and physical timing remain open. Entries below are historical milestones.
 
-2026-10-08 memory integration: [Capicola sample-pool reservation](CAPICOLA-OWNED-MEMORY-RESULTS.md) carves eight MiB from the existing pool, leaving 392 MiB. Native allocation-boundary checks and preparation/voice-hook comparisons in the reserved region pass. Preview memory and the legacy Capicola build are preserved. Fresh allocator state is required; stock scheduling and CPU selection remain open.
+2026-10-08 memory integration: [Capicola sample-pool reservation](history/capicola/CAPICOLA-OWNED-MEMORY-RESULTS.md) carves eight MiB from the existing pool, leaving 392 MiB. Native allocation-boundary checks and preparation/voice-hook comparisons in the reserved region pass. Preview memory and the legacy Capicola build are preserved. Fresh allocator state is required; stock scheduling and CPU selection remain open.
 
-2026-10-08 native preparation: [Capicola PCM worker](CAPICOLA-NATIVE-PREP-RESULTS.md) builds banks in bounded count/write passes, with cancellation and generation guards. Host twelve-second and short native SHARC comparisons pass. Exact integer ratio rounding fixes the tested int16 analyzer timestamp discrepancy. Stock scheduling, memory ownership and CPU menu remain open.
+2026-10-08 native preparation: [Capicola PCM worker](history/capicola/CAPICOLA-NATIVE-PREP-RESULTS.md) builds banks in bounded count/write passes, with cancellation and generation guards. Host twelve-second and short native SHARC comparisons pass. Exact integer ratio rounding fixes the tested int16 analyzer timestamp discrepancy. Stock scheduling, memory ownership and CPU menu remain open.
 
-2026-10-07 integration: [Capicola R1 voice hook](CAPICOLA-INTEGRATION-R1-RESULTS.md) runs compiled stretch alongside Plaits with guarded prepared banks. Actual voice-entry, Plaits parity, stock fallback and invalid-bank checks pass. Existing Plaits/Flex MAIN is unchanged. Native loading and CPU selection remain open; no installable Capicola OS yet.
+2026-10-07 integration: [Capicola R1 voice hook](history/capicola/CAPICOLA-INTEGRATION-R1-RESULTS.md) runs compiled stretch alongside Plaits with guarded prepared banks. Actual voice-entry, Plaits parity, stock fallback and invalid-bank checks pass. Existing Plaits/Flex MAIN is unchanged. Native loading and CPU selection remain open; no installable Capicola OS yet.
 
-2026-10-07 final capacity choice: [Capicola is capped at twelve seconds](CAPICOLA-TWELVE-SECONDS-RESULTS.md): 576,000 mono input frames, at most 24 seconds of output, and 6.59 MiB worst-case shared bank storage. Thirty host and five SHARC comparisons, 59 tests and the SINE replay pass. The ten-second results below are historical.
+2026-10-07 final capacity choice: [Capicola is capped at twelve seconds](history/capicola/CAPICOLA-TWELVE-SECONDS-RESULTS.md): 576,000 mono input frames, at most 24 seconds of output, and 6.59 MiB worst-case shared bank storage. Thirty host and five SHARC comparisons, 59 tests and the SINE replay pass. The ten-second results below are historical.
 
-2026-10-07 capacity: [Capicola ten-second banks](CAPICOLA-TEN-SECONDS-RESULTS.md) support 480,000 mono input frames and up to 960,000 output frames. Count-before-load storage accepts dense input; each bank is shared by 76-byte target readers. Thirty host long-signal comparisons and five standalone SHARC full-source/large-bank endpoint checks pass. All 59 source/native CPU tests and the SINE replay regression pass. The structural bank maximum is 5.49 MiB per distinct sample, allocated according to measured keyframe count. Firmware memory ownership, target analysis parity and physical timing remain open.
+2026-10-07 capacity: [Capicola ten-second banks](history/capicola/CAPICOLA-TEN-SECONDS-RESULTS.md) support 480,000 mono input frames and up to 960,000 output frames. Count-before-load storage accepts dense input; each bank is shared by 76-byte target readers. Thirty host long-signal comparisons and five standalone SHARC full-source/large-bank endpoint checks pass. All 59 source/native CPU tests and the SINE replay regression pass. The structural bank maximum is 5.49 MiB per distinct sample, allocated according to measured keyframe count. Firmware memory ownership, target analysis parity and physical timing remain open.
 
-2026-10-07 continuation: [Capicola split timestamps](CAPICOLA-SPLIT-TIME-RESULTS.md) remove the direct-port precision blocker. The host passes 125 audio comparisons and 3,000 duration cases; standalone compiled SHARC reader comparisons pass six cases with exact repeat. The full source/native CPU suite passes 54 tests, and the SINE replay regression passes. Target analysis still differs slightly on one two-tone fixture, so the target experiment remains partial. No firmware integration, listening or physical timing is claimed.
+2026-10-07 continuation: [Capicola split timestamps](history/capicola/CAPICOLA-SPLIT-TIME-RESULTS.md) remove the direct-port precision blocker. The host passes 125 audio comparisons and 3,000 duration cases; standalone compiled SHARC reader comparisons pass six cases with exact repeat. The full source/native CPU suite passes 54 tests, and the SINE replay regression passes. Target analysis still differs slightly on one two-tone fixture, so the target experiment remains partial. No firmware integration, listening or physical timing is claimed.
 
-2026-10-07: [Capicola finite-sample prototype](CAPICOLA-PROTOTYPE-RESULTS.md) has exact host C99/reference PCM across 90 matrix cases and three decimal-rate cases. Forty-six source/native CPU tests pass. One extreme-setting pitch metric remains incomplete. A compiled SHARC numeric probe confirms that the pinned compiler narrows double to four bytes despite its 64-bit option; the full target audio port is deferred pending a precision-preserving position representation. No firmware integration or quality improvement is claimed.
+2026-10-07: [Capicola finite-sample prototype](history/capicola/CAPICOLA-PROTOTYPE-RESULTS.md) has exact host C99/reference PCM across 90 matrix cases and three decimal-rate cases. Forty-six source/native CPU tests pass. One extreme-setting pitch metric remains incomplete. A compiled SHARC numeric probe confirms that the pinned compiler narrows double to four bytes despite its 64-bit option; the full target audio port is deferred pending a precision-preserving position representation. No firmware integration or quality improvement is claimed.
 
 2026-10-07 machine menu: optional `--plaits-before-midi` build overlay places PLAITS between Grid and MIDI, preserving machine IDs (Plaits 7, MIDI 5). The final combined package is `out/runs/flex-20sec-menu-package-02`, including twenty-second Flex and named save. Only four MAIN bytes differ from the prior package; native rank-shim/table checks, 40 source tests and container verification pass. Hardware menu behavior remains unverified.
 
@@ -544,7 +544,7 @@ The CPU correction and current verification are documented in [COLDFIRE-FIX.md](
 
 > **2026-10-06 hardware failure:** the Plaits r1 handoff crashed after installation at CPU PC `0x40311a64`. The rank shim uses a MOVE addressing form excluded by ColdFire. Do not install/retry this candidate. User confirmed stock 1.16 recovery, normal boot and audio via Novation Launch Control 3 DIN OUT; the generic USB MIDI adapter produced no visible device reception. See [failure evidence](../out/hardware/plaits-1.16-first-trial-2026-10-06/HARDWARE-FAILURE.md). Earlier emulator checks below remain historical evidence only.
 
-2026-10-06: the [Flex sampling prototype](FLEX-LITE-UI-RESULTS.md) connects
+2026-10-06: the [Flex sampling prototype](history/flex/FLEX-LITE-UI-RESULTS.md) connects
 the original recorder panel to temporary RAM samples. Record/stop/trim/USE,
 remembered destination, discard, replacement and capacity retry pass through
 actual panel events. Stereo track 1 and mono track 3 produce repeatable original
@@ -695,7 +695,7 @@ The existing STRETCH machine now has an optional per-track CAPI OFF/ON on
 encoder C. Native trigger latching, stock/R3 rendering, mixed sixteen-track
 routing, native locks and buffered second-SRC-page feedback pass. The builder
 requires `--capi-toggle`; omission reproduces the original combined image.
-[Results and reproduction](CAPICOLA-TOGGLE-RESULTS.md). Device timing, coupled
+[Results and reproduction](history/capicola/CAPICOLA-TOGGLE-RESULTS.md). Device timing, coupled
 operation, full project persistence and existing lifecycle gaps remain separate.
 
 ## Optional any-track routing — 2026-10-19

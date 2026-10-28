@@ -1,6 +1,6 @@
 # Capicola prototype results
 
-See [the result report](../../../docs/CAPICOLA-PROTOTYPE-RESULTS.md) for commands, metrics and proof limits.
+See [the result report](../../../docs/history/capicola/CAPICOLA-PROTOTYPE-RESULTS.md) for commands, metrics and proof limits.
 
 ## Evidence ladder
 

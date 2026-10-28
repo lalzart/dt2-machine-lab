@@ -1,6 +1,6 @@
 # STRETCH R3 results
 
-Final source/emulator gates pass. See [R3 results](../../../docs/CAPICOLA-STRETCH-R3-RESULTS.md) for reproductions and retained artifacts.
+Final source/emulator gates pass. See [R3 results](../../../docs/history/capicola/CAPICOLA-STRETCH-R3-RESULTS.md) for reproductions and retained artifacts.
 
 Host: 576 live-control comparisons, max 1.92e-7 and RMS 5.66e-8; rapid queues, exact partitioning, invalid-state guards and the latched-control negative comparator pass. Unchanged-control PCM is exact against the preserved C reader.
 

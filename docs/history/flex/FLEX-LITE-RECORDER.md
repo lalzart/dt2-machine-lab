@@ -83,7 +83,7 @@ capture, or a project change.
 
 ## Isolated execution result
 
-[Probe source](../scripts/probe-flex-recorder.py) loads the entire authenticated
+[Probe source](../../../scripts/probe-flex-recorder.py) loads the entire authenticated
 MAIN unchanged into patched Unicorn's ColdFire model. The stock save loop,
 PCM request wrapper, response getter and lock-helper glue execute. RTOS mutex
 primitives, the request service, memory helpers and filesystem calls are
@@ -91,7 +91,7 @@ substituted. File output is an in-memory byte sink, not a disk operation.
 One unsupported FF1 instruction at `0x401539e2` receives the same semantic
 accommodation used by DigiKit's harness; the probe records it explicitly.
 
-The [final local report](../out/runs/flex-recorder-116-final-01/report.json)
+The [final local report](../../../out/runs/flex-recorder-116-final-01/report.json)
 passes 16 mono/stereo vectors, each run twice with exact result comparison,
 plus an open-failure control: **33 executions**. Frame counts are 0, 1, 511,
 512, 513, 1024, 1025 and 20,000, starting at frame 7. They cover both response

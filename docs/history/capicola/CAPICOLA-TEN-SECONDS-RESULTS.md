@@ -2,7 +2,7 @@
 
 2026-10-07. **Ten seconds is a practical bounded prototype target.** The new core accepts up to 480,000 mono frames at 48 kHz, including the tested dense-noise fixture that exceeded the old keyframe limit. Output duration can reach 960,000 frames (twenty seconds) at advance 0.5. This is host and standalone SHARC reader evidence; safe firmware allocation and physical real-time operation remain unverified.
 
-The [frozen proposal](CAPICOLA-TEN-SECONDS.md) and [capacity contract](../machines/capicola/capacity-contract/implementation-contract.json) preserve the original double and split implementations. The new [capacity core](../machines/capicola/capacity.c) and [header](../machines/capicola/capacity.h) are separate files, retaining the existing Capicola AGPL attribution.
+The [frozen proposal](../../CAPICOLA-TEN-SECONDS.md) and [capacity contract](../../../machines/capicola/capacity-contract/implementation-contract.json) preserve the original double and split implementations. The new [capacity core](../../../machines/capicola/capacity.c) and [header](../../../machines/capicola/capacity.h) are separate files, retaining the existing Capicola AGPL attribution.
 
 ## What changed
 
@@ -34,8 +34,8 @@ Measured reader state is 80 bytes on the host and **76 bytes on SHARC**. Bank me
 
 ## Verification
 
-Host report: [capicola-capacity-host-final-01](../out/runs/capicola-capacity-host-final-01/report.json).
-Target report: [capicola-capacity-target-final-01](../out/runs/capicola-capacity-target-final-01/report.json).
+Host report: [capicola-capacity-host-final-01](../../../out/runs/capicola-capacity-host-final-01/report.json).
+Target report: [capicola-capacity-target-final-01](../../../out/runs/capicola-capacity-target-final-01/report.json).
 
 - Thirty full host audio comparisons: six ten-second fixtures × five pitch/advance pairs, including decimal rates and both extremes. Counts and amplitudes match the double reference; timestamp error stays within one Q24 unit. PCM tolerance remains max 1e-4 / RMS 1e-5. Observed maximum host error is 2.38419e-7.
 - The reference is a scratch copy of the preserved double core with only its two capacity macros expanded. Both original and adapted hashes are recorded. Existing accepted one-second split-core behavior remains byte-identical in the compatibility cases.
@@ -46,7 +46,7 @@ Target report: [capicola-capacity-target-final-01](../out/runs/capicola-capacity
 
 All five final target comparisons pass. Worst target sample error is 2.98023e-7. The twenty-second dense-noise endpoint window contains 3,591 non-negligible output samples. Target code is 11,656 bytes; among 8,022 processing calls, median instruction count is 233,010, p99 437,873 and maximum 444,797. Counts include the standalone wrapper and must not be interpreted as physical cycles.
 
-The configured source/native CPU suite passes **59 tests, no skips**. The [SINE replay regression](../out/runs/20261007T125039Z-test-425667ae/manifest.json) passes exact-repeat/baseline, stock isolation, lifecycle and disabled-hook negative checks. Ready-contract validation and focused lint pass; all five preserved baseline source files and both pinned dependency checkouts remain unchanged.
+The configured source/native CPU suite passes **59 tests, no skips**. The [SINE replay regression](../../../out/runs/20261007T125039Z-test-425667ae/manifest.json) passes exact-repeat/baseline, stock isolation, lifecycle and disabled-hook negative checks. Ready-contract validation and focused lint pass; all five preserved baseline source files and both pinned dependency checkouts remain unchanged.
 
 The target keyframes are analyzed on the host. The earlier small target-analyzer mismatch remains unresolved. Sparse finite transport can also fall silent before its duration counter ends, as the preserved reference does; numerical equivalence does not settle that playback-quality question. The sine decimal endpoint is retained as a stop/cursor check, while dense endpoints supply meaningful audio checks.
 

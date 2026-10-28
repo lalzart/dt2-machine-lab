@@ -12,7 +12,7 @@ Their analyzer, immutable banks, independent readers, bounded preparation,
 sample-transfer invalidation and memory tests can be reused. Their CPU menu,
 four-control interface and status-title roadmap are superseded. Automatic
 title-refresh development has stopped; its incomplete UI results are recorded
-in [the continuation results](CAPICOLA-LIVE-FEEDBACK-RESULTS.md).
+in [the continuation results](history/capicola/CAPICOLA-LIVE-FEEDBACK-RESULTS.md).
 
 ## Verified existing interface
 
